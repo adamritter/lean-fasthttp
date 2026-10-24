@@ -1,0 +1,446 @@
+[
+  {
+    "name": "lean-fast-before-1",
+    "repeat": 1,
+    "requests_per_second": 48123.14,
+    "p99_latency": "1.98ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/home/aritter/src/leanprod/http-bench/bin/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18094/"
+    ],
+    "verification": "PASS: exact 1024-byte body, keep-alive, all request splits, pipeline, half-close, header limit, concurrent clients, disconnects",
+    "wall_seconds": 15.020080305999727,
+    "timing": {
+      "started_utc": "2026-10-24T13:04:24.367344+00:00",
+      "finished_utc": "2026-10-24T13:04:39.387465+00:00",
+      "monotonic_seconds": 15.020080305999727,
+      "boottime_seconds": 15.020087108998268,
+      "suspend_seconds": 6.802998541388661e-06
+    },
+    "thread_cpu_seconds": {
+      "518976": 0.0,
+      "518977": 0.0,
+      "518978": 4.11,
+      "518979": 1.31,
+      "518980": 7.35
+    },
+    "average_busy_cores": 0.85,
+    "peak_rss_kib": 11108
+  },
+  {
+    "name": "lean-fast-v1-1",
+    "repeat": 1,
+    "requests_per_second": 45135.48,
+    "p99_latency": "2.13ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/home/aritter/src/leanprod/http-bench/bin/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18103/"
+    ],
+    "verification": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close",
+    "wall_seconds": 15.107553239999106,
+    "timing": {
+      "started_utc": "2026-10-24T13:04:44.035961+00:00",
+      "finished_utc": "2026-10-24T13:04:59.143562+00:00",
+      "monotonic_seconds": 15.107553239999106,
+      "boottime_seconds": 15.107558611998684,
+      "suspend_seconds": 5.371999577619135e-06
+    },
+    "thread_cpu_seconds": {
+      "519910": 0.0,
+      "519911": 0.0,
+      "519912": 3.92,
+      "519913": 1.23,
+      "519914": 7.8
+    },
+    "average_busy_cores": 0.857,
+    "peak_rss_kib": 13228
+  },
+  {
+    "name": "lean-fast-1",
+    "repeat": 1,
+    "requests_per_second": 51387.49,
+    "p99_latency": "1.83ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/home/aritter/src/leanprod/http-bench/bin/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18095/"
+    ],
+    "verification": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close",
+    "wall_seconds": 15.018185561000791,
+    "timing": {
+      "started_utc": "2026-10-24T13:05:03.788033+00:00",
+      "finished_utc": "2026-10-24T13:05:18.806258+00:00",
+      "monotonic_seconds": 15.018185561000791,
+      "boottime_seconds": 15.018190300997958,
+      "suspend_seconds": 4.739997166325338e-06
+    },
+    "thread_cpu_seconds": {
+      "521095": 0.0,
+      "521096": 0.0,
+      "521097": 4.27,
+      "521098": 1.37,
+      "521099": 7.1
+    },
+    "average_busy_cores": 0.848,
+    "peak_rss_kib": 13244
+  },
+  {
+    "name": "lean-h1-1",
+    "repeat": 1,
+    "requests_per_second": 24164.68,
+    "p99_latency": "4.37ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/home/aritter/src/leanprod/http-bench/bin/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18097/"
+    ],
+    "verification": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close",
+    "wall_seconds": 15.107195189000777,
+    "timing": {
+      "started_utc": "2026-10-24T13:05:23.454437+00:00",
+      "finished_utc": "2026-10-24T13:05:38.561674+00:00",
+      "monotonic_seconds": 15.107195189000777,
+      "boottime_seconds": 15.107200249000016,
+      "suspend_seconds": 5.059999239165336e-06
+    },
+    "thread_cpu_seconds": {
+      "521546": 0.0,
+      "521547": 0.0,
+      "521548": 3.16,
+      "521549": 1.01,
+      "521550": 9.7
+    },
+    "average_busy_cores": 0.918,
+    "peak_rss_kib": 12260
+  },
+  {
+    "name": "lean-h1-1",
+    "repeat": 2,
+    "requests_per_second": 23557.98,
+    "p99_latency": "4.39ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/home/aritter/src/leanprod/http-bench/bin/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18097/"
+    ],
+    "verification": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close",
+    "wall_seconds": 15.106984193000244,
+    "timing": {
+      "started_utc": "2026-10-24T13:05:43.211229+00:00",
+      "finished_utc": "2026-10-24T13:05:58.318253+00:00",
+      "monotonic_seconds": 15.106984193000244,
+      "boottime_seconds": 15.106988595001894,
+      "suspend_seconds": 4.402001650305465e-06
+    },
+    "thread_cpu_seconds": {
+      "521868": 0.0,
+      "521869": 0.0,
+      "521870": 3.26,
+      "521871": 1.11,
+      "521872": 9.48
+    },
+    "average_busy_cores": 0.917,
+    "peak_rss_kib": 12332
+  },
+  {
+    "name": "lean-fast-1",
+    "repeat": 2,
+    "requests_per_second": 50079.31,
+    "p99_latency": "1.86ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/home/aritter/src/leanprod/http-bench/bin/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18095/"
+    ],
+    "verification": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close",
+    "wall_seconds": 15.10734487100126,
+    "timing": {
+      "started_utc": "2026-10-24T13:06:02.952689+00:00",
+      "finished_utc": "2026-10-24T13:06:18.060076+00:00",
+      "monotonic_seconds": 15.10734487100126,
+      "boottime_seconds": 15.107350768001197,
+      "suspend_seconds": 5.8969999372493476e-06
+    },
+    "thread_cpu_seconds": {
+      "522486": 0.0,
+      "522487": 0.0,
+      "522488": 4.22,
+      "522489": 1.33,
+      "522490": 7.0
+    },
+    "average_busy_cores": 0.831,
+    "peak_rss_kib": 13264
+  },
+  {
+    "name": "lean-fast-v1-1",
+    "repeat": 2,
+    "requests_per_second": 45455.15,
+    "p99_latency": "2.07ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/home/aritter/src/leanprod/http-bench/bin/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18103/"
+    ],
+    "verification": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close",
+    "wall_seconds": 15.10722084200097,
+    "timing": {
+      "started_utc": "2026-10-24T13:06:22.692993+00:00",
+      "finished_utc": "2026-10-24T13:06:37.800254+00:00",
+      "monotonic_seconds": 15.10722084200097,
+      "boottime_seconds": 15.10722574600004,
+      "suspend_seconds": 4.903999069938436e-06
+    },
+    "thread_cpu_seconds": {
+      "522760": 0.0,
+      "522761": 0.0,
+      "522762": 3.87,
+      "522763": 1.21,
+      "522765": 7.92
+    },
+    "average_busy_cores": 0.861,
+    "peak_rss_kib": 13284
+  },
+  {
+    "name": "lean-fast-before-1",
+    "repeat": 2,
+    "requests_per_second": 46104.6,
+    "p99_latency": "2.15ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/home/aritter/src/leanprod/http-bench/bin/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18094/"
+    ],
+    "verification": "PASS: exact 1024-byte body, keep-alive, all request splits, pipeline, half-close, header limit, concurrent clients, disconnects",
+    "wall_seconds": 15.106563630999517,
+    "timing": {
+      "started_utc": "2026-10-24T13:06:42.392897+00:00",
+      "finished_utc": "2026-10-24T13:06:57.499502+00:00",
+      "monotonic_seconds": 15.106563630999517,
+      "boottime_seconds": 15.106569517996832,
+      "suspend_seconds": 5.886997314519249e-06
+    },
+    "thread_cpu_seconds": {
+      "523088": 0.0,
+      "523089": 0.0,
+      "523090": 4.13,
+      "523091": 1.35,
+      "523092": 7.26
+    },
+    "average_busy_cores": 0.843,
+    "peak_rss_kib": 11104
+  },
+  {
+    "name": "lean-fast-before-1",
+    "repeat": 3,
+    "requests_per_second": 48543.5,
+    "p99_latency": "1.95ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/home/aritter/src/leanprod/http-bench/bin/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18094/"
+    ],
+    "verification": "PASS: exact 1024-byte body, keep-alive, all request splits, pipeline, half-close, header limit, concurrent clients, disconnects",
+    "wall_seconds": 15.106291699999929,
+    "timing": {
+      "started_utc": "2026-10-24T13:07:02.108853+00:00",
+      "finished_utc": "2026-10-24T13:07:17.215186+00:00",
+      "monotonic_seconds": 15.106291699999929,
+      "boottime_seconds": 15.106296716003271,
+      "suspend_seconds": 5.016003342461772e-06
+    },
+    "thread_cpu_seconds": {
+      "524001": 0.0,
+      "524002": 0.0,
+      "524003": 4.05,
+      "524004": 1.28,
+      "524005": 7.47
+    },
+    "average_busy_cores": 0.847,
+    "peak_rss_kib": 11112
+  },
+  {
+    "name": "lean-fast-v1-1",
+    "repeat": 3,
+    "requests_per_second": 44513.65,
+    "p99_latency": "2.14ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/home/aritter/src/leanprod/http-bench/bin/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18103/"
+    ],
+    "verification": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close",
+    "wall_seconds": 15.10650641599932,
+    "timing": {
+      "started_utc": "2026-10-24T13:07:21.872915+00:00",
+      "finished_utc": "2026-10-24T13:07:36.979463+00:00",
+      "monotonic_seconds": 15.10650641599932,
+      "boottime_seconds": 15.106512269998348,
+      "suspend_seconds": 5.8539990277495235e-06
+    },
+    "thread_cpu_seconds": {
+      "524258": 0.0,
+      "524259": 0.0,
+      "524260": 3.85,
+      "524261": 1.2,
+      "524262": 7.74
+    },
+    "average_busy_cores": 0.847,
+    "peak_rss_kib": 13344
+  },
+  {
+    "name": "lean-fast-1",
+    "repeat": 3,
+    "requests_per_second": 50923.92,
+    "p99_latency": "1.85ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/home/aritter/src/leanprod/http-bench/bin/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18095/"
+    ],
+    "verification": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close",
+    "wall_seconds": 15.10627802899944,
+    "timing": {
+      "started_utc": "2026-10-24T13:07:41.740043+00:00",
+      "finished_utc": "2026-10-24T13:07:56.846357+00:00",
+      "monotonic_seconds": 15.10627802899944,
+      "boottime_seconds": 15.106282966997242,
+      "suspend_seconds": 4.937997800880112e-06
+    },
+    "thread_cpu_seconds": {
+      "524887": 0.0,
+      "524889": 0.0,
+      "524890": 4.27,
+      "524891": 1.35,
+      "524895": 7.08
+    },
+    "average_busy_cores": 0.841,
+    "peak_rss_kib": 13244
+  },
+  {
+    "name": "lean-h1-1",
+    "repeat": 3,
+    "requests_per_second": 23966.4,
+    "p99_latency": "4.30ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/home/aritter/src/leanprod/http-bench/bin/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18097/"
+    ],
+    "verification": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close",
+    "wall_seconds": 15.106125709999105,
+    "timing": {
+      "started_utc": "2026-10-24T13:08:01.518997+00:00",
+      "finished_utc": "2026-10-24T13:08:16.625164+00:00",
+      "monotonic_seconds": 15.106125709999105,
+      "boottime_seconds": 15.106130962998577,
+      "suspend_seconds": 5.252999471849762e-06
+    },
+    "thread_cpu_seconds": {
+      "525857": 0.0,
+      "525858": 0.0,
+      "525859": 3.28,
+      "525860": 1.16,
+      "525861": 9.39
+    },
+    "average_busy_cores": 0.916,
+    "peak_rss_kib": 12288
+  }
+]

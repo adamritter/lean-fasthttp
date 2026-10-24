@@ -1,0 +1,19 @@
+'FastHTTP.Protocol.scanFeed_append' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FastHTTP.Protocol.scanFeed_fragments' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FastHTTP.Protocol.scanByte_stopped' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FastHTTP.Protocol.scanFeed_stopped' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FastHTTP.Protocol.conflicting_framing_rejected' does not depend on any axioms
+'FastHTTP.Protocol.fixed_framing_exact' does not depend on any axioms
+'FastHTTP.Protocol.takeCount_bounds' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FastHTTP.Protocol.takeCount_conservation' depends on axioms: [propext, Quot.sound]
+'FastHTTP.Protocol.takeCount_fragmentation' depends on axioms: [propext, Quot.sound]
+'FastHTTP.Protocol.takeBody_bounds' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FastHTTP.Protocol.takeBody_size' depends on axioms: [propext, Quot.sound]
+'FastHTTP.Protocol.takeBody_partition' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FastHTTP.Protocol.takeBody_complete' depends on axioms: [propext, Quot.sound]
+'FastHTTP.Protocol.takeBody_bytes_fragmentation' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FastHTTP.Protocol.head_has_no_body' depends on axioms: [propext]
+'FastHTTP.Protocol.no_content_has_no_body' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FastHTTP.Protocol.not_modified_has_no_body' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FastHTTP.Protocol.no_content_omits_length' does not depend on any axioms
+'FastHTTP.Protocol.response_length_exact' depends on axioms: [propext, Quot.sound]

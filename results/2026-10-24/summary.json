@@ -1,0 +1,22 @@
+{
+  "lean-fast-before-1": {
+    "median_req_s": 48123.14,
+    "min_req_s": 46104.6,
+    "max_req_s": 48543.5
+  },
+  "lean-fast-v1-1": {
+    "median_req_s": 45135.48,
+    "min_req_s": 44513.65,
+    "max_req_s": 45455.15
+  },
+  "lean-fast-1": {
+    "median_req_s": 50923.92,
+    "min_req_s": 50079.31,
+    "max_req_s": 51387.49
+  },
+  "lean-h1-1": {
+    "median_req_s": 23966.4,
+    "min_req_s": 23557.98,
+    "max_req_s": 24164.68
+  }
+}

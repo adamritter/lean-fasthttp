@@ -1,0 +1,31 @@
+name = "fast_http"
+version = "0.1.0"
+defaultTargets = ["FastHTTP", "fast_http", "fast_http_example", "h1_http", "baseline_http", "v1_http"]
+
+[[lean_lib]]
+name = "FastHTTP"
+globs = ["FastHTTP", "FastHTTP.+"]
+
+[[lean_lib]]
+name = "Bench"
+globs = ["Bench.+"]
+
+[[lean_exe]]
+name = "fast_http"
+root = "Bench.Main"
+
+[[lean_exe]]
+name = "fast_http_example"
+root = "Tests.Server"
+
+[[lean_exe]]
+name = "h1_http"
+root = "Bench.H1Main"
+
+[[lean_exe]]
+name = "baseline_http"
+root = "Bench.BaselineMain"
+
+[[lean_exe]]
+name = "v1_http"
+root = "Bench.V1Main"

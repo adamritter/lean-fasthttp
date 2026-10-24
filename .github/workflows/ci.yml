@@ -1,0 +1,13 @@
+name: Lean and wire tests
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          build: true
+      - run: scripts/build.sh
+      - run: lake env lean FastHTTP/ProofAudit.lean
+      - run: python3 scripts/verify_fast_protocol.py

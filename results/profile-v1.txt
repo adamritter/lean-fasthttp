@@ -1,0 +1,106 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 2K of event 'cpu-clock:u'
+# Event count (approx.): 5082164288
+#
+# Overhead  Command         Shared Object     Symbol                                                                                                                                                                                                                           
+# ........  ..............  ................  .................................................................................................................................................................................................................................
+#
+    10.29%  lean-fast-http  lean-fast-http    [.] lean_dec_ref_cold
+     9.50%  lean-fast-http  lean-fast-http    [.] lean_alloc_small_object_core
+     8.60%  lean-fast-http  lean-fast-http    [.] lp_static__http___private_Init_Data_Range_Basic_0__Std_Legacy_Range_forIn_x27_loop___at___00__private_Init_Data_Range_Basic_0__Std_Legacy_Range_forIn_x27_loop___at___00FastHTTP_Protocol_parseHead_spec__8_spec__13___redArg
+     4.81%  lean-fast-http  libc.so.6         [.] 0x000000000009d35c
+            |
+            ---0x7f5bc5a9d35c
+
+     4.38%  lean-fast-http  lean-fast-http    [.] lean::lean_del_core_other(lean_object*, unsigned char, lean_object*)
+     3.90%  lean-fast-http  lean-fast-http    [.] mi_free
+     3.27%  lean-fast-http  libc.so.6         [.] pthread_mutex_lock
+            |          
+             --3.04%--lll_mutex_lock_optimized (inlined)
+                       pthread_mutex_lock
+
+     3.00%  lean-fast-http  lean-fast-http    [.] lean_apply_2
+     2.84%  lean-fast-http  libc.so.6         [.] 0x00000000000a08f2
+            |
+            ---0x7f5bc5aa08f2
+               |          
+               |--1.50%--0x7f5bc5a94c78
+               |          __pthread_cond_wait_common (inlined)
+               |          pthread_cond_wait
+               |          
+                --1.34%--internal_syscall_cancel (inlined)
+                          syscall_cancel (inlined)
+                          |          
+                           --0.71%--write
+
+     2.60%  lean-fast-http  lean-fast-http    [.] lp_static__http_FastHTTP_Protocol_scanByte
+     1.97%  lean-fast-http  libc.so.6         [.] pthread_cond_broadcast
+            |          
+             --0.83%--futex_wake (inlined)
+                       pthread_cond_broadcast
+
+     1.89%  lean-fast-http  lean-fast-http    [.] lean_mark_mt
+     1.89%  lean-fast-http  libc.so.6         [.] pthread_cond_signal
+            |          
+            |--0.67%--__condvar_switch_g1 (inlined)
+            |          pthread_cond_signal
+            |          
+             --0.63%--__condvar_acquire_lock (inlined)
+                       pthread_cond_signal
+
+     1.81%  lean-fast-http  lean-fast-http    [.] lean_task_map_core
+     1.81%  lean-fast-http  lean-fast-http    [.] lp_static__http_FastHTTP_Protocol_feed
+     1.66%  lean-fast-http  lean-fast-http    [.] mi_free_block_mt(mi_page_s*, mi_block_s*, bool, bool)
+     1.62%  lean-fast-http  lean-fast-http    [.] lean::lean_promise_new()
+     1.58%  lean-fast-http  lean-fast-http    [.] lp_static__http___private_Init_Data_Range_Basic_0__Std_Legacy_Range_forIn_x27_loop___at___00__private_Init_Data_Range_Basic_0__Std_Legacy_Range_forIn_x27_loop___at___00FastHTTP_Protocol_parseHead_spec__7_spec__11___redArg
+     1.50%  lean-fast-http  lean-fast-http    [.] lean_apply_1
+     1.34%  lean-fast-http  libc.so.6         [.] 0x0000000000094e9e
+            |
+            ---0x7f5bc5a94e9e
+               |          
+                --1.14%--0x7f5bc5a9aac4
+                          __pthread_cond_wait_common (inlined)
+                          pthread_cond_wait
+
+     1.22%  lean-fast-http  libc.so.6         [.] 0x0000000000094f07
+            |
+            ---0x7f5bc5a94f07
+               0x7f5bc5a9d369
+
+     1.14%  lean-fast-http  lean-fast-http    [.] lp_static__http___private_FastHTTP_0__FastHTTP_process
+     0.99%  lean-fast-http  lean-fast-http    [.] lp_static__http_FastHTTP_Protocol_parseHead
+     0.95%  lean-fast-http  libc.so.6         [.] 0x00000000000a62e8
+            |
+            ---0x7f5bc5aa62e8
+
+     0.87%  lean-fast-http  lean-fast-http    [.] lean::task_manager::resolve(lean_task*, lean_object*)
+     0.83%  lean-fast-http  lean-fast-http    [.] lp_static__http_FastHTTP_equals_loop
+     0.79%  lean-fast-http  lean-fast-http    [.] _mi_malloc_generic(mi_theap_s*, unsigned long, unsigned long, mi_page_s**)
+     0.79%  lean-fast-http  lean-fast-http    [.] lean_free_object
+     0.79%  lean-fast-http  libc.so.6         [.] 0x00000000000a62ff
+            |
+            ---0x7f5bc5aa62ff
+
+     0.71%  lean-fast-http  libc.so.6         [.] 0x00000000000a799d
+            |
+            ---0x7f5bc5aa799d
+
+     0.67%  lean-fast-http  lean-fast-http    [.] lean_io_promise_result_opt
+     0.67%  lean-fast-http  libc.so.6         [.] 0x00000000000a79b9
+            |
+            ---0x7f5bc5aa79b9
+
+     0.63%  lean-fast-http  lean-fast-http    [.] lp_static__http___private_Init_Data_Range_Basic_0__Std_Legacy_Range_forIn_x27_loop___at___00FastHTTP_Protocol_parseHead_spec__8___redArg
+     0.63%  lean-fast-http  lean-fast-http    [.] mi_page_thread_collect_to_local(mi_page_s*, mi_block_s*)
+     0.55%  lean-fast-http  lean-fast-http    [.] lp_static__http___private_FastHTTP_0__FastHTTP_receive___lam__0
+     0.51%  lean-fast-http  lean-fast-http    [.] uv__epoll_ctl_flush
+     0.51%  lean-fast-http  libc.so.6         [.] pthread_cond_wait
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#

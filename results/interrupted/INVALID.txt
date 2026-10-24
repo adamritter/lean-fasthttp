@@ -1,0 +1,1 @@
+Incomplete batch: lean-fast-1-run2 reported 64 timeouts and 32.27s for a 15s run. Kernel journal records s2idle suspend/resume during this batch. No summary/median is valid for this batch. Retained for transparency; use fast-protocol-final for the clean comparison.

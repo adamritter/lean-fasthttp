@@ -1,0 +1,10 @@
+Oct 24 15:00:24 asus kernel: PM: suspend entry (s2idle)
+Oct 24 15:02:26 asus kernel: OOM killer disabled.
+Oct 24 15:02:27 asus kernel: printk: Suspending console(s) (use no_console_suspend to debug)
+Oct 24 15:02:27 asus kernel: OOM killer enabled.
+Oct 24 15:02:29 asus kernel: PM: suspend exit
+Oct 24 15:02:53 asus kernel: PM: suspend entry (s2idle)
+Oct 24 15:03:15 asus kernel: OOM killer disabled.
+Oct 24 15:03:15 asus kernel: printk: Suspending console(s) (use no_console_suspend to debug)
+Oct 24 15:03:15 asus kernel: OOM killer enabled.
+Oct 24 15:03:17 asus kernel: PM: suspend exit
