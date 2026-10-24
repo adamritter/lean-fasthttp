@@ -1,3 +1,4 @@
+import FastHTTP.WireProofs
 import FastHTTP.HeaderProofs
 import FastHTTP.FeedProofs
 import FastHTTP.NumericProofs
@@ -123,3 +124,13 @@ import FastHTTP.BodyFastProofs
 #print axioms FastHTTP.Protocol.parseHeaders_loop_sound
 #print axioms FastHTTP.Protocol.parseHeaders_sound
 #print axioms FastHTTP.Protocol.parseHead_envelope
+
+#print axioms FastHTTP.Protocol.hexValue_iff
+#print axioms FastHTTP.Protocol.digitChar_hex
+#print axioms FastHTTP.Protocol.digitChar_decimal
+#print axioms FastHTTP.Protocol.numeral_single_byte
+#print axioms FastHTTP.Protocol.numeral_alphabet
+#print axioms FastHTTP.Protocol.numeral_roundtrip
+#print axioms FastHTTP.Protocol.decimal_wire_encoding
+#print axioms FastHTTP.Protocol.decimal_wire_roundtrip
+#print axioms FastHTTP.Protocol.encodeChunk_wire

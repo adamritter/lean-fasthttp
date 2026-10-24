@@ -270,9 +270,7 @@ def chunkSize (line : ByteArray) (limit : Nat) : Except Nat Nat := do
   let mut i := 0
   let mut n := 0
   while i < line.size do
-    let b := lower line[i]!
-    let digit := if b >= 48 && b <= 57 then b.toNat - 48
-      else if b >= 97 && b <= 102 then b.toNat - 87 else 16
+    let digit := hexValue line[i]!
     if digit == 16 then break
     n := n * 16 + digit
     if n > limit then throw 413

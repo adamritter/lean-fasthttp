@@ -1,6 +1,12 @@
-import Init
+import FastHTTP.Syntax
 
 namespace FastHTTP.Protocol
+
+/-- ASCII hexadecimal value; 16 is the explicit non-HEXDIG sentinel. -/
+@[inline] def hexValue (octet : UInt8) : Nat :=
+  let b := lower octet
+  if b >= 48 && b <= 57 then b.toNat - 48
+  else if b >= 97 && b <= 102 then b.toNat - 87 else 16
 
 /-- One decimal octet. Arithmetic is on naturals, without machine overflow. -/
 @[inline] def decimalStep (limit n : Nat) (b : UInt8) : Option Nat :=
