@@ -1,0 +1,50 @@
+[
+  {
+    "kind": "std",
+    "workers_or_cpu_budget": 1,
+    "median_rps": 51654.3,
+    "min_rps": 49990.33,
+    "max_rps": 52084.53,
+    "runs": [
+      51654.3,
+      49990.33,
+      52084.53
+    ]
+  },
+  {
+    "kind": "std",
+    "workers_or_cpu_budget": 4,
+    "median_rps": 41197.9,
+    "min_rps": 40767.0,
+    "max_rps": 42444.61,
+    "runs": [
+      40767.0,
+      41197.9,
+      42444.61
+    ]
+  },
+  {
+    "kind": "uv",
+    "workers_or_cpu_budget": 1,
+    "median_rps": 108522.1,
+    "min_rps": 104212.39,
+    "max_rps": 109859.41,
+    "runs": [
+      108522.1,
+      109859.41,
+      104212.39
+    ]
+  },
+  {
+    "kind": "uv",
+    "workers_or_cpu_budget": 4,
+    "median_rps": 479333.0,
+    "min_rps": 472558.33,
+    "max_rps": 493836.03,
+    "runs": [
+      479333.0,
+      493836.03,
+      472558.33
+    ]
+  }
+]

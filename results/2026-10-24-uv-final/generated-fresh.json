@@ -1,0 +1,33 @@
+{
+  "result": "PASS",
+  "seed": 2275052114,
+  "generated_pipelines": 10000,
+  "exact_fragment_cases": 23554,
+  "input_sha256": "f862fc4ab748aba532a693dd64dfb8ce386b7499b5927f6d3112f150f941c428",
+  "probe_sha256": "aa531693130a295cc57c74096a72c0f8d60cfae32160c78ca0dbe86ac1f0605d",
+  "case_classes": {
+    "absolute-uri-scheme": 5,
+    "all-field-value-octets": 256,
+    "authority-boundaries": 7,
+    "body-limit": 1,
+    "chunk-limit-exceeded": 1,
+    "close-stops-pipeline": 3,
+    "combined-transfer-coding-fields": 4,
+    "every-split": 351,
+    "exact-chunk-limit": 1,
+    "exact-limits": 1,
+    "generated": 10000,
+    "head-limit": 1,
+    "independent-ipv6": 500,
+    "invalid-chunk-extensions": 5,
+    "invalid-ipv6": 1000,
+    "leading-crlf-splits": 65,
+    "malformed": 14,
+    "malformed-fragments": 14,
+    "minimal-http10-method": 1309,
+    "one-octet-fragments": 10,
+    "random-fragments": 10000,
+    "transfer-coding-order": 5,
+    "zero-data-chunks": 1
+  }
+}

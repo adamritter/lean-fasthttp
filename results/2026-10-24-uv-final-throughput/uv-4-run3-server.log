@@ -1,0 +1,4 @@
+worker=0 accepted=143 reads=2149331 sends=2149331 bytes=2506119946 queued=0 errors=0 peer_disconnects=128 elapsed_ns=18127651152
+worker=1 accepted=130 reads=2103218 sends=2103218 bytes=2452352188 queued=0 errors=0 peer_disconnects=117 elapsed_ns=18127847186
+worker=2 accepted=112 reads=2120147 sends=2120147 bytes=2472091402 queued=0 errors=0 peer_disconnects=92 elapsed_ns=18127752913
+worker=3 accepted=131 reads=2144465 sends=2144465 bytes=2500446190 queued=0 errors=0 peer_disconnects=111 elapsed_ns=18127583407

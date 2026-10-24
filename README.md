@@ -36,13 +36,38 @@ All 69 theorems are audited for axioms. [Detailed formal scope](FORMAL_SCOPE.md)
 distinguishes these guarantees from the still-unproved full RFC grammar and I/O
 interpreter; this is not a full formal proof of HTTP/1.1 conformance.
 
-A short development measurement with every timed response body checked reached
-487,269 completed requests/s with four I/O workers restricted to four GH200 CPUs.
-A separate three-repeat 1 MiB body regression restored fixed/chunked echo throughput
-to approximately 534–536 MiB/s after a byte-only implementation regressed to 52 MiB/s.
-The failed optimization and recovery are both retained under
-[development evidence](results/2026-10-24-uv-integration/). Final repeated
-checkpoint measurements are recorded separately from these development samples.
+The final production-code checkpoint
+[`0fbd69b`](https://github.com/adamritter/lean-fasthttp/commit/0fbd69bbca866724d941dae29b3907fe4fd36ab2)
+reaches **479,333 completed requests/s** (median of three 15-second runs), with
+four I/O workers in one process restricted to four GH200 CPU cores. All three
+runs exceed 400k/s: **472,558–493,836/s**. The timed clients verify the status,
+Content-Length and complete 1 KiB body of **all 21,726,656 responses**, with zero
+invalid responses. This is HTTP/1.1 keep-alive on Linux loopback, 256 connections,
+eight client threads on separate CPUs, no pipelining and no TLS.
+
+| Same complete HTTP parser/handler | 1 server CPU | 4 server CPUs |
+|---|---:|---:|
+| Original Std transport | 51,654 req/s | 41,198 req/s |
+| lean-uv transport | 108,522 req/s | **479,333 req/s** |
+
+The four-worker server consumes about 3.99 CPU seconds per wall second. It has
+four I/O workers plus runtime/helper threads (12 observed OS threads total); the
+entire process is restricted to CPUs 16–19. The Std four-CPU control uses one
+shared I/O loop and four Lean scheduler threads. Fixed total concurrency means
+per-worker connection counts differ across the scaling configurations.
+
+A fresh final evaluation passes **23,554 exact-fragment cases**, including
+10,000 newly generated pipelines and their random fragmentations, plus a new
+four-worker dynamic-response corpus. The code checkpoint's CI passes.
+[Verification manifest](results/2026-10-24-uv-final/verification.json),
+[raw throughput and metadata](results/2026-10-24-uv-final-throughput/),
+[formal scope](FORMAL_SCOPE.md).
+
+The byte-only body decoder initially regressed 1 MiB echo throughput from about
+513 to 52 MiB/s. Proved bulk-copy refinement restored approximately 534–536 MiB/s
+in a three-repeat fixed/chunked echo comparison. This is a separate client/server
+body benchmark, with Python validation included. The negative result and recovery
+remain in [development evidence](results/2026-10-24-uv-integration/).
 
 ## Earlier single-loop checkpoint validation (2026-10-24)
 
@@ -340,6 +365,6 @@ four-worker tests with fresh random fixed/chunked bodies, deferred responses,
 HEAD, connection close and half-close. `scripts/benchmark_uv.py` compares the
 original transport with the worker transport using identical full HTTP parsing
 and 1 KiB response bodies; it records raw runs, source/binary hashes, process CPU
-usage, worker counters and client settings. A preliminary five-second run reached
-464,495 req/s on four GH200 CPU cores; this is development evidence, pending the
-final checkpoint's longer repeated evaluation.
+usage, worker counters and client settings. Use `--validate-bodies` to check every timed response. Final repeated results
+and exact reproduction commands are linked near the top of this README; earlier
+short development runs remain separately labelled.
