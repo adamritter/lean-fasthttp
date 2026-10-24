@@ -29,6 +29,7 @@ and any axiom beyond `propext`, `Classical.choice` and `Quot.sound`. There is no
 | `trailer_iff` / `trimSpan_exact` in `TrailerProofs` | Exact equivalence of the production trailer parser to the independent field-line envelope, the explicit forbidden-name policy, and the original binary value with only outer OWS removed. Every interior octet is preserved, including obs-text and all-whitespace values. |
 | `quotedEnd_iff` in `QuotedProofs` | Soundness/completeness against an independent RFC 9110 quoted-string grammar, including every escaped octet, obs-text, rejected controls/DEL, missing terminators and the exact closing cursor. The same production function is called for chunk extensions and Transfer-Encoding parameters. |
 | `decimal_iff` in `NumericProofs` | Every byte array, interval, limit and result; the production Content-Length parser succeeds iff the interval is nonempty and in bounds, contains only RFC ASCII DIGIT octets, and its positional decimal value equals the result without exceeding the limit. |
+| `connectionOptions_iff` / `transferCodings_iff` in `FieldsProofs` | Exact full comma-list grammars with ignored empty members, accumulated close/chunked/unsupported flags, transfer parameters and quoted strings. Chunked is unique, final and parameter-free, including a previous field's chunked flag. Every production loop is total. |
 | `validAuthority_iff` / `validIPvFuture_iff` in `AuthorityProofs` | Soundness and completeness of the complete Host/authority grammar: reg-name percent atoms, bracketed IPv6/IPvFuture, optional decimal port, and CONNECT nonempty host/port requirements. All interval scans terminate. |
 | `parseTarget_iff` in `TargetProofs` | Exact production request-target equivalence for all four forms, scheme syntax, userinfo policy, HTTP(S) authority precedence, path spans and unsupported-scheme metadata. `equals_iff` proves the underlying byte-text comparison. |
 | `validIPv4_iff` / `validIPv6_iff` / `utf8IPv6_iff` in `IPv6Proofs` | Exact equivalence to the RFC decimal-octet and counted IPv6 group grammar: eight 16-bit pieces, one optional compression eliding at least one piece, and an IPv4 tail only in the final two pieces. Decimal octets exclude leading zeros and values above 255. Malformed UTF-8 is rejected without panic. Group traversal uses structural list recursion rather than repeated indexing. |
@@ -48,7 +49,8 @@ The following obligations are not established by these theorems:
 
 * Field-specific Host, Connection, Expect and Transfer-Encoding state
   accumulation across the complete header block. Authority and all request-target
-  forms now have exact independent grammar equivalence theorems. The request-line
+  forms and both complete Connection/Transfer-Encoding list parsers now have exact
+  independent grammar equivalence theorems. The request-line
   envelope, field-line envelope, complete accepted header-block structure and
   URI atom grammar and the IPv4/IPv6 counted-group grammar now have independent
   formal specifications and proofs.

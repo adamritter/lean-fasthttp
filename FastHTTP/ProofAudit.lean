@@ -4,6 +4,7 @@ import FastHTTP.BodyLimitProofs
 import FastHTTP.BodyProofs
 import FastHTTP.ChunkGrammarProofs
 import FastHTTP.FeedProofs
+import FastHTTP.FieldsProofs
 import FastHTTP.HeaderLimitProofs
 import FastHTTP.HeaderProofs
 import FastHTTP.HexProofs
@@ -111,6 +112,28 @@ import FastHTTP.WireProofs
 #print axioms FastHTTP.Protocol.headStep_bound
 #print axioms FastHTTP.Protocol.feed_bound
 #print axioms FastHTTP.Protocol.feed_body_no_continue
+#print axioms FastHTTP.Protocol.listSpace_iff
+#print axioms FastHTTP.Protocol.connectionToken_sound
+#print axioms FastHTTP.Protocol.connectionToken_complete
+#print axioms FastHTTP.Protocol.connectionToken_iff
+#print axioms FastHTTP.Protocol.connectionList_sound
+#print axioms FastHTTP.Protocol.connectionList_complete
+#print axioms FastHTTP.Protocol.connectionOptions_iff
+#print axioms FastHTTP.Protocol.transferParameter_sound
+#print axioms FastHTTP.Protocol.transferParameter_complete
+#print axioms FastHTTP.Protocol.transferParameter_iff
+#print axioms FastHTTP.Protocol.transferParameter_bounds
+#print axioms FastHTTP.Protocol.transferParameters_sound
+#print axioms FastHTTP.Protocol.transferParameters_bounds
+#print axioms FastHTTP.Protocol.transferParameters_complete
+#print axioms FastHTTP.Protocol.transferParameters_iff
+#print axioms FastHTTP.Protocol.transferCoding_sound
+#print axioms FastHTTP.Protocol.transferCoding_complete
+#print axioms FastHTTP.Protocol.transferCoding_iff
+#print axioms FastHTTP.Protocol.transferCoding_bounds
+#print axioms FastHTTP.Protocol.transferList_sound
+#print axioms FastHTTP.Protocol.transferList_complete
+#print axioms FastHTTP.Protocol.transferCodings_iff
 #print axioms FastHTTP.Protocol.parseField_budget
 #print axioms FastHTTP.Protocol.parseHeaders_loop_budget
 #print axioms FastHTTP.Protocol.parseHeaders_budget

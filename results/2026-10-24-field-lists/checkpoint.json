@@ -1,0 +1,8 @@
+{
+  "base_commit": "c06a7ec96526a203ab3dc541cdd4d3181564db13",
+  "theorems": 240,
+  "new_theorems": 22,
+  "lean_uv_revision": "9a27ba8aeb152f2e54becf9571de736d37370f1e",
+  "scope": "Complete Connection and Transfer-Encoding list grammars; continued proof composition",
+  "full_http11_conformance_proved": false
+}

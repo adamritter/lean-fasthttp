@@ -1,62 +1,91 @@
 import FastHTTP.Authority
 
 namespace FastHTTP
+open Protocol
 
-/-- A Connection field is a comma-list of tokens. Empty list members are ignored
-as required for recipients by RFC 9110 section 5.6.1. -/
-def connectionOptions (bytes : ByteArray) (start stop : Nat) : Except Nat Bool := do
-  let mut first := start
-  let mut closing := false
-  for i in [start:stop + 1] do
-    if i == stop || bytes[i]! == 44 then
-      let mut a := first
-      let mut b := i
-      while a < b && space bytes[a]! do a := a + 1
-      while b > a && space bytes[b - 1]! do b := b - 1
-      for j in [a:b] do
-        if !token bytes[j]! then throw 400
-      closing := closing || equals bytes a b "close" true
-      first := i + 1
-  return closing
+/-- OWS plus ignored empty comma-list members (RFC 9110, 5.6.1). -/
+def listSpace (b : UInt8) : Bool := space b || b == 44
 
-/-- Parse a Transfer-Encoding list. The only implemented coding is chunked;
-syntactically valid preceding extension codings are reported as unsupported.
-Chunked must occur exactly once, last, and without parameters. -/
-def transferCodings (bytes : ByteArray) (start stop : Nat) (previousChunked := false) :
-    Except Nat (Bool × Bool) := do
-  let mut i := start
-  let mut chunked := previousChunked
-  let mut unsupported := false
-  while i < stop do
-    while i < stop && (space bytes[i]! || bytes[i]! == 44) do i := i + 1
-    if i == stop then break
-    if chunked then throw 400
-    let first := i
-    while i < stop && token bytes[i]! do i := i + 1
-    if i == first then throw 400
-    chunked := equals bytes first i "chunked" true
-    unsupported := unsupported || !chunked
-    while i < stop do
-      while i < stop && space bytes[i]! do i := i + 1
-      if i == stop || bytes[i]! == 44 then break
-      if bytes[i]! != 59 || chunked then throw 400
-      i := i + 1
-      while i < stop && space bytes[i]! do i := i + 1
-      let key := i
-      while i < stop && token bytes[i]! do i := i + 1
-      if i == key then throw 400
-      while i < stop && space bytes[i]! do i := i + 1
-      if i == stop || bytes[i]! != 61 then throw 400
-      i := i + 1
-      while i < stop && space bytes[i]! do i := i + 1
-      if i < stop && bytes[i]! == 34 then
-        match Protocol.quotedEnd bytes i stop with
-        | none => throw 400
-        | some last => i := last
+/-- Read one token followed by OWS and a comma or the bounded end. -/
+def connectionToken (bytes : ByteArray) (start stop : Nat) : Except Nat (Bool × Nat) :=
+  let nameEnd := spanEnd bytes stop token start
+  let last := spanEnd bytes stop space nameEnd
+  if nameEnd == start || (last < stop && bytes[last]! != 44) then .error 400
+  else .ok (equals bytes start nameEnd "close" true, last)
+
+/-- Total comma-list fold. Empty members are ignored; closing is an OR over the
+case-insensitive token names, including fields received on previous lines. -/
+def connectionList (bytes : ByteArray) (start stop : Nat) (closing : Bool) : Except Nat Bool :=
+  let first := spanEnd bytes stop listSpace start
+  if first ≥ stop then .ok closing
+  else match connectionToken bytes first stop with
+    | .error status => .error status
+    | .ok (close, last) =>
+      if last ≥ stop then .ok (closing || close)
+      else if last < start then .error 400
+      else connectionList bytes (last + 1) stop (closing || close)
+termination_by stop - start
+
+def connectionOptions (bytes : ByteArray) (start stop : Nat) : Except Nat Bool :=
+  if start ≤ stop && stop ≤ bytes.size then connectionList bytes start stop false else .error 400
+
+/-- RFC transfer-parameter: ';' OWS token BWS '=' BWS (token / quoted-string).
+The leading OWS is consumed by transferParameters. Every success advances. -/
+def transferParameter (bytes : ByteArray) (start stop : Nat) : Option Nat :=
+  if start ≥ stop || bytes[start]! != 59 then none
+  else
+    let key := spanEnd bytes stop space (start + 1)
+    let nameEnd := spanEnd bytes stop token key
+    let eq := spanEnd bytes stop space nameEnd
+    if nameEnd == key || eq ≥ stop || bytes[eq]! != 61 then none
+    else
+      let value := spanEnd bytes stop space (eq + 1)
+      if value < stop && bytes[value]! == 34 then quotedEnd bytes value stop
       else
-        let value := i
-        while i < stop && token bytes[i]! do i := i + 1
-        if i == value then throw 400
-  return (chunked, unsupported)
+        let last := spanEnd bytes stop token value
+        if last == value then none else some last
+
+/-- Parameters end only at a comma or the bounded field end. Chunked cannot have
+parameters; extension codings are syntax-checked before the unsupported policy. -/
+def transferParameters (bytes : ByteArray) (start stop : Nat) (chunked : Bool) : Option Nat :=
+  if start ≥ stop then some start
+  else
+    let first := spanEnd bytes stop space start
+    if first ≥ stop || bytes[first]! == 44 then some first
+    else if chunked then none
+    else match transferParameter bytes first stop with
+      | none => none
+      | some last =>
+        if last ≤ start then none else transferParameters bytes last stop chunked
+termination_by stop - start
+
+def transferCoding (bytes : ByteArray) (start stop : Nat) : Except Nat (Bool × Nat) :=
+  let nameEnd := spanEnd bytes stop token start
+  if nameEnd == start then .error 400
+  else
+    let chunked := equals bytes start nameEnd "chunked" true
+    match transferParameters bytes nameEnd stop chunked with
+    | none => .error 400
+    | some last => .ok (chunked, last)
+
+/-- A previous chunked coding forbids any following nonempty list member. Both
+within and between field lines, chunked is unique, final, and parameter-free. -/
+def transferList (bytes : ByteArray) (start stop : Nat) (chunked unsupported : Bool) :
+    Except Nat (Bool × Bool) :=
+  let first := spanEnd bytes stop listSpace start
+  if first ≥ stop then .ok (chunked, unsupported)
+  else if chunked then .error 400
+  else match transferCoding bytes first stop with
+    | .error status => .error status
+    | .ok (nextChunked, last) =>
+      if last ≥ stop then .ok (nextChunked, unsupported || !nextChunked)
+      else if last < start then .error 400
+      else transferList bytes (last + 1) stop nextChunked (unsupported || !nextChunked)
+termination_by stop - start
+
+def transferCodings (bytes : ByteArray) (start stop : Nat) (previousChunked := false) :
+    Except Nat (Bool × Bool) :=
+  if start ≤ stop && stop ≤ bytes.size then transferList bytes start stop previousChunked false
+  else .error 400
 
 end FastHTTP
