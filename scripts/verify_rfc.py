@@ -55,6 +55,12 @@ def main():
         exchange(b'\r\n' + req())
         exchange(req('POST', '/body', b'Transfer-Encoding: , CHUNKED, ,\r\n', b'0\r\n\r\n'), b'')
         reject(req(headers=b'Transfer-Encoding: gzip;key="a,b", chunked\r\n'), 501)
+        reject(req(headers=b'Transfer-Encoding: gzip\r\nTransfer-Encoding: chunked\r\n'), 501)
+        exchange(req('POST', '/body', b'Transfer-Encoding: ,\r\nTransfer-Encoding: chunked\r\n', b'0\r\n\r\n'), b'')
+        for target in ['urn:isbn:123', 'file:///tmp/example', 'ftp://user:pass@example.org/file']:
+            reject(req(target=target), 501)
+        for target in ['1urn:value', 'urn:bad%zz', 'ftp://[:::1]/file']:
+            reject(req(target=target))
         reject(req(headers=b'Transfer-Encoding: gzip, chunked\r\nContent-Length: 0\r\n'))
         for coding in [b'chunked, gzip', b'chunked, chunked', b'gzip', b'chunked;foo=bar', b'gzip;foo, chunked']:
             reject(req(headers=b'Transfer-Encoding: ' + coding + b'\r\n'))

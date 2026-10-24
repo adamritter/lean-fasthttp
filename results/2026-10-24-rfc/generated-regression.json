@@ -2,15 +2,17 @@
   "result": "PASS",
   "seed": 20261024,
   "generated_pipelines": 1000,
-  "exact_fragment_cases": 4231,
-  "input_sha256": "54888f99d553dec8cfc47f0c193dc3d58008fab2a88d9c290b9180ced6b78507",
-  "probe_sha256": "6f743aed0bade4d2bd9eadd629ad9da7a6078ad8ad582e76a2229b1abc33a01a",
+  "exact_fragment_cases": 4245,
+  "input_sha256": "e84ca002eb0c69ad245b5fe9507c0dccd2ebda7a2be446386615501939aec6dc",
+  "probe_sha256": "419c7f71917c0614f676b90c9b59ae0ab389e45a2bac57f389fba87b3e4529a1",
   "case_classes": {
+    "absolute-uri-scheme": 5,
     "all-field-value-octets": 256,
     "authority-boundaries": 7,
     "body-limit": 1,
     "chunk-limit-exceeded": 1,
     "close-stops-pipeline": 3,
+    "combined-transfer-coding-fields": 4,
     "every-split": 351,
     "exact-chunk-limit": 1,
     "exact-limits": 1,
@@ -24,6 +26,7 @@
     "malformed-fragments": 14,
     "one-octet-fragments": 10,
     "random-fragments": 1000,
+    "transfer-coding-order": 5,
     "zero-data-chunks": 1
   }
 }

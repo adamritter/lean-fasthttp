@@ -108,8 +108,9 @@ HEAD/204/205/304. Streaming responses use chunked transfer coding.
 
 Malformed requests receive 400 and close; resource limits use 413/414/431,
 unsupported expectations 417, CONNECT 501. Upgrade offers are ignored. Conflicting CL/TE, duplicated
-framing headers, malformed transfer-coding lists, obsolete folding and bare LF are
-rejected. Unsupported codings before a final chunked coding return 501;
+Content-Length or repeated chunked codings, malformed transfer-coding lists, obsolete folding and bare LF are
+rejected. Transfer-Encoding field lines are combined in wire order. Unsupported codings
+before a final chunked coding return 501;
 a final non-chunked coding returns 400. One leading CRLF is accepted.
 Rejecting duplicated identical Content-Length values is an intentional
 strict policy. Unknown methods are dispatched to the application.
@@ -123,7 +124,8 @@ The protocol rules were checked against [RFC 9112](https://www.rfc-editor.org/rf
 and [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html), but the current profile
 does not implement CONNECT tunnels or protocol upgrades. Request targets validate URI characters and percent
 escapes; Host validates reg-name, bracketed IPv6/IPvFuture, and decimal port syntax.
-Absolute HTTP(S) targets route by path/query; `requestTarget` retains the wire
+Absolute HTTP(S) targets route by path/query; other syntactically valid URI
+schemes receive 501 after header/framing validation. `requestTarget` retains the wire
 form and `authority` uses the URI authority, ignoring Host for absolute targets.
 `rawTrailers` and `headerBytes?` preserve non-UTF-8 field values. The text
 `trailers` view decodes UTF-8 where possible, otherwise maps octets to Latin-1. There is no transparent decompression or application caching logic.
@@ -200,7 +202,7 @@ formal proofs of those complete features.
 
 `python3 scripts/verify_generated.py` drives the actual pure parser through a
 compiled test-only probe with exact fragments (including empty and single-octet
-fragments). Seed 20261024 covers 4,231 cases from 1,000 generated binary-body
+fragments). Seed 20261024 covers 4,245 cases from 1,000 generated binary-body
 pipelines, every split of representative messages, malformed framing, version
 rules, connection closure, and exact limits. Expected messages are generated
 independently in Python. These are component regressions, not a whole-protocol
@@ -234,5 +236,5 @@ updating fields at header boundaries instead of carrying nested mutable-variable
 tuples through every byte. The delimiter step is inlined. Bodyless requests
 bypass construction and execution of an empty body decoder. No protocol checks
 were removed. The first expanded binary is preserved as `lean-fast-http-v1` for
-a same-run comparison. All protocol/streaming regressions and the 29 proofs
+a same-run comparison. All protocol/streaming regressions and the original 19 proofs
 were rerun after these changes.

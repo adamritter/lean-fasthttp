@@ -77,7 +77,8 @@ def main():
         "uname": subprocess.check_output(["uname", "-a"], text=True),
         "configs": configs,
         "source_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
-        "source_dirty": bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True)),
+        "source_dirty": bool(subprocess.check_output(["git", "status", "--porcelain", "--",
+            "FastHTTP.lean", "FastHTTP", "Bench", "Tests", "scripts", "lakefile.toml", "lean-toolchain"], cwd=ROOT, text=True)),
         "original_source_commit": "ad80f25fd47cfde93db96c76affe983ac565b1f0" if "lean-fast-original-1" in configs else None,
         "binary_sha256": {name: hashlib.sha256(Path(config[2][0]).read_bytes()).hexdigest()
                           for name, config in configs.items()},
@@ -146,7 +147,7 @@ def main():
                               "p99_latency": p99, "command": cmd, "verification": check,
                               "wall_seconds": elapsed, "timing": timing, "thread_cpu_seconds": cpu,
                               "average_busy_cores": round(sum(cpu.values()) / elapsed, 3),
-                              "peak_rss_kib": int(re.search(r"VmHWM:\s+(\d+)", status)[1])}
+                              "peak_rss_kib": int(re.search(r"VmHWM:\s+(\d+)", status)[1]) or None}
                     records.append(record)
                     (out / "runs.json").write_text(json.dumps(records, indent=2) + "\n")
                     print(f"{prefix}: {rate:,.2f} req/s, p99 {p99}, "

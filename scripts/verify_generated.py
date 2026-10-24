@@ -150,6 +150,19 @@ def main():
         leading = b'\r\n' + wire
         add([leading[:i], leading[i:]], [r], label='leading-crlf-splits')
 
+    for coding in [b'chunked', b', chunked,', b',\r\nTransfer-Encoding: chunked',
+            b'chunked\r\nTransfer-Encoding: ,']:
+        wire = prefix.replace(b'chunked', coding) + b'0\r\n\r\n'
+        add(fragments(wire, rng), [empty], label='combined-transfer-coding-fields')
+    for coding, status in [(b'gzip\r\nTransfer-Encoding: chunked', 501),
+            (b'chunked\r\nTransfer-Encoding: gzip',400), (b'chunked, chunked',400),
+            (b'gzip;key="a,b", chunked',501), (b'gzip;key, chunked',400)]:
+        add(fragments(prefix.replace(b'chunked', coding), rng), [], error=status, label='transfer-coding-order')
+    for target, status in [('urn:isbn:123',501), ('file:///tmp/example',501),
+            ('ftp://user:pass@example.org/file',501), ('1urn:value',400), ('urn:bad%zz',400)]:
+        wire, _, _ = request(target=target)
+        add(fragments(wire, rng), [], error=status, label='absolute-uri-scheme')
+
     payload = ''.join(json.dumps(case) + '\n' for case in inputs).encode()
     run = subprocess.run([str(args.probe)], input=payload, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
     assert run.returncode == 0, run.stderr.decode()

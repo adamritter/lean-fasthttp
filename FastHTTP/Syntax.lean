@@ -133,6 +133,7 @@ structure TargetInfo where
   pathStart : Nat
   authority : Option (Nat × Nat) := none
   schemeEnd : Option Nat := none
+  unsupportedScheme : Bool := false
 
 /-- Validate the request-target without changing the octets used for routing.
 Absolute HTTP(S) URIs use their own authority, never the received Host field. -/
@@ -141,24 +142,42 @@ def parseTarget (bytes : ByteArray) (start stop : Nat) (isOptions isConnect : Bo
   if start >= stop || stop > bytes.size then throw 400
   if isConnect then
     if !validAuthority bytes start stop true then throw 400
-    return ⟨start, none, none⟩
+    return { pathStart := start }
   if equals bytes start stop "*" then
     if !isOptions then throw 400
-    return ⟨start, none, none⟩
+    return { pathStart := start }
   if bytes[start]! == 47 then
     if !validPathQuery bytes start stop then throw 400
-    return ⟨start, none, none⟩
+    return { pathStart := start }
   let mut colon := start
   while colon < stop && bytes[colon]! != 58 do colon := colon + 1
-  if colon == start || colon + 3 > stop then throw 400
-  if !(equals bytes start colon "http" true || equals bytes start colon "https" true) then throw 400
-  if bytes[colon + 1]! != 47 || bytes[colon + 2]! != 47 then throw 400
-  let auth := colon + 3
+  if colon == start || colon == stop then throw 400
+  let alpha (b : UInt8) := (lower b >= 97 && lower b <= 122)
+  if !alpha bytes[start]! then throw 400
+  for i in [start + 1:colon] do
+    let b := bytes[i]!
+    if !(alpha b || (b >= 48 && b <= 57) || b == 43 || b == 45 || b == 46) then throw 400
+  let http := equals bytes start colon "http" true || equals bytes start colon "https" true
+  let first := colon + 1
+  if first + 2 > stop || bytes[first]! != 47 || bytes[first + 1]! != 47 then
+    if http || !validPathQuery bytes first stop then throw 400
+    return { pathStart := first, schemeEnd := some colon, unsupportedScheme := true }
+  let auth := first + 2
   let mut path := auth
   while path < stop && bytes[path]! != 47 && bytes[path]! != 63 do path := path + 1
-  if path == auth || bytes[auth]! == 58 || !validAuthority bytes auth path then throw 400
-  if !validPathQuery bytes path stop then throw 400
-  return ⟨path, some (auth, path), some colon⟩
+  let mut host := auth
+  for i in [auth:path] do
+    if bytes[i]! == 64 then host := i + 1
+  if host != auth then
+    if http || !uriComponent bytes auth (host - 1) (fun b => unreserved b || subDelimiter b || b == 58) then
+      throw 400
+  if http && (path == host || bytes[host]! == 58) then throw 400
+  if !validAuthority bytes host path || !validPathQuery bytes path stop then throw 400
+  return {
+    pathStart := path
+    authority := some (host, path)
+    schemeEnd := some colon
+    unsupportedScheme := !http }
 
 /-- A Connection field is a comma-list of tokens. Empty list members are ignored
 as required for recipients by RFC 9110 section 5.6.1. -/
@@ -180,9 +199,10 @@ def connectionOptions (bytes : ByteArray) (start stop : Nat) : Except Nat Bool :
 /-- Parse a Transfer-Encoding list. The only implemented coding is chunked;
 syntactically valid preceding extension codings are reported as unsupported.
 Chunked must occur exactly once, last, and without parameters. -/
-def transferCodings (bytes : ByteArray) (start stop : Nat) : Except Nat Bool := do
+def transferCodings (bytes : ByteArray) (start stop : Nat) (previousChunked := false) :
+    Except Nat (Bool × Bool) := do
   let mut i := start
-  let mut chunked := false
+  let mut chunked := previousChunked
   let mut unsupported := false
   while i < stop do
     while i < stop && (space bytes[i]! || bytes[i]! == 44) do i := i + 1
@@ -226,7 +246,6 @@ def transferCodings (bytes : ByteArray) (start stop : Nat) : Except Nat Bool := 
         let value := i
         while i < stop && token bytes[i]! do i := i + 1
         if i == value then throw 400
-  if !chunked then throw 400
-  return unsupported
+  return (chunked, unsupported)
 
 end FastHTTP

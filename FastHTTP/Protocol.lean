@@ -162,6 +162,7 @@ structure HeaderState where
   host : Bool := false
   expectContinue : Bool := false
   unsupportedTransfer : Bool := false
+  transferSeen : Bool := false
 
 private def parseField (cfg : Config) (bytes : ByteArray) (i stop minor : Nat)
     (initial : HeaderState) : Except Nat HeaderState := do
@@ -181,9 +182,12 @@ private def parseField (cfg : Config) (bytes : ByteArray) (i stop minor : Nat)
     | none => throw 413
     | some n => state := { state with length := some n }
   else if equals bytes state.line state.colon "transfer-encoding" true then
-    if minor == 0 || state.chunked then throw 400
-    let unsupportedTransfer ← transferCodings bytes first last
-    state := { state with chunked := true, unsupportedTransfer }
+    if minor == 0 then throw 400
+    let (chunked, unsupported) ← transferCodings bytes first last state.chunked
+    state := { state with
+      chunked
+      transferSeen := true
+      unsupportedTransfer := state.unsupportedTransfer || unsupported }
   else if equals bytes state.line state.colon "host" true then
     if state.host || !validAuthority bytes first last then throw 400
     state := { state with host := true }
@@ -249,8 +253,9 @@ def parseHead (cfg : Config) (bytes : ByteArray) (stop : Nat) : Except Nat Head 
     (equals bytes methodStart methodEnd "OPTIONS") (equals bytes methodStart methodEnd "CONNECT")
   let headersStart := targetEnd + 11
   let fields ← parseHeaders cfg bytes headersStart stop minor
+  if fields.transferSeen && !fields.chunked then throw 400
   let framing ← chooseFraming fields.length fields.chunked
-  if fields.unsupportedTransfer then throw 501
+  if fields.unsupportedTransfer || target.unsupportedScheme then throw 501
   if equals bytes methodStart methodEnd "CONNECT" then throw 501
   let request : Request := {
     raw := bytes, methodStart, methodEnd, targetStart, targetEnd, headersStart, headEnd := stop
