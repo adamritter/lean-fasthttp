@@ -1,3 +1,4 @@
+import FastHTTP.LimitsProofs
 import FastHTTP.StreamMachineProofs
 import FastHTTP.WireProofs
 import FastHTTP.HeaderProofs
@@ -148,3 +149,26 @@ import FastHTTP.BodyFastProofs
 #print axioms FastHTTP.Protocol.streamTrace_release_once
 #print axioms FastHTTP.Protocol.streamTrace_cleanup_complete
 #print axioms FastHTTP.Protocol.streamCommands_head
+
+#print axioms FastHTTP.Protocol.hexadecimalValue_mono
+#print axioms FastHTTP.Protocol.hexadecimalStep_iff
+#print axioms FastHTTP.Protocol.hexadecimalFold_none
+#print axioms FastHTTP.Protocol.hexadecimalFold_iff
+#print axioms FastHTTP.Protocol.hexadecimalLoop_eq_fold
+#print axioms FastHTTP.Protocol.hexadecimal_iff
+#print axioms FastHTTP.Protocol.chunkSize_numeral
+#print axioms FastHTTP.Protocol.chunkSize_bound
+#print axioms FastHTTP.Protocol.bodyByte_budget
+#print axioms FastHTTP.Protocol.bodyInitial_budget
+#print axioms FastHTTP.Protocol.bodyAdvance_budget
+#print axioms FastHTTP.Protocol.bodyList_budget
+#print axioms FastHTTP.Protocol.decodeBody_budget
+#print axioms FastHTTP.Protocol.parseField_budget
+#print axioms FastHTTP.Protocol.parseHeaders_loop_budget
+#print axioms FastHTTP.Protocol.parseHeaders_budget
+#print axioms FastHTTP.Protocol.chooseFraming_budget
+#print axioms FastHTTP.Protocol.parseHead_budget
+#print axioms FastHTTP.Protocol.bodyStep_protocolBudget
+#print axioms FastHTTP.Protocol.headStep_protocolBudget
+#print axioms FastHTTP.Protocol.feed_protocolBudget
+#print axioms FastHTTP.Protocol.feed_request_body_bound

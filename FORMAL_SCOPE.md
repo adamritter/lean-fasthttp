@@ -23,6 +23,8 @@ and any axiom beyond `propext`, `Classical.choice` and `Quot.sound`. There is no
 | `parseHead_envelope` in `HeaderProofs` | Every accepted production request head has that grammatical request line and a complete inductive sequence of valid field lines ending at the empty CRLF, with the exact raw bytes and metadata returned to the application. |
 | `decimal_wire_roundtrip` / `encodeChunk_wire` in `WireProofs` | Every natural length and every binary payload. The actual decimal formatter round-trips through the production bounded parser; the actual chunk encoder emits hexadecimal length + CRLF, the unchanged payload and CRLF. UTF-8 ASCII correspondence and positional value are proved for all bases 2..16, without a machine-word bound. |
 | `streamStep_*` / `streamTrace_*` / `streamCommands_head` in `StreamMachineProofs` | Both actual transports execute `Protocol.streamStep`. Every finite callback-event trace conserves a single cleanup right; cleanup occurs at most once and exactly once after ownership ends. Producer pulls require a write-completion event; body writes require a pending producer result; HEAD never pulls or emits body chunks; HTTP/1.0 EOF and HTTP/1.1 final-chunk ordering are distinguished. |
+| `feed_protocolBudget` / `feed_request_body_bound` in `LimitsProofs` | End-to-end body-limit preservation for the production feed function. Content-Length interpretation, framing selection, hexadecimal chunk sizes, all byte-machine phases and every bulk path are covered. Every need/continue preserves the budget and every delivered Request.body fits maxBodyBytes. Initial head states satisfy the invariant. |
+| `hexadecimal_iff` / `chunkSize_numeral` in `HexProofs` | The production bounded hexadecimal parser accepts exactly nonempty HEXDIG sequences with the stated positional value within the limit. Every accepted chunk-size line has that numeral and an accepted extension suffix; lexical correctness of the latter remains separate. |
 | `decimal_iff` in `NumericProofs` | Every byte array, interval, limit and result; the production Content-Length parser succeeds iff the interval is nonempty and in bounds, contains only RFC ASCII DIGIT octets, and its positional decimal value equals the result without exceeding the limit. |
 | `validPathQuery_iff` / `uriComponent_iff` in `SyntaxProofs` | Every wire interval and literal alphabet; acceptance is equivalent to an independent inductive grammar whose productions consume one literal or exactly percent + two ASCII HEXDIG octets. The path/query instantiation uses the RFC 3986 pchar, slash and question-mark alphabet. |
 | `chooseFraming`, `takeCount`, `takeBody` | Conflicting CL/TE rejection; exact declared fixed lengths; bounded byte slices, conservation, partition and fixed-body fragmentation. |
@@ -42,8 +44,9 @@ The following obligations are not established by these theorems:
   Expect and Transfer-Encoding semantics against the RFCs. The request-line
   envelope, field-line envelope, complete accepted header-block structure and
   URI atom grammar now have independent formal specifications and proofs.
-* Complete chunk-size parsing and chunk extension/trailer lexical correspondence
-  with that grammar. Decimal/hex numeral wire serialization is now established.
+* Chunk extension/trailer lexical correspondence with the RFC grammar. Both
+  decimal and hexadecimal numeral parsing and wire serialization are now
+  established, as is the complete receive-body budget invariant.
 * Application dispatch and the IO acknowledgment of actions. Pure head-plus-body
   feed composition, including all metadata and Expect buffering, is established.
 * End-to-end IO refinement and liveness, cancellation of application-owned

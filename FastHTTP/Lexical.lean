@@ -9,6 +9,12 @@ allocation-free; the proof gives both the accepted prefix and the first stop. -/
 termination_by stop - i
 decreasing_by simp_all; omega
 
+/-- Trim trailing HTTP optional whitespace within an interval. -/
+def trimEnd (bytes : ByteArray) (start stop : Nat) : Nat :=
+  if start < stop && space bytes[stop - 1]! then trimEnd bytes start (stop - 1) else stop
+termination_by stop
+decreasing_by simp_all; omega
+
 @[inline] def targetOctet (b : UInt8) : Bool := b >= 33 && b <= 126 && b != 35
 @[inline] def fieldOctet (b : UInt8) : Bool := (b >= 32 && b != 127) || b == 9
 

@@ -227,6 +227,23 @@ def main():
         add(fragments(wire,rng), [r] if valid else [], error=0 if valid else 400,
             label='all-field-name-octets')
 
+    for _ in range(256):
+        n = rng.randrange(257)
+        limit = rng.randrange(257)
+        body = rng.randbytes(n)
+        wire, r, _ = request(body, chunked=True, rng=rng)
+        add(fragments(wire,rng), [r] if n <= limit else [],
+            error=0 if n <= limit else 413, limits=[16384,limit,1024,16384,65536],
+            label='chunked-cumulative-body-budget')
+        _, r, _ = request(body)
+        wire = b'POST /body HTTP/1.1\r\nHost: localhost\r\nTransfer-Encoding: chunked\r\n\r\n'
+        if n:
+            wire += b'0' * rng.randrange(1,33) + f'{n:X}'.encode() + b'\r\n' + body + b'\r\n'
+        wire += b'0000\r\n\r\n'
+        add(fragments(wire,rng), [r] if n <= limit else [],
+            error=0 if n <= limit else 413, limits=[16384,limit,1024,16384,65536],
+            label='hexadecimal-leading-zeros-budget')
+
     payload = ''.join(json.dumps(case) + '\n' for case in inputs).encode()
     run = subprocess.run([str(args.probe)], input=payload, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
     assert run.returncode == 0, run.stderr.decode()

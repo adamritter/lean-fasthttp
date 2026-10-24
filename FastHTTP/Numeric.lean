@@ -28,4 +28,21 @@ termination_by stop - i
 def decimal (bytes : ByteArray) (start stop limit : Nat) : Option Nat :=
   if start < stop ∧ stop ≤ bytes.size then decimalLoop bytes stop limit start 0 else none
 
+@[inline] def hexadecimalStep (limit n : Nat) (b : UInt8) : Option Nat :=
+  if hexValue b < 16 then
+    let next := n * 16 + hexValue b
+    if next ≤ limit then some next else none
+  else none
+
+def hexadecimalLoop (bytes : ByteArray) (stop limit i n : Nat) : Option Nat :=
+  if h : i < stop ∧ i < bytes.size then
+    match hexadecimalStep limit n bytes[i] with
+    | none => none
+    | some next => hexadecimalLoop bytes stop limit (i + 1) next
+  else some n
+termination_by stop - i
+
+def hexadecimal (bytes : ByteArray) (start stop limit : Nat) : Option Nat :=
+  if start < stop ∧ stop ≤ bytes.size then hexadecimalLoop bytes stop limit start 0 else none
+
 end FastHTTP.Protocol

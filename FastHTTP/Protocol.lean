@@ -156,20 +156,17 @@ structure HeaderState where
   unsupportedTransfer : Bool := false
   transferSeen : Bool := false
 
-private def parseField (cfg : Config) (bytes : ByteArray) (i stop minor : Nat)
+def parseField (cfg : Config) (bytes : ByteArray) (i stop minor : Nat)
     (initial : HeaderState) : Except Nat HeaderState := do
   let mut state := initial
   if i + 1 >= stop || bytes[i + 1]! != 10 || state.colon == state.line then throw 400
-  let mut first := state.colon + 1
-  let mut last := i
-  while first < last && space bytes[first]! do first := first + 1
-  while last > first && space bytes[last - 1]! do last := last - 1
+  let first := spanEnd bytes i space (state.colon + 1)
+  let last := trimEnd bytes first i
   if equals bytes state.line state.colon "content-length" true then
     if state.length.isSome then throw 400
     -- Distinguish syntactically invalid lengths from the configured size limit.
     if first == last then throw 400
-    for k in [first:last] do
-      if bytes[k]! < 48 || bytes[k]! > 57 then throw 400
+    if spanEnd bytes last (fun b => b >= 48 && b <= 57) first != last then throw 400
     match decimal bytes first last cfg.maxBodyBytes with
     | none => throw 413
     | some n => state := { state with length := some n }
@@ -265,17 +262,9 @@ inductive BodyResult where
   | done (body : ByteArray) (trailers : Array (String × ByteArray)) (stop : Nat)
   | error (status : Nat)
 
-/-- Chunk extensions: token names and token/quoted-string values, with OWS. -/
-def chunkSize (line : ByteArray) (limit : Nat) : Except Nat Nat := do
-  let mut i := 0
-  let mut n := 0
-  while i < line.size do
-    let digit := hexValue line[i]!
-    if digit == 16 then break
-    n := n * 16 + digit
-    if n > limit then throw 413
-    i := i + 1
-  if i == 0 then throw 400
+/-- Chunk extensions: token names and token/quoted-string values, with BWS. -/
+def chunkExtensions (line : ByteArray) (start : Nat) : Except Nat Unit := do
+  let mut i := start
   while i < line.size do
     while i < line.size && space line[i]! do i := i + 1
     if i == line.size || line[i]! != 59 then throw 400
@@ -310,7 +299,18 @@ def chunkSize (line : ByteArray) (limit : Nat) : Except Nat Nat := do
         let start := i
         while i < line.size && token line[i]! do i := i + 1
         if i == start then throw 400
-  return n
+  return ()
+
+/-- The numeral and extension grammar are separate. The bounded numeric parser
+has an independent positional-value soundness/completeness proof. -/
+def chunkSize (line : ByteArray) (limit : Nat) : Except Nat Nat :=
+  let stop := spanEnd line line.size hexDigit 0
+  if stop == 0 then .error 400
+  else match hexadecimal line 0 stop limit with
+    | none => .error 413
+    | some n => match chunkExtensions line stop with
+      | .error status => .error status
+      | .ok () => .ok n
 
 def trailer (line : ByteArray) : Except Nat (String × ByteArray) := do
   let mut i := 0
