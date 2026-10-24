@@ -47,6 +47,44 @@ theorem scanFeed_stopped (limit : Nat) (s : ScanState) (bytes : ByteArray) (n : 
     | cons x xs ih => simpa [List.foldl_cons, scanByte_stopped limit s x n h] using ih
   exact aux _
 
+theorem scanByte_absorbed (limit : Nat) (s : ScanState) (b : UInt8)
+    (h : (s.stop.isSome || s.invalid) = true) : scanByte limit s b = s := by
+  simp [scanByte, h]
+
+theorem scanList_absorbed (limit : Nat) (s : ScanState) (xs : List UInt8)
+    (h : (s.stop.isSome || s.invalid) = true) : xs.foldl (scanByte limit) s = s := by
+  induction xs with
+  | nil => rfl
+  | cons x xs ih => simpa [List.foldl_cons, scanByte_absorbed limit s x h] using ih
+
+theorem scanLoop_eq_fold (limit : Nat) (bytes : ByteArray) (i : Nat) (s : ScanState) :
+    scanLoop limit bytes i s = (bytes.data.toList.drop i).foldl (scanByte limit) s := by
+  rw [scanLoop]
+  split
+  next h => exact (scanList_absorbed limit s _ h).symm
+  next h =>
+    split
+    next hi =>
+      rw [List.drop_eq_getElem_cons (by simpa using hi), List.foldl_cons]
+      have hb : bytes[i] = bytes.data[i] := ByteArray.getElem_eq_getElem_data
+      simp only [Array.getElem_toList]
+      rw [← hb]
+      exact scanLoop_eq_fold limit bytes (i + 1) (scanByte limit s bytes[i])
+    next hi =>
+      rw [List.drop_eq_nil_of_le (by simpa using Nat.le_of_not_gt hi)]
+      rfl
+termination_by bytes.size - i
+
+/-- The actual optimized runtime scanner refines the original fold for arbitrary
+states and byte buffers, not just the test corpus. -/
+theorem scanFeedFast_eq_scanFeed (limit : Nat) (s : ScanState) (bytes : ByteArray) :
+    scanFeedFast limit s bytes = scanFeed limit s bytes := by
+  simpa [scanFeedFast, scanFeed, Array.foldl_toList] using scanLoop_eq_fold limit bytes 0 s
+
+theorem scanFeedFast_append (limit : Nat) (s : ScanState) (a b : ByteArray) :
+    scanFeedFast limit s (a ++ b) = scanFeedFast limit (scanFeedFast limit s a) b := by
+  simp only [scanFeedFast_eq_scanFeed, scanFeed_append]
+
 theorem conflicting_framing_rejected (n : Nat) :
     chooseFraming (some n) true = .error 400 := rfl
 

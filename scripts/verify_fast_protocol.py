@@ -138,7 +138,7 @@ def main():
             (req(headers=b'Content-Length: 0\r\nContent-Length: 0\r\n'),400),
             (req(headers=b'Transfer-Encoding: chunked\r\nContent-Length: 0\r\n'),400),
             (req(headers=b'Transfer-Encoding: chunked\r\nTransfer-Encoding: chunked\r\n'),400),
-            (req(headers=b'Transfer-Encoding: gzip, chunked\r\n'),400),
+            (req(headers=b'Transfer-Encoding: gzip, chunked\r\n'),501),
             (req(headers=b'Content-Length: +1\r\n'),400),
             (req(headers=b'Content-Length: 0,0\r\n'),400),
             (req(headers=b'Content-Length: 1048577\r\n'),413),

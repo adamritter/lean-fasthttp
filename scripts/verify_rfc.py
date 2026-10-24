@@ -52,6 +52,13 @@ def main():
         reject(req().replace(b'HTTP/1.1', b'HTTP/2.0'), 505)
         exchange(req().replace(b'HTTP/1.1', b'HTTP/1.9'))
         exchange(req(headers=b'Upgrade: websocket\r\nConnection: Upgrade\r\n'))
+        exchange(b'\r\n' + req())
+        exchange(req('POST', '/body', b'Transfer-Encoding: , CHUNKED, ,\r\n', b'0\r\n\r\n'), b'')
+        reject(req(headers=b'Transfer-Encoding: gzip;key="a,b", chunked\r\n'), 501)
+        reject(req(headers=b'Transfer-Encoding: gzip, chunked\r\nContent-Length: 0\r\n'))
+        for coding in [b'chunked, gzip', b'chunked, chunked', b'gzip', b'chunked;foo=bar', b'gzip;foo, chunked']:
+            reject(req(headers=b'Transfer-Encoding: ' + coding + b'\r\n'))
+        reject(req(target='/' + 'x' * 17000), 414)
         first = exchange(req())[b'date']
         time.sleep(1.1)
         second = exchange(req())[b'date']

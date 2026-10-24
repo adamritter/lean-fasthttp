@@ -2,13 +2,13 @@
 
 Experimental callback HTTP/1.1 server in Lean 4.35.0, with a pure protocol state
 machine, built-in libuv networking, prepared responses, streaming output, and
-19 kernel-checked framing/response properties. **Not a fully verified or
+29 kernel-checked framing/response properties. **Not a fully verified or
 production-ready HTTP implementation.**
 
 ```sh
 scripts/build.sh
 python3 scripts/verify_fast_protocol.py
-lake env lean FastHTTP/ProofAudit.lean
+python3 scripts/verify_proofs.py
 bin/lean-fast-http 18095
 ```
 
@@ -106,14 +106,16 @@ streamed HTTP/1.0 bodies use EOF framing. Final prepared
 responses support 200..599, with body suppression and Content-Length rules for
 HEAD/204/205/304. Streaming responses use chunked transfer coding.
 
-Malformed requests receive 400 and close; resource limits use 413/431,
+Malformed requests receive 400 and close; resource limits use 413/414/431,
 unsupported expectations 417, CONNECT 501. Upgrade offers are ignored. Conflicting CL/TE, duplicated
-framing headers, unsupported transfer codings, obsolete folding and bare LF are
-rejected. Rejecting duplicated identical Content-Length values is an intentional
+framing headers, malformed transfer-coding lists, obsolete folding and bare LF are
+rejected. Unsupported codings before a final chunked coding return 501;
+a final non-chunked coding returns 400. One leading CRLF is accepted.
+Rejecting duplicated identical Content-Length values is an intentional
 strict policy. Unknown methods are dispatched to the application.
 
-Defaults: 16 KiB request head, 1 MiB decoded request body, 1 KiB per chunk-size or
-trailer line, 16 KiB trailer section, 65536 chunks. These limits are configurable.
+Defaults: 16 KiB request head, 8 KiB request target, 1 MiB decoded request body, 1 KiB per chunk-size or
+trailer line, 16 KiB trailer section, 65536 data chunks (the terminal zero chunk does not count). These limits are configurable.
 Header/trailer fields and chunk metadata cannot cause unbounded integer growth.
 
 This is **not a complete RFC-conforming or production-ready HTTP server**.
@@ -136,15 +138,16 @@ items, not properties established by the current tests or proofs.
 
 ## What is actually proved
 
-`lake build FastHTTP.Proofs` checks 19 theorems without `sorry`, custom axioms,
+`lake build FastHTTP.Proofs` checks 29 theorems without `sorry`, custom axioms,
 `unsafe`, or `native_decide`. They refer to the **functions used by this server**,
 not a separate idealized HTTP implementation. The proof terms are erased and
-are not executed per request. The [axiom audit](results/proof-axioms.txt)
+are not executed per request. The [current axiom audit](results/2026-10-24-rfc/proof-audit.json)
 contains only the usual Lean axioms (`propext`, `Classical.choice`, `Quot.sound`),
 or no axioms; no `sorryAx` or custom verification assumption is present.
 
 | Executable primitive | Kernel-checked property |
 |---|---|
+| `scanFeedFast` / `scanFeed` | Optimized scanner equals the fold for all states; agrees with an independent literal CRLFCRLF first-match/limit specification |
 | `scanFeed` | Feeding two buffers equals feeding their concatenation; extends to any list of fragments |
 | `scanByte` / `scanFeed` | Once the first delimiter offset is recorded, later bytes cannot change the scanner |
 | `chooseFraming` | CL together with TE is rejected; an accepted fixed length is preserved |
@@ -153,9 +156,7 @@ or no axioms; no `sorryAx` or custom verification assumption is present.
 | `takeBody` | Fixed-body bytes consumed across two buffers equal the bytes consumed from their concatenation |
 | `wireBody` / `responseLength` | HEAD/204/304 emit no body; 204 omits Content-Length; ordinary response declared lengths match emitted body size |
 
-**These do not prove the whole server correct.** In particular, scanner
-fragmentation equivalence is not yet a proof of its complete correspondence to
-the HTTP delimiter grammar. Header grammar acceptance, the entire chunked
+**These do not prove the whole server correct.** In particular, header grammar acceptance, the entire chunked
 state machine, composition of `feed` across arbitrary inputs, decimal/hex wire
 formatting, stream ordering/cancellation/liveness, and the UV interpreter remain
 tested rather than fully verified. The byte-slicing theorems assume a valid input
@@ -195,6 +196,27 @@ cases, and an 8 MiB chunked stream with a delayed reader, HEAD suppression,
 producer failure and release-count checks. These are regression evidence, not
 formal proofs of those complete features.
 
+## Current verification additions
+
+`python3 scripts/verify_generated.py` drives the actual pure parser through a
+compiled test-only probe with exact fragments (including empty and single-octet
+fragments). Seed 20261024 covers 2,395 cases from 1,000 generated binary-body
+pipelines, every split of representative messages, malformed framing, version
+rules, connection closure, and exact limits. Expected messages are generated
+independently in Python. These are component regressions, not a whole-protocol
+formal proof. `scripts/verify_rfc.py` separately covers actual socket behavior.
+CI checks all three suites and fails on any unaudited theorem or unexpected axiom.
+
+To rebuild the original comparison binary from its exact source commit:
+
+```sh
+python3 scripts/build_original.py
+python3 scripts/benchmark.py --configs lean-fast-original-1 lean-fast-1 --output comparison
+```
+
+The original comparison lacks the new grammar checks and Date header. Equal
+payload, CPUs, connections and durations do not imply equal feature coverage.
+
 ## Profiling and optimization
 
 A 12-second `perf` sample of the first expanded version, under 64-connection wrk
@@ -212,5 +234,5 @@ updating fields at header boundaries instead of carrying nested mutable-variable
 tuples through every byte. The delimiter step is inlined. Bodyless requests
 bypass construction and execution of an empty body decoder. No protocol checks
 were removed. The first expanded binary is preserved as `lean-fast-http-v1` for
-a same-run comparison. All protocol/streaming regressions and the 19 proofs
+a same-run comparison. All protocol/streaming regressions and the 29 proofs
 were rerun after these changes.

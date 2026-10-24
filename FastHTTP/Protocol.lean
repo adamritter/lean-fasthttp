@@ -15,13 +15,14 @@ structure Request where
   isHead : Bool
   body : ByteArray := .empty
   rawTrailers : Array (String × ByteArray) := #[]
+  methodStart : Nat := 0
   versionMinor : Nat := 1
   pathStart : Option Nat := none
   authoritySpan : Option (Nat × Nat) := none
   schemeEnd : Option Nat := none
 
 def Request.method (r : Request) : String :=
-  String.fromUTF8! (r.raw.extract 0 r.methodEnd)
+  String.fromUTF8! (r.raw.extract r.methodStart r.methodEnd)
 def Request.requestTarget (r : Request) : String :=
   String.fromUTF8! (r.raw.extract r.targetStart r.targetEnd)
 def Request.target (r : Request) : String :=
@@ -83,6 +84,7 @@ def hasClose (bytes : ByteArray) (start stop : Nat) : Bool := Id.run do
 
 structure Config where
   maxHeaderBytes : Nat := 16384
+  maxTargetBytes : Nat := 8192
   maxBodyBytes : Nat := 1024 * 1024
   maxChunkLineBytes : Nat := 1024
   maxTrailerBytes : Nat := 16384
@@ -124,6 +126,17 @@ structure ScanState where
 def scanFeed (limit : Nat) (s : ScanState) (bytes : ByteArray) : ScanState :=
   bytes.data.foldl (scanByte limit) s
 
+/-- Early exit avoids examining body and pipelined bytes after the delimiter.
+The refinement theorem in Proofs equates this loop with scanFeed for every state. -/
+def scanLoop (limit : Nat) (bytes : ByteArray) (i : Nat) (s : ScanState) : ScanState :=
+  if s.stop.isSome || s.invalid then s
+  else if h : i < bytes.size then scanLoop limit bytes (i + 1) (scanByte limit s bytes[i])
+  else s
+termination_by bytes.size - i
+
+def scanFeedFast (limit : Nat) (s : ScanState) (bytes : ByteArray) : ScanState :=
+  scanLoop limit bytes 0 s
+
 /-- Bounded decimal parsing: avoid unbounded Nat growth from hostile headers. -/
 def decimal (bytes : ByteArray) (start stop limit : Nat) : Option Nat := Id.run do
   if start == stop then return none
@@ -148,6 +161,7 @@ structure HeaderState where
   chunked : Bool := false
   host : Bool := false
   expectContinue : Bool := false
+  unsupportedTransfer : Bool := false
 
 private def parseField (cfg : Config) (bytes : ByteArray) (i stop minor : Nat)
     (initial : HeaderState) : Except Nat HeaderState := do
@@ -167,8 +181,9 @@ private def parseField (cfg : Config) (bytes : ByteArray) (i stop minor : Nat)
     | none => throw 413
     | some n => state := { state with length := some n }
   else if equals bytes state.line state.colon "transfer-encoding" true then
-    if minor == 0 || state.chunked || !equals bytes first last "chunked" true then throw 400
-    state := { state with chunked := true }
+    if minor == 0 || state.chunked then throw 400
+    let unsupportedTransfer ← transferCodings bytes first last
+    state := { state with chunked := true, unsupportedTransfer }
   else if equals bytes state.line state.colon "host" true then
     if state.host || !validAuthority bytes first last then throw 400
     state := { state with host := true }
@@ -206,11 +221,12 @@ where
 are rejected; methods are tokens, targets are origin-form or OPTIONS *. -/
 def parseHead (cfg : Config) (bytes : ByteArray) (stop : Nat) : Except Nat Head := do
   if stop > bytes.size || stop < 18 || !equals bytes (stop - 4) stop "\r\n\r\n" then throw 400
-  let mut methodEnd := 0
+  let methodStart := if equals bytes 0 2 "\r\n" then 2 else 0
+  let mut methodEnd := methodStart
   while methodEnd < stop && bytes[methodEnd]! != 32 do
     if !token bytes[methodEnd]! then throw 400
     methodEnd := methodEnd + 1
-  if methodEnd == 0 then throw 400
+  if methodEnd == methodStart then throw 400
   let targetStart := methodEnd + 1
   let mut targetEnd := targetStart
   while targetEnd < stop && bytes[targetEnd]! != 32 do
@@ -219,6 +235,7 @@ def parseHead (cfg : Config) (bytes : ByteArray) (stop : Nat) : Except Nat Head 
     -- Percent escapes must contain exactly two hex digits (checked below).
     targetEnd := targetEnd + 1
   if targetEnd == targetStart then throw 400
+  if targetEnd - targetStart > cfg.maxTargetBytes then throw 414
   if targetEnd + 11 > stop ||
       !equals bytes (targetEnd + 1) (targetEnd + 6) "HTTP/" ||
       bytes[targetEnd + 7]! != 46 || bytes[targetEnd + 9]! != 13 || bytes[targetEnd + 10]! != 10 then
@@ -229,14 +246,15 @@ def parseHead (cfg : Config) (bytes : ByteArray) (stop : Nat) : Except Nat Head 
   if major != 49 then throw 505
   let minor := minor.toNat - 48
   let target ← parseTarget bytes targetStart targetEnd
-    (equals bytes 0 methodEnd "OPTIONS") (equals bytes 0 methodEnd "CONNECT")
+    (equals bytes methodStart methodEnd "OPTIONS") (equals bytes methodStart methodEnd "CONNECT")
   let headersStart := targetEnd + 11
   let fields ← parseHeaders cfg bytes headersStart stop minor
   let framing ← chooseFraming fields.length fields.chunked
-  if equals bytes 0 methodEnd "CONNECT" then throw 501
+  if fields.unsupportedTransfer then throw 501
+  if equals bytes methodStart methodEnd "CONNECT" then throw 501
   let request : Request := {
-    raw := bytes, methodEnd, targetStart, targetEnd, headersStart, headEnd := stop
-    close := fields.close || minor == 0, isHead := equals bytes 0 methodEnd "HEAD"
+    raw := bytes, methodStart, methodEnd, targetStart, targetEnd, headersStart, headEnd := stop
+    close := fields.close || minor == 0, isHead := equals bytes methodStart methodEnd "HEAD"
     versionMinor := minor, pathStart := if target.authority.isSome then some target.pathStart else none
     authoritySpan := target.authority, schemeEnd := target.schemeEnd }
   return ⟨request, framing, fields.expectContinue⟩
@@ -292,7 +310,9 @@ def chunkSize (line : ByteArray) (limit : Nat) : Except Nat Nat := do
     let start := i
     while i < line.size && token line[i]! do i := i + 1
     if i == start then throw 400
+    let nameEnd := i
     while i < line.size && space line[i]! do i := i + 1
+    if i == line.size && i != nameEnd then throw 400
     if i < line.size && line[i]! == 61 then
       i := i + 1
       while i < line.size && space line[i]! do i := i + 1
@@ -375,15 +395,15 @@ def decodeBody (cfg : Config) (bytes : ByteArray) (start : Nat) (initial : BodyS
         if b != 10 then return .error 400
         match s.phase with
         | .sizeLine =>
-          if s.chunks >= cfg.maxChunks then return .error 413
           match chunkSize s.line (cfg.maxBodyBytes - s.body.size) with
           | .error status => return .error status
           | .ok n =>
+            if n != 0 && s.chunks >= cfg.maxChunks then return .error 413
             s := { s with
               phase := if n == 0 then .trailers else .data n
               line := .empty
               sawCR := false
-              chunks := s.chunks + 1 }
+              chunks := s.chunks + (if n == 0 then 0 else 1) }
         | _ =>
           if s.line.isEmpty then return .done s.body s.trailers i
           match trailer s.line with
@@ -418,6 +438,15 @@ def bodyStep (cfg : Config) (request : Request) (decoder : BodyState)
   | .done body trailers stop =>
     .request { request with body, rawTrailers := trailers } (bytes.extract stop bytes.size)
 
+def headLimitStatus (cfg : Config) (bytes : ByteArray) : Nat := Id.run do
+  let mut i := if equals bytes 0 2 "\r\n" then 2 else 0
+  while i < bytes.size && token bytes[i]! do i := i + 1
+  if i == bytes.size || bytes[i]! != 32 then return 431
+  let first := i + 1
+  i := first
+  while i < bytes.size && bytes[i]! > 32 && bytes[i]! < 127 do i := i + 1
+  return if i - first > cfg.maxTargetBytes then 414 else 431
+
 /-- No socket, promise, task, or H1 dependency. One input produces one action.
 The driver resumes the returned continuation only after sending the response. -/
 def feed (cfg : Config) (state : State) (input : ByteArray) : Step :=
@@ -425,9 +454,9 @@ def feed (cfg : Config) (state : State) (input : ByteArray) : Step :=
   | .body request decoder pending start =>
     bodyStep cfg request decoder (if pending.isEmpty then input else pending ++ input) start
   | .head pending scanner => Id.run do
-    let scanner := scanFeed cfg.maxHeaderBytes scanner input
-    if scanner.invalid then return .reject 431
+    let scanner := scanFeedFast cfg.maxHeaderBytes scanner input
     let bytes := if pending.isEmpty then input else pending ++ input
+    if scanner.invalid then return .reject (headLimitStatus cfg bytes)
     match scanner.stop with
     | none => return .need (.head bytes scanner)
     | some stop =>

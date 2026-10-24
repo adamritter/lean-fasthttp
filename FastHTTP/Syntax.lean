@@ -171,4 +171,56 @@ def connectionOptions (bytes : ByteArray) (start stop : Nat) : Except Nat Bool :
       first := i + 1
   return closing
 
+/-- Parse a Transfer-Encoding list. The only implemented coding is chunked;
+syntactically valid preceding extension codings are reported as unsupported.
+Chunked must occur exactly once, last, and without parameters. -/
+def transferCodings (bytes : ByteArray) (start stop : Nat) : Except Nat Bool := do
+  let mut i := start
+  let mut chunked := false
+  let mut unsupported := false
+  while i < stop do
+    while i < stop && (space bytes[i]! || bytes[i]! == 44) do i := i + 1
+    if i == stop then break
+    if chunked then throw 400
+    let first := i
+    while i < stop && token bytes[i]! do i := i + 1
+    if i == first then throw 400
+    chunked := equals bytes first i "chunked" true
+    unsupported := unsupported || !chunked
+    while i < stop do
+      while i < stop && space bytes[i]! do i := i + 1
+      if i == stop || bytes[i]! == 44 then break
+      if bytes[i]! != 59 || chunked then throw 400
+      i := i + 1
+      while i < stop && space bytes[i]! do i := i + 1
+      let key := i
+      while i < stop && token bytes[i]! do i := i + 1
+      if i == key then throw 400
+      while i < stop && space bytes[i]! do i := i + 1
+      if i == stop || bytes[i]! != 61 then throw 400
+      i := i + 1
+      while i < stop && space bytes[i]! do i := i + 1
+      if i < stop && bytes[i]! == 34 then
+        i := i + 1
+        let mut closed := false
+        while i < stop do
+          let b := bytes[i]!
+          i := i + 1
+          if b == 34 then
+            closed := true
+            break
+          if b == 92 then
+            if i == stop then throw 400
+            let escaped := bytes[i]!
+            if (escaped < 32 && escaped != 9) || escaped == 127 then throw 400
+            i := i + 1
+          else if (b < 32 && b != 9) || b == 127 then throw 400
+        if !closed then throw 400
+      else
+        let value := i
+        while i < stop && token bytes[i]! do i := i + 1
+        if i == value then throw 400
+  if !chunked then throw 400
+  return unsupported
+
 end FastHTTP

@@ -28,7 +28,7 @@ private def finish (client : Socket) : IO Unit := do
 
 private def reject (client : Socket) (dates : DateCache) (status : Nat) : IO Unit := do
   let reason := match status with
-    | 413 => "Content Too Large" | 417 => "Expectation Failed"
+    | 414 => "URI Too Long" | 413 => "Content Too Large" | 417 => "Expectation Failed"
     | 431 => "Request Header Fields Too Large" | 501 => "Not Implemented"
     | 505 => "HTTP Version Not Supported" | 408 => "Request Timeout"
     | 500 => "Internal Server Error" | _ => "Bad Request"

@@ -1,6 +1,6 @@
 name = "fast_http"
 version = "0.1.0"
-defaultTargets = ["FastHTTP", "fast_http", "fast_http_example", "h1_http", "baseline_http", "v1_http"]
+defaultTargets = ["FastHTTP", "fast_http", "fast_http_example", "h1_http", "baseline_http", "v1_http", "protocol_probe"]
 
 [[lean_lib]]
 name = "FastHTTP"
@@ -29,3 +29,7 @@ root = "Bench.BaselineMain"
 [[lean_exe]]
 name = "v1_http"
 root = "Bench.V1Main"
+
+[[lean_exe]]
+name = "protocol_probe"
+root = "Tests.ProtocolProbe"

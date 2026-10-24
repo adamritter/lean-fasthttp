@@ -16,6 +16,7 @@ from verify_http import verify_http
 ROOT = Path(__file__).resolve().parents[1]
 HZ = os.sysconf("SC_CLK_TCK")
 CONFIGS = {
+    "lean-fast-original-1": (18105, "0", [str(ROOT / "bin/lean-fast-http-original"), "18105"], "1"),
     "lean-fast-before-1": (18094, "0", [str(ROOT / "bin/lean-fast-http-before"), "18094"], "1"),
     "lean-fast-v1-1": (18103, "0", [str(ROOT / "bin/lean-fast-http-v1"), "18103"], "1"),
     "lean-fast-1": (18095, "0", [str(ROOT / "bin/lean-fast-http"), "18095"], "1"),
@@ -51,7 +52,7 @@ def main():
     parser.add_argument("--server-cpu", type=int,
                         help="override the server CPU for single-CPU configurations")
     parser.add_argument("--configs", nargs="+", choices=CONFIGS,
-                        default=list(CONFIGS))
+                        default=[name for name in CONFIGS if name != "lean-fast-original-1"])
     args = parser.parse_args()
     configs = {name: CONFIGS[name] for name in args.configs}
     if args.server_cpu is not None:
@@ -75,6 +76,9 @@ def main():
         "lscpu": subprocess.check_output(["lscpu"], text=True),
         "uname": subprocess.check_output(["uname", "-a"], text=True),
         "configs": configs,
+        "source_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+        "source_dirty": bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True)),
+        "original_source_commit": "ad80f25fd47cfde93db96c76affe983ac565b1f0" if "lean-fast-original-1" in configs else None,
         "binary_sha256": {name: hashlib.sha256(Path(config[2][0]).read_bytes()).hexdigest()
                           for name, config in configs.items()},
     }
@@ -107,7 +111,7 @@ def main():
                                 break
                         except OSError:
                             time.sleep(0.05)
-                    check = verify_http(port) if name in ("lean-fast-1", "lean-fast-v1-1") or name.startswith(("lean-std-", "lean-h1-", "lean-compat-", "lean-leanio-", "rust-hyper-")) else verify(port)
+                    check = verify_http(port) if name in ("lean-fast-1", "lean-fast-v1-1", "lean-fast-original-1") or name.startswith(("lean-std-", "lean-h1-", "lean-compat-", "lean-leanio-", "rust-hyper-")) else verify(port)
                     if server.poll() is not None:
                         raise RuntimeError(f"server exited during verification: {prefix}")
                     _, warmup = run_wrk(port, 3, args.connections)

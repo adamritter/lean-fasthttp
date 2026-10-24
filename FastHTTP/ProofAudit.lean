@@ -1,4 +1,4 @@
-import FastHTTP.Proofs
+import FastHTTP.ScannerProofs
 
 #print axioms FastHTTP.Protocol.scanFeed_append
 #print axioms FastHTTP.Protocol.scanFeed_fragments
@@ -19,3 +19,14 @@ import FastHTTP.Proofs
 #print axioms FastHTTP.Protocol.not_modified_has_no_body
 #print axioms FastHTTP.Protocol.no_content_omits_length
 #print axioms FastHTTP.Protocol.response_length_exact
+
+#print axioms FastHTTP.Protocol.scanByte_absorbed
+#print axioms FastHTTP.Protocol.scanList_absorbed
+#print axioms FastHTTP.Protocol.scanLoop_eq_fold
+#print axioms FastHTTP.Protocol.scanFeedFast_eq_scanFeed
+#print axioms FastHTTP.Protocol.scanFeedFast_append
+#print axioms FastHTTP.Protocol.scanByte_history
+#print axioms FastHTTP.Protocol.scanList_reference
+#print axioms FastHTTP.Protocol.scanFeedFast_reference
+#print axioms FastHTTP.Protocol.classify_cr_iff
+#print axioms FastHTTP.Protocol.classify_lf_iff

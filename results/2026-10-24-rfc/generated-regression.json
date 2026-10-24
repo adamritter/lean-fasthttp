@@ -1,0 +1,20 @@
+{
+  "result": "PASS",
+  "seed": 20261024,
+  "generated_pipelines": 1000,
+  "exact_fragment_cases": 2395,
+  "input_sha256": "015610be6ea0a3b2af3aef07851af92990d11000646576e3a82ca65f5f1cf3e4",
+  "probe_sha256": "daf307ee7ce3ba4be4ce90ba801cd7d0a98e335d2ea7a8d3f22540ed58475ed5",
+  "case_classes": {
+    "body-limit": 1,
+    "close-stops-pipeline": 3,
+    "every-split": 351,
+    "exact-limits": 1,
+    "generated": 1000,
+    "head-limit": 1,
+    "malformed": 14,
+    "malformed-fragments": 14,
+    "one-octet-fragments": 10,
+    "random-fragments": 1000
+  }
+}
