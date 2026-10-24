@@ -45,11 +45,11 @@ distinguishes these guarantees from the still-unproved full RFC grammar and I/O
 interpreter; this is not a full formal proof of HTTP/1.1 conformance.
 
 The measured production-code checkpoint
-[`6210652`](https://github.com/adamritter/lean-fasthttp/commit/6210652caf65b443e657b67ea7f3eccd7d459088)
-reaches **474,364 completed requests/s** (median of three 15-second runs), with
+[`9a82a5d`](https://github.com/adamritter/lean-fasthttp/commit/9a82a5dc52eaccfb15fab24eef8d52b7b57352be)
+reaches **478,118 completed requests/s** (median of three 15-second runs), with
 four I/O workers in one process restricted to four GH200 CPU cores. All three
-runs exceed 400k/s: **470,320–475,033/s**. The timed clients verify status,
-Content-Length and the complete 1 KiB body of **21,330,064 responses**, with zero
+runs exceed 400k/s: **465,910–493,126/s**. The timed clients verify status,
+Content-Length and the complete 1 KiB body of **21,598,708 responses**, with zero
 invalid responses. This is HTTP/1.1 keep-alive on Linux loopback, 256 connections,
 eight client threads on separate CPUs, no pipelining and no TLS.
 
@@ -58,15 +58,26 @@ I/O workers plus runtime/helper threads (12 observed OS threads total); the whol
 process is restricted to CPUs 16–19. This is a four-worker/four-CPU result, not a
 claim that the process creates only four OS threads.
 
-The same checkpoint passes **28,390 exact-fragment cases** with a new seed,
+The same checkpoint passes **29,984 exact-fragment cases** with a new seed,
 including 10,000 generated pipelines and their random fragmentations, plus a
-fresh four-worker dynamic-response corpus with 975 checked responses and 160
+fresh four-worker dynamic-response corpus with 973 checked responses and 160
 stream cleanup checks. Its GitHub CI passes.
-[Verification manifest](results/2026-10-24-protocol-proof-checkpoint/verification.json),
-[raw throughput and metadata](results/2026-10-24-protocol-proof-throughput/).
+[Verification manifest](results/2026-10-24-protocol-final-195/verification.json),
+[raw throughput and metadata](results/2026-10-24-protocol-final-195-throughput/).
 The build manifest binds the evaluated source, pinned lean-uv source and installed
 executables. A detected stale-copy development run is retained and explicitly
 excluded in the [validation note](results/2026-10-24-chunk-trailer-proofs/validation-note.json).
+
+IPv4/IPv6 acceptance now has a counted-group grammar proof. Structural traversal
+removes repeated indexing of a linked list on malformed long IPv6 inputs. Invalid
+UTF-8 in a bracketed Host used to return 400 while emitting a runtime panic;
+the checked decoder now rejects it without a panic. The before/after diagnostic,
+all-octet regressions and boundary tests are retained in
+[IPv6 evidence](results/2026-10-24-ipv6-proofs/).
+
+The preceding 182-theorem checkpoint remains separately reproducible in its
+[verification manifest](results/2026-10-24-protocol-proof-checkpoint/verification.json)
+and [474k/s measurements](results/2026-10-24-protocol-proof-throughput/).
 
 The earlier `0fbd69b` transport comparison remains historical evidence:
 

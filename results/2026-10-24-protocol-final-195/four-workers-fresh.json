@@ -1,0 +1,28 @@
+{
+  "result": "PASS",
+  "seed": 5999044261574686118,
+  "workers": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "server_cpus": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "connections": 160,
+  "checked_responses": 973,
+  "completed_streams_by_worker": {
+    "0": 37,
+    "1": 38,
+    "2": 39,
+    "3": 46
+  },
+  "cleanup_check_connections": 6,
+  "request_semantics": "fixed, chunked, deferred, dynamic streaming, per-worker exactly-once cleanup, HEAD, close, half-close, pipeline ordering",
+  "input_sha256": "98cb67955e254fe50a1bff27dddc03e8c22b6a66d6a5c756d33210e208dcbb97",
+  "binary_sha256": "a40d29b056d1450e5b51a2b6096a569599fca9dd83abf8fe9b773ff20fdad7dd"
+}
