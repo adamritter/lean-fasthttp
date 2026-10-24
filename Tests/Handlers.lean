@@ -1,4 +1,5 @@
 import FastHTTP
+import Tests.CertificateChecks
 
 private def prepared (body : String) : IO FastHTTP.Response :=
   IO.ofExcept ((FastHTTP.Response.create body.toUTF8).mapError IO.userError)
@@ -6,6 +7,7 @@ private def prepared (body : String) : IO FastHTTP.Response :=
 namespace Tests
 
 def makeHandler : IO FastHTTP.Handler := do
+  certificateChecks
   let ready ← prepared "ready"
   match FastHTTP.Response.create ByteArray.empty 200 "OK\r\nInjected: yes" with
   | .ok _ => throw (IO.userError "response header injection accepted")

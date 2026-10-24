@@ -4,8 +4,10 @@ import FastHTTP.BodyGrammarProofs
 import FastHTTP.BodyLimitProofs
 import FastHTTP.BodyProofs
 import FastHTTP.ChunkGrammarProofs
+import FastHTTP.DateSyntaxProofs
 import FastHTTP.DriverNativeProofs
 import FastHTTP.DriverProofs
+import FastHTTP.DriverRequestProofs
 import FastHTTP.FeedProofs
 import FastHTTP.FieldsProofs
 import FastHTTP.HeadGrammarProofs
@@ -20,6 +22,8 @@ import FastHTTP.MessageGrammarProofs
 import FastHTTP.NumericProofs
 import FastHTTP.Proofs
 import FastHTTP.QuotedProofs
+import FastHTTP.ResponseProofs
+import FastHTTP.ResponseSyntaxProofs
 import FastHTTP.ScannerProofs
 import FastHTTP.StreamMachineProofs
 import FastHTTP.SyntaxProofs
@@ -27,6 +31,10 @@ import FastHTTP.TargetProofs
 import FastHTTP.TrailerProofs
 import FastHTTP.WireProofs
 
+#print axioms FastHTTP.checkedResponseFields
+#print axioms FastHTTP.Response.create
+#print axioms FastHTTP.StreamResponse.create
+#print axioms FastHTTP.DateHeader.create
 #print axioms FastHTTP.Protocol.regNameOctet_iff
 #print axioms FastHTTP.Protocol.futureOctet_iff
 #print axioms FastHTTP.Protocol.decimalOctet_iff
@@ -108,6 +116,8 @@ import FastHTTP.WireProofs
 #print axioms FastHTTP.Protocol.chunkExtensions_complete
 #print axioms FastHTTP.Protocol.chunkExtensions_iff
 #print axioms FastHTTP.Protocol.chunkSize_grammar
+#print axioms FastHTTP.Protocol.dateNumber_iff
+#print axioms FastHTTP.Protocol.validDateHeader_iff
 #print axioms FastHTTP.Protocol.driver_finalizer_weight
 #print axioms FastHTTP.Protocol.driver_actual_cleanup
 #print axioms FastHTTP.Protocol.driver_actual_cleanup_complete
@@ -123,6 +133,16 @@ import FastHTTP.WireProofs
 #print axioms FastHTTP.Protocol.driver_native_resource
 #print axioms FastHTTP.Protocol.driver_native_cleanup_at_most_acquired
 #print axioms FastHTTP.Protocol.driver_native_cleanup_complete
+#print axioms FastHTTP.Protocol.driver_initial_request_invariant
+#print axioms FastHTTP.Protocol.driver_reject_valid
+#print axioms FastHTTP.Protocol.driver_accept_valid
+#print axioms FastHTTP.Protocol.driver_resume_valid
+#print axioms FastHTTP.Protocol.driver_streamCommand_valid
+#print axioms FastHTTP.Protocol.driver_streamEvent_valid
+#print axioms FastHTTP.Protocol.driver_stop_valid
+#print axioms FastHTTP.Protocol.driver_step_request_valid
+#print axioms FastHTTP.Protocol.driver_replay_requests_valid
+#print axioms FastHTTP.Protocol.driver_native_requests_valid
 #print axioms FastHTTP.Protocol.append_unless_empty
 #print axioms FastHTTP.Protocol.extract_prefix_append
 #print axioms FastHTTP.Protocol.extract_suffix_append
@@ -233,6 +253,10 @@ import FastHTTP.WireProofs
 #print axioms FastHTTP.Protocol.feed_acknowledged_fragmentation
 #print axioms FastHTTP.Protocol.feed_acknowledged_fragments
 #print axioms FastHTTP.Protocol.feed_live_fragments_grammar_iff
+#print axioms FastHTTP.Protocol.acknowledge_bound
+#print axioms FastHTTP.Protocol.acknowledge_idempotent
+#print axioms FastHTTP.Protocol.acknowledge_initial_idempotent
+#print axioms FastHTTP.Protocol.feed_empty_need
 #print axioms FastHTTP.Protocol.decimalValue_mono
 #print axioms FastHTTP.Protocol.decimalStep_iff
 #print axioms FastHTTP.Protocol.decimalFold_none
@@ -268,6 +292,17 @@ import FastHTTP.WireProofs
 #print axioms FastHTTP.Protocol.quotedTail_complete
 #print axioms FastHTTP.Protocol.quotedTail_bounds
 #print axioms FastHTTP.Protocol.quotedEnd_iff
+#print axioms FastHTTP.Protocol.status_wire_encoding
+#print axioms FastHTTP.Protocol.prepared_buffers_grammar
+#print axioms FastHTTP.Protocol.streaming_buffers_grammar
+#print axioms FastHTTP.Protocol.encoded_chunk_grammar
+#print axioms FastHTTP.Protocol.driver_prepared_buffers_grammar
+#print axioms FastHTTP.Protocol.validOutputName_iff
+#print axioms FastHTTP.Protocol.outputValueOctet_iff
+#print axioms FastHTTP.Protocol.validFieldValue_iff
+#print axioms FastHTTP.Protocol.validOutputReason_iff
+#print axioms FastHTTP.Protocol.outputNameIs_iff
+#print axioms FastHTTP.Protocol.outputFieldAllowed_iff
 #print axioms FastHTTP.Protocol.scanByte_history
 #print axioms FastHTTP.Protocol.scanList_reference
 #print axioms FastHTTP.Protocol.scanFeedFast_reference

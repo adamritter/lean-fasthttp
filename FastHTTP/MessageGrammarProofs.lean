@@ -172,4 +172,32 @@ theorem feed_live_fragments_grammar_iff (cfg : Config) (chunks : List ByteArray)
   rw [feed_acknowledged_fragments]
   exact feed_request_grammar_iff cfg _ request rest
 
+theorem acknowledge_bound (cfg : Config) (step : Step) (bound : StepBound step) :
+    StepBound (acknowledge cfg step) := by
+  cases step with
+  | «continue» state => exact feed_bound cfg state .empty bound
+  | need state => exact bound
+  | request request rest => trivial
+  | reject status => trivial
+
+theorem acknowledge_idempotent (cfg : Config) (step : Step) (bound : ContinuationBound step) :
+    acknowledge cfg (acknowledge cfg step) = acknowledge cfg step := by
+  cases step with
+  | need state => rfl
+  | request request rest => rfl
+  | reject status => rfl
+  | «continue» state =>
+    cases state with
+    | head pending scanner => contradiction
+    | body request decoder pending start =>
+      rw [acknowledge_continue_body]
+      exact acknowledge_bodyStep cfg request decoder pending start
+
+theorem acknowledge_initial_idempotent (cfg : Config) (bytes : ByteArray) :
+    acknowledge cfg (acknowledge cfg (feed cfg .head bytes)) = acknowledge cfg (feed cfg .head bytes) :=
+  acknowledge_idempotent cfg (feed cfg .head bytes) (feed_continuation_bound cfg .head bytes initial_state_bound)
+
+theorem feed_empty_need (cfg : Config) : feed cfg .head .empty = .need .head := by
+  simp [feed, scanFeedFast_eq_scanFeed, scanFeed, headStep, ByteArray.isEmpty]
+
 end FastHTTP.Protocol

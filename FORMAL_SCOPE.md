@@ -21,8 +21,10 @@ and any axiom beyond `propext`, `Classical.choice` and `Quot.sound`. There is no
 | `feed_bound` / `feed_body_no_continue` | Every emitted continuation preserves the cursor invariants; a body continuation cannot emit another 100-continue action. |
 | `parseRequestLine_iff` / `parseFieldLine_iff` in `LexicalProofs` | Soundness and completeness against independent wire-envelope grammars: nonempty tchar method and field name, exact SP/colon/CRLF positions, supported HTTP/1.x version digits, ASCII target envelope, all field-value octets including obs-text, exact returned spans and target limit. URI and field-specific semantics are separate obligations. |
 | `feed_request_grammar_iff` / `feed_live_fragments_grammar_iff` in `MessageGrammarProofs` | Exact complete RequestWire equivalence for the public parser, including independent first-delimiter, head and body grammars, all request fields and untouched pipeline bytes. Arbitrary fragmentation and acknowledgment of Expect after each fragment produce the same complete result. |
+| `prepared_buffers_grammar` / `streaming_buffers_grammar` / `encoded_chunk_grammar` in `ResponseProofs` | Every prepared/streaming response, Date header, connection/version/HEAD choice and binary chunk. Complete wire productions include exact three-digit status, decimal/hexadecimal byte counts, field grammar, managed/duplicate field policy, Date grammar, body suppression and the final empty line. Response objects carry erased grammar certificates; their factory definitions are separately axiom-audited. |
+| `driver_native_requests_valid` in `DriverRequestProofs` | Every handler command in an arbitrary actual controller replay has a complete RequestWire witness. Linking that witness to the actual receive ledger is still a separate obligation below. |
 | `driver_step_resource` / `driver_replay_resource` in `DriverProofs` | Every transition and finite trace of the actual complete HTTP reactor conserves acquired stream cleanup rights. Error, close, malformed event ordering, deferred responses, stream completion and pipeline continuation are covered. |
-| `driver_actual_cleanup` / `driver_actual_graceful_output` in `DriverNativeProofs` | Conditional native transfer under the visible lean-uv ExecutionContract, AdapterContract and NativeContract. Actual cleanup invocations conserve acquired rights; TCP output is an ordered prefix of selected controller output, or the exact selected output after successful graceful close. This is not yet the independent response-serialization grammar proof. |
+| `driver_actual_cleanup` / `driver_actual_graceful_output` in `DriverNativeProofs` | Conditional native transfer under the visible lean-uv ExecutionContract, AdapterContract and NativeContract. Actual cleanup invocations conserve acquired rights; TCP output is an ordered prefix of selected controller output, or the exact selected output after successful graceful close. Complete response serialization is proved separately in ResponseProofs; the cross-request composition remains below. |
 | `parseHead_grammar_iff` in `HeadGrammarProofs` | Exact equivalence of the complete production head parser and independently specified request-line, all four target forms, complete ordered header semantics, framing and supported-feature policy. Includes every returned routing span, HTTP version, connection/HEAD/Expect flag and duplicate-field rejection. |
 | `parseField_grammar_iff` / `parseHeaders_grammar_iff` | Each grammatical field updates exactly the accumulated Content-Length, Transfer-Encoding, Host, Expect and Connection state; both directions cover the complete ordered field block and mandatory Host policy. |
 | `decodeBody_grammar_iff` / `decodeChunked_grammar_iff` in `BodyGrammarProofs` | The actual optimized decoder succeeds iff the input has an independently grammatical body prefix. Exact decoded payload, raw trailers, stopping cursor and untouched suffix are included. `BodyWire` is an inductive operational wire grammar; its byte productions use independent numeral, extension and trailer grammars, not calls to the body parser. |
@@ -53,11 +55,9 @@ wire grammar, not a transcription of RFC ABNF into a separate grammar language.
 
 The following obligations are not established by these theorems:
 
-* Application dispatch and the IO acknowledgment of actions. Pure head-plus-body
-  feed composition, including all metadata and Expect buffering, is established.
-* Independent grammar equivalence of complete response construction, and the
-  full cross-request dispatch/response invariant. The actual UV controller is now
-  pure and has complete cleanup conservation. Native read/write/finalizer
+* The actual-input provenance and full cross-request dispatch/response invariant.
+  Complete parser grammar equivalence, response wire grammar, grammatical
+  handler dispatch and cleanup conservation are proved. Native read/write/finalizer
   refinement is an explicit generic contract, with conditional transfer proofs.
 * Liveness and the external application's producer/cancellation semantics.
   Native C/libuv socket lifetimes, callback delivery and IO.Ref execution are

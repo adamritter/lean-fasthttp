@@ -23,7 +23,7 @@ inductive Result where
   | response (response : Response)
   | producer (promise : ChunkPromise)
   | chunk (bytes : Option ByteArray)
-  | date (bytes : ByteArray)
+  | date (header : DateHeader)
   | released
   | failed
 
@@ -79,10 +79,10 @@ def resume (cfg : Config) (purpose : Purpose) : State × Command :=
     else if rest.isEmpty then (.reading, .idle)
     else accept (Protocol.feed cfg .head rest)
 
-def preparedBuffers (purpose : Purpose) (response : Response) (date : ByteArray) : Array ByteArray :=
+def preparedBuffers (purpose : Purpose) (response : Response) (date : DateHeader) : Array ByteArray :=
   match purpose with
-  | .rejection => response.buffers true false date
-  | .response request _ => response.buffers request.close request.isHead date (request.versionMinor == 0)
+  | .rejection => response.buffers true false date.bytes
+  | .response request _ => response.buffers request.close request.isHead date.bytes (request.versionMinor == 0)
 
 /-- Interpret the already-proved stream policy. Cleanup ownership is relinquished
 in the pure state before invoking release; the continuation cannot release again. -/
@@ -130,7 +130,7 @@ def step (cfg : Config) (state : State) (event : Event) : State × Command :=
     | .sending purpose, .written => resume cfg purpose
     | .streamDate stream, .result (.date date) =>
       (.streaming stream, .write (stream.response.buffers stream.request.close
-        (stream.request.versionMinor == 0) date))
+        (stream.request.versionMinor == 0) date.bytes))
     | .streaming stream, .written => streamEvent cfg stream .written
     | .streaming stream, .result (.producer promise) => (.streaming stream, .perform (.chunk promise))
     | .streaming stream, .result (.chunk none) => streamEvent cfg stream .eof

@@ -24,7 +24,7 @@ private def effect (handler : Handler) (dates : DateCache) : Driver.Work → IO 
     return some (match promise.result?.get with
       | some (.ok chunk) => .chunk chunk
       | _ => .failed)
-  | .date => do return some (.date (← dates.get))
+  | .date => do return some (.date (← dates.getChecked))
   | .release action => do
     try action catch _ => pure ()
     return some .released
