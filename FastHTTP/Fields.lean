@@ -1,4 +1,4 @@
-import FastHTTP.Lexical
+import FastHTTP.Authority
 
 namespace FastHTTP
 

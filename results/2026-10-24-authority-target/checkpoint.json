@@ -1,0 +1,8 @@
+{
+  "base_commit": "e8ad5745bdb92a083f2e3e6fc70c109570602d4e",
+  "theorems": 218,
+  "new_theorems": 23,
+  "scope": "Authority and all request-target forms; continuation toward complete protocol proof",
+  "source_verified": true,
+  "full_http11_conformance_proved": false
+}
