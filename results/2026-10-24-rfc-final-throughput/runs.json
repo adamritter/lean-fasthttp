@@ -1,0 +1,224 @@
+[
+  {
+    "name": "lean-fast-original-1",
+    "repeat": 1,
+    "requests_per_second": 55588.44,
+    "p99_latency": "1.84ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/dev/shm/fasthttp-tools-20261024/wrk/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18105/"
+    ],
+    "verification": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close",
+    "wall_seconds": 15.102992553962395,
+    "timing": {
+      "started_utc": "2026-10-24T13:40:10.229399+00:00",
+      "finished_utc": "2026-10-24T13:40:25.332415+00:00",
+      "monotonic_seconds": 15.102992553962395,
+      "boottime_seconds": 15.102996265981346,
+      "suspend_seconds": 3.7120189517736435e-06
+    },
+    "thread_cpu_seconds": {
+      "1589468": 0.0,
+      "1589469": 0.0,
+      "1589470": 3.95,
+      "1589471": 0.98,
+      "1589472": 10.11
+    },
+    "average_busy_cores": 0.996,
+    "peak_rss_kib": 0
+  },
+  {
+    "name": "lean-fast-1",
+    "repeat": 1,
+    "requests_per_second": 53547.21,
+    "p99_latency": "1.90ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/dev/shm/fasthttp-tools-20261024/wrk/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18095/"
+    ],
+    "verification": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close",
+    "wall_seconds": 15.102978089940734,
+    "timing": {
+      "started_utc": "2026-10-24T13:40:29.957342+00:00",
+      "finished_utc": "2026-10-24T13:40:45.060345+00:00",
+      "monotonic_seconds": 15.102978089940734,
+      "boottime_seconds": 15.102981514064595,
+      "suspend_seconds": 3.4241238608956337e-06
+    },
+    "thread_cpu_seconds": {
+      "1589943": 0.0,
+      "1589944": 0.0,
+      "1589945": 3.9,
+      "1589946": 1.03,
+      "1589947": 10.13
+    },
+    "average_busy_cores": 0.997,
+    "peak_rss_kib": 0
+  },
+  {
+    "name": "lean-fast-1",
+    "repeat": 2,
+    "requests_per_second": 55166.61,
+    "p99_latency": "1.83ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/dev/shm/fasthttp-tools-20261024/wrk/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18095/"
+    ],
+    "verification": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close",
+    "wall_seconds": 15.10400574898813,
+    "timing": {
+      "started_utc": "2026-10-24T13:40:49.685594+00:00",
+      "finished_utc": "2026-10-24T13:41:04.789624+00:00",
+      "monotonic_seconds": 15.10400574898813,
+      "boottime_seconds": 15.104009141097777,
+      "suspend_seconds": 3.3921096473932266e-06
+    },
+    "thread_cpu_seconds": {
+      "1591803": 0.0,
+      "1591804": 0.0,
+      "1591805": 3.87,
+      "1591806": 0.99,
+      "1591807": 10.22
+    },
+    "average_busy_cores": 0.998,
+    "peak_rss_kib": 0
+  },
+  {
+    "name": "lean-fast-original-1",
+    "repeat": 2,
+    "requests_per_second": 59286.91,
+    "p99_latency": "1.73ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/dev/shm/fasthttp-tools-20261024/wrk/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18105/"
+    ],
+    "verification": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close",
+    "wall_seconds": 15.10330682899803,
+    "timing": {
+      "started_utc": "2026-10-24T13:41:09.417283+00:00",
+      "finished_utc": "2026-10-24T13:41:24.520613+00:00",
+      "monotonic_seconds": 15.10330682899803,
+      "boottime_seconds": 15.103309580939822,
+      "suspend_seconds": 2.751941792666912e-06
+    },
+    "thread_cpu_seconds": {
+      "1592168": 0.0,
+      "1592169": 0.0,
+      "1592170": 4.06,
+      "1592171": 1.03,
+      "1592172": 9.95
+    },
+    "average_busy_cores": 0.996,
+    "peak_rss_kib": 0
+  },
+  {
+    "name": "lean-fast-original-1",
+    "repeat": 3,
+    "requests_per_second": 59821.25,
+    "p99_latency": "1.71ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/dev/shm/fasthttp-tools-20261024/wrk/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18105/"
+    ],
+    "verification": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close",
+    "wall_seconds": 15.103037834982388,
+    "timing": {
+      "started_utc": "2026-10-24T13:41:29.149345+00:00",
+      "finished_utc": "2026-10-24T13:41:44.252406+00:00",
+      "monotonic_seconds": 15.103037834982388,
+      "boottime_seconds": 15.103040490997955,
+      "suspend_seconds": 2.656015567481518e-06
+    },
+    "thread_cpu_seconds": {
+      "1592926": 0.0,
+      "1592927": 0.0,
+      "1592928": 3.95,
+      "1592929": 0.98,
+      "1592930": 10.12
+    },
+    "average_busy_cores": 0.996,
+    "peak_rss_kib": 0
+  },
+  {
+    "name": "lean-fast-1",
+    "repeat": 3,
+    "requests_per_second": 52775.81,
+    "p99_latency": "1.93ms",
+    "command": [
+      "taskset",
+      "-c",
+      "4-11",
+      "/dev/shm/fasthttp-tools-20261024/wrk/wrk",
+      "-t8",
+      "-c64",
+      "-d15s",
+      "--latency",
+      "--timeout",
+      "2s",
+      "http://127.0.0.1:18095/"
+    ],
+    "verification": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close",
+    "wall_seconds": 15.10318900400307,
+    "timing": {
+      "started_utc": "2026-10-24T13:41:48.880278+00:00",
+      "finished_utc": "2026-10-24T13:42:03.983491+00:00",
+      "monotonic_seconds": 15.10318900400307,
+      "boottime_seconds": 15.103191243950278,
+      "suspend_seconds": 2.2399472072720528e-06
+    },
+    "thread_cpu_seconds": {
+      "1593899": 0.0,
+      "1593900": 0.0,
+      "1593901": 3.89,
+      "1593902": 0.99,
+      "1593903": 10.17
+    },
+    "average_busy_cores": 0.996,
+    "peak_rss_kib": 0
+  }
+]

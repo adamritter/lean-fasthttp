@@ -1,0 +1,1 @@
+{"result":"UNAVAILABLE","reason":"perf_event_paranoid=4 denied profiling of the test server; no global kernel settings were changed; no profile-based attribution is claimed"}

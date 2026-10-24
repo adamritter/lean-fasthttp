@@ -1,0 +1,41 @@
+{
+  "started_utc": "2026-10-24T13:35:47.900610+00:00",
+  "seconds": 15,
+  "repeats": 3,
+  "connections": 64,
+  "client_threads": 8,
+  "client_cpus": "4-11",
+  "warmup_seconds": 3,
+  "response_body_bytes": 1024,
+  "protocol": "HTTP/1.1 keep-alive, no pipelining in wrk",
+  "transport": "Linux loopback, HTTP without TLS",
+  "lscpu": "Architecture:                         aarch64\nCPU op-mode(s):                       64-bit\nByte Order:                           Little Endian\nCPU(s):                               64\nOn-line CPU(s) list:                  0-63\nVendor ID:                            ARM\nModel name:                           Neoverse-V2\nModel:                                0\nThread(s) per core:                   1\nCore(s) per socket:                   64\nSocket(s):                            1\nStepping:                             r0p0\nBogoMIPS:                             2000.00\nFlags:                                fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm jscvt fcma lrcpc dcpop sha3 sm3 sm4 asimddp sha512 sve asimdfhm dit uscat ilrcpc flagm sb paca pacg dcpodp sve2 sveaes svepmull svebitperm svesha3 svesm4 flagm2 frint svei8mm svebf16 i8mm bf16 dgh bti\nNUMA node(s):                         8\nNUMA node0 CPU(s):                    0-63\nNUMA node2 CPU(s):                    \nNUMA node3 CPU(s):                    \nNUMA node4 CPU(s):                    \nNUMA node5 CPU(s):                    \nNUMA node6 CPU(s):                    \nNUMA node7 CPU(s):                    \nNUMA node8 CPU(s):                    \nVulnerability Gather data sampling:   Not affected\nVulnerability Itlb multihit:          Not affected\nVulnerability L1tf:                   Not affected\nVulnerability Mds:                    Not affected\nVulnerability Meltdown:               Not affected\nVulnerability Mmio stale data:        Not affected\nVulnerability Reg file data sampling: Not affected\nVulnerability Retbleed:               Not affected\nVulnerability Spec rstack overflow:   Not affected\nVulnerability Spec store bypass:      Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:             Mitigation; __user pointer sanitization\nVulnerability Spectre v2:             Not affected\nVulnerability Srbds:                  Not affected\nVulnerability Tsx async abort:        Not affected\n",
+  "uname": "Linux 192-222-50-208 6.11.0-1011-nvidia-64k #11-Ubuntu SMP PREEMPT_DYNAMIC Thu Jun 19 01:04:29 UTC 2025 aarch64 aarch64 aarch64 GNU/Linux\n",
+  "configs": {
+    "lean-fast-original-1": [
+      18105,
+      "0",
+      [
+        "/dev/shm/lean-fasthttp-20261024/bin/lean-fast-http-original",
+        "18105"
+      ],
+      "1"
+    ],
+    "lean-fast-1": [
+      18095,
+      "0",
+      [
+        "/dev/shm/lean-fasthttp-20261024/bin/lean-fast-http",
+        "18095"
+      ],
+      "1"
+    ]
+  },
+  "source_commit": "8409b1ffceecb6f1192c4a86fb85ece1c30af265",
+  "source_dirty": false,
+  "original_source_commit": "ad80f25fd47cfde93db96c76affe983ac565b1f0",
+  "binary_sha256": {
+    "lean-fast-original-1": "d7fef89f2eda5b264b738d3f5b9c3717ef2de00adfcec5f18b2b23209f593f32",
+    "lean-fast-1": "19bd0ea80b6e434ee36f8c2e61f20931e83f80c1dd3f8dd5ce7fa356fb7015d0"
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "implementation_commit": "078d75d645e29e1e1ce0e4d9bf1ee84292c65148",
+  "formal_verification": {
+    "result": "PASS",
+    "theorems": 29,
+    "audit": "proof-audit.json",
+    "scope": [
+      "All-input equivalence of optimized and fold-based delimiter scanners",
+      "All-input equivalence to a literal CRLFCRLF first-delimiter/limit specification",
+      "Fragmentation, fixed-length byte slicing and conservation",
+      "Conflicting Content-Length/Transfer-Encoding rejection and response body/length primitives"
+    ],
+    "full_http11_formal_proof": false,
+    "remaining_proof_obligations": [
+      "Complete request/header/URI grammar acceptance",
+      "Complete chunked decoder and composition of feed over arbitrary fragments",
+      "Decimal and hexadecimal wire serialization",
+      "UV callback interpreter, cancellation and liveness"
+    ]
+  },
+  "component_regression": {
+    "result": "PASS",
+    "seed": 20261024,
+    "generated_pipelines": 1000,
+    "exact_fragment_cases": 4245,
+    "input_sha256": "e84ca002eb0c69ad245b5fe9507c0dccd2ebda7a2be446386615501939aec6dc",
+    "probe_sha256": "419c7f71917c0614f676b90c9b59ae0ab389e45a2bac57f389fba87b3e4529a1",
+    "case_classes": {
+      "absolute-uri-scheme": 5,
+      "all-field-value-octets": 256,
+      "authority-boundaries": 7,
+      "body-limit": 1,
+      "chunk-limit-exceeded": 1,
+      "close-stops-pipeline": 3,
+      "combined-transfer-coding-fields": 4,
+      "every-split": 351,
+      "exact-chunk-limit": 1,
+      "exact-limits": 1,
+      "generated": 1000,
+      "head-limit": 1,
+      "independent-ipv6": 500,
+      "invalid-chunk-extensions": 5,
+      "invalid-ipv6": 1000,
+      "leading-crlf-splits": 65,
+      "malformed": 14,
+      "malformed-fragments": 14,
+      "one-octet-fragments": 10,
+      "random-fragments": 1000,
+      "transfer-coding-order": 5,
+      "zero-data-chunks": 1
+    }
+  },
+  "fresh_component_evaluation": {
+    "result": "PASS",
+    "seed": 1608837293,
+    "generated_pipelines": 5000,
+    "exact_fragment_cases": 12245,
+    "input_sha256": "2be4a41c438c0ce44968ce4ef64077657512f87e83934041e6aaa27744085a6f",
+    "probe_sha256": "419c7f71917c0614f676b90c9b59ae0ab389e45a2bac57f389fba87b3e4529a1",
+    "case_classes": {
+      "absolute-uri-scheme": 5,
+      "all-field-value-octets": 256,
+      "authority-boundaries": 7,
+      "body-limit": 1,
+      "chunk-limit-exceeded": 1,
+      "close-stops-pipeline": 3,
+      "combined-transfer-coding-fields": 4,
+      "every-split": 351,
+      "exact-chunk-limit": 1,
+      "exact-limits": 1,
+      "generated": 5000,
+      "head-limit": 1,
+      "independent-ipv6": 500,
+      "invalid-chunk-extensions": 5,
+      "invalid-ipv6": 1000,
+      "leading-crlf-splits": 65,
+      "malformed": 14,
+      "malformed-fragments": 14,
+      "one-octet-fragments": 10,
+      "random-fragments": 5000,
+      "transfer-coding-order": 5,
+      "zero-data-chunks": 1
+    }
+  },
+  "wire_regressions": {
+    "protocol": "protocol-wire.json",
+    "rfc": "rfc-wire.json"
+  },
+  "ci": {
+    "commit": "078d75d645e29e1e1ce0e4d9bf1ee84292c65148",
+    "result": "success",
+    "url": "https://github.com/adamritter/lean-fasthttp/actions/runs/40099396661"
+  },
+  "operating_limits": [
+    "Buffered request bodies with configurable limits",
+    "No header/idle deadlines or active connection cap",
+    "No prompt cancellation of a permanently pending application promise",
+    "CONNECT tunnels, protocol upgrades and TLS are not implemented",
+    "Application handlers remain responsible for resource and response-header semantics"
+  ],
+  "reproduction": {
+    "build": "scripts/build.sh",
+    "proofs": "python3 scripts/verify_proofs.py",
+    "component": "python3 scripts/verify_generated.py",
+    "fresh": "python3 scripts/verify_generated.py --cases 5000 --seed 1608837293",
+    "wire": [
+      "python3 scripts/verify_fast_protocol.py",
+      "python3 scripts/verify_rfc.py"
+    ],
+    "baseline": "python3 scripts/build_original.py"
+  },
+  "throughput": {
+    "result": "PASS",
+    "workload": "1024-byte prebuilt response; HTTP/1.1 keep-alive; no request pipelining; Linux loopback; one allocated server CPU; 8 wrk threads on disjoint CPUs; 64 connections; 3 alternating 15-second samples per variant",
+    "environment": "shared Lambda GH200 host; CPU-only server measurement",
+    "original_median_requests_per_second": 61124.9,
+    "current_median_requests_per_second": 58096.77,
+    "change_percent": -4.954004014730506,
+    "current_min_requests_per_second": 53748.58,
+    "current_max_requests_per_second": 58972.68,
+    "raw_results": "../2026-10-24-rfc-checkpoint-throughput/",
+    "caveat": "Original lacks the added grammar checks and Date headers; features differ. All completed comparisons, including slower results, are retained. No network throughput speedup is claimed.",
+    "earlier_comparisons": [
+      "../2026-10-24-rfc-throughput/",
+      "../2026-10-24-rfc-final-throughput/"
+    ],
+    "profiling": "Unavailable because perf_event_paranoid=4; no attribution to specific hot functions is claimed.",
+    "memory": "VmHWM was unavailable (zero); final results store null and no RSS claim is made."
+  }
+}

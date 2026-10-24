@@ -19,7 +19,40 @@ and benchmark executables are not checked in. `FASTHTTP_TEST_CPU` overrides the
 test server’s CPU affinity; the benchmark defaults to server CPU 0 and clients
 on CPUs 4–11.
 
-## Measured throughput
+## Current checkpoint validation (2026-10-24)
+
+[Verification manifest](results/2026-10-24-rfc/verification.json) for source
+[`078d75d`](https://github.com/adamritter/lean-fasthttp/commit/078d75d645e29e1e1ce0e4d9bf1ee84292c65148):
+29 audited Lean theorems, 4,245 maintained exact-fragment cases, and a final
+12,245-case evaluation with a new seed, including 5,000 generated request pipelines.
+Socket regressions and [GitHub CI](https://github.com/adamritter/lean-fasthttp/actions/runs/40099396661) passed.
+The final corpus and executable hashes are recorded. The formal proof scope is
+partial; the complete header/chunked parser and networking interpreter remain
+unproved. Passing the test corpus does not turn these into formal theorems.
+
+Same-host medians from 3 × 15 seconds, 64 connections, one allocated server CPU,
+8 wrk threads on disjoint CPUs, 1024-byte prepared replies, Linux loopback on a
+shared Lambda GH200 host (CPU measurement):
+
+| Variant | Requests/second |
+|---|---:|
+| Exact original `ad80f25` | 61,124.90 |
+| Expanded HTTP/1.1 implementation `078d75d` | 58,096.77 |
+
+The expanded implementation is 4.95% slower on this workload and includes
+additional grammar checks and fresh Date headers. Its samples ranged from
+53,748.58 to 58,972.68 requests/second.
+All six timed runs passed socket/status and suspend/timing checks.
+[Raw final measurements](results/2026-10-24-rfc-checkpoint-throughput/summary.json),
+[first comparison](results/2026-10-24-rfc-throughput/summary.json), and
+[intermediate comparison](results/2026-10-24-rfc-final-throughput/summary.json)
+are retained. These measurements do not establish a network throughput gain
+from the scanner or callback changes. The scanner's early exit and its semantic
+equivalence are proved; its isolated timing was not measured. Kernel permissions
+prevented profiling, so no hotspot attribution is claimed. Zero VmHWM readings
+were unavailable measurements, not zero memory usage.
+
+## Historical workstation throughput
 
 Same-run medians from 3 × 15 seconds, 64 connections, one allocated server CPU,
 8 wrk threads, 1024-byte prebuilt responses, Linux loopback:

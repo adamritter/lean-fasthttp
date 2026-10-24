@@ -1,0 +1,12 @@
+{
+  "lean-fast-original-1": {
+    "median_req_s": 59286.91,
+    "min_req_s": 55588.44,
+    "max_req_s": 59821.25
+  },
+  "lean-fast-1": {
+    "median_req_s": 53547.21,
+    "min_req_s": 52775.81,
+    "max_req_s": 55166.61
+  }
+}

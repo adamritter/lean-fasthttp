@@ -1,0 +1,17 @@
+✔ [2/12] Built FastHTTP.Protocol (1.3s)
+✔ [3/12] Built FastHTTP.Response (232ms)
+✔ [4/12] Built FastHTTP.Response:c.o (136ms)
+✔ [5/12] Built FastHTTP.Stream (199ms)
+✔ [6/12] Built FastHTTP.Stream:c.o (66ms)
+✔ [7/12] Built FastHTTP (283ms)
+✔ [8/12] Built Bench.Main (190ms)
+✔ [9/12] Built Bench.Main:c.o (87ms)
+✔ [10/12] Built FastHTTP:c.o (237ms)
+✔ [11/12] Built FastHTTP.Protocol:c.o (1.0s)
+✔ [12/12] Built fast_http:exe (78ms)
+Build completed successfully (12 jobs).
+{
+  "source_commit": "ad80f25fd47cfde93db96c76affe983ac565b1f0",
+  "binary": "/dev/shm/lean-fasthttp-20261024/bin/lean-fast-http-original",
+  "sha256": "d7fef89f2eda5b264b738d3f5b9c3717ef2de00adfcec5f18b2b23209f593f32"
+}

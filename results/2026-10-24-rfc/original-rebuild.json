@@ -1,0 +1,8 @@
+{
+  "result": "PASS",
+  "source_commit": "ad80f25fd47cfde93db96c76affe983ac565b1f0",
+  "rebuilt_binary_sha256": "d7fef89f2eda5b264b738d3f5b9c3717ef2de00adfcec5f18b2b23209f593f32",
+  "measured_binary_sha256": "d7fef89f2eda5b264b738d3f5b9c3717ef2de00adfcec5f18b2b23209f593f32",
+  "byte_identical": true,
+  "wire_verification": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close"
+}
