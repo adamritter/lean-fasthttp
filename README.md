@@ -271,3 +271,45 @@ bypass construction and execution of an empty body decoder. No protocol checks
 were removed. The first expanded binary is preserved as `lean-fast-http-v1` for
 a same-run comparison. All protocol/streaming regressions and the original 19 proofs
 were rerun after these changes.
+
+### lean-uv transport
+
+`import FastHTTP.UV` provides `FastHTTP.UV.serve transport makeHandler config`.
+`transport : LeanUV.TCP.Config` selects the address, worker count, CPU affinity,
+idle timeout, connection limit and retained-write budget. `makeHandler` receives a
+worker ID and constructs its `FastHTTP.Handler` inside that worker. Create mutable
+application state in the factory; shared state needs synchronization.
+
+```lean
+import FastHTTP.UV
+
+def main : IO Unit := do
+  let _ ← FastHTTP.UV.serve { port := 8080, threads := 4 } fun _worker => do
+    let response ← IO.ofExcept ((FastHTTP.Response.create "hello".toUTF8).mapError IO.userError)
+    return fun _request => pure (.ready response)
+```
+
+Ready, deferred and streaming replies use the same parser, response framing and
+handler types as `FastHTTP.serve`. No benchmark request bypasses validation.
+Gather writes retain the original buffers. The adapter waits for outstanding
+writes before reading another stream chunk or dispatching the next pipelined
+request, and pauses reads while a promise is pending. Promise completion is
+polled on the owner worker, at intervals up to approximately 10 ms. Stream cleanup
+runs once on completion, failure or connection closure. Large individual replies
+are split to fit the transport's bounded write budget. After 256 pipeline/stream
+steps the continuation yields to the event loop.
+
+Build `uv_http` / `uv_http_example`; `scripts/build.sh` installs them as
+`bin/lean-uv-http` / `bin/lean-uv-http-example`. The benchmark accepts port,
+worker count and optional first CPU. The example fixture defaults to one worker;
+its state is deliberately independent per worker. The pinned lean-uv dependency
+requires Linux, a C compiler and libuv headers (`libuv1-dev`).
+
+Run the same wire suites with `FASTHTTP_BACKEND=uv`. `scripts/verify_uv.py` adds
+four-worker tests with fresh random fixed/chunked bodies, deferred responses,
+HEAD, connection close and half-close. `scripts/benchmark_uv.py` compares the
+original transport with the worker transport using identical full HTTP parsing
+and 1 KiB response bodies; it records raw runs, source/binary hashes, process CPU
+usage, worker counters and client settings. A preliminary five-second run reached
+464,495 req/s on four GH200 CPU cores; this is development evidence, pending the
+final checkpoint's longer repeated evaluation.

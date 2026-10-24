@@ -23,7 +23,11 @@ def server(executable, port):
         pass
     else:
         raise RuntimeError(f"port {port} already occupied")
-    p = subprocess.Popen(["taskset", "-c", os.environ.get("FASTHTTP_TEST_CPU", str(min(os.sched_getaffinity(0)))) , str(executable), str(port)],
+    extra = []
+    if os.environ.get("FASTHTTP_BACKEND") == "uv":
+        executable = executable.with_name(executable.name.replace("lean-fast-http", "lean-uv-http"))
+        extra = ["1"]
+    p = subprocess.Popen(["taskset", "-c", os.environ.get("FASTHTTP_TEST_CPU", str(min(os.sched_getaffinity(0)))) , str(executable), str(port), *extra],
                          env={**os.environ, "LEAN_NUM_THREADS": "1"},
                          stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
     try:

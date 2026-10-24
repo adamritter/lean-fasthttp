@@ -1,6 +1,6 @@
 name = "fast_http"
 version = "0.1.0"
-defaultTargets = ["FastHTTP", "fast_http", "fast_http_example", "h1_http", "baseline_http", "v1_http", "protocol_probe"]
+defaultTargets = ["FastHTTP", "fast_http", "fast_http_example", "h1_http", "baseline_http", "v1_http", "protocol_probe", "uv_http", "uv_http_example"]
 
 [[lean_lib]]
 name = "FastHTTP"
@@ -33,3 +33,20 @@ root = "Bench.V1Main"
 [[lean_exe]]
 name = "protocol_probe"
 root = "Tests.ProtocolProbe"
+
+[[require]]
+name = "lean_uv"
+git = "https://github.com/adamritter/lean-uv.git"
+rev = "49914ee609c44f747439d981565d6922a3ba14e8"
+
+[[lean_exe]]
+name = "uv_http"
+root = "Bench.UVMain"
+
+[[lean_exe]]
+name = "uv_http_example"
+root = "Tests.UVServer"
+
+[[lean_lib]]
+name = "Tests"
+globs = ["Tests.+"]

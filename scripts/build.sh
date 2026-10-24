@@ -9,3 +9,5 @@ cp .lake/build/bin/h1_http bin/lean-h1-http
 cp .lake/build/bin/baseline_http bin/lean-fast-http-before
 cp .lake/build/bin/v1_http bin/lean-fast-http-v1
 cp .lake/build/bin/protocol_probe bin/protocol-probe
+cp .lake/build/bin/uv_http bin/lean-uv-http
+cp .lake/build/bin/uv_http_example bin/lean-uv-http-example
