@@ -1,6 +1,7 @@
 import FastHTTP.Syntax
 import FastHTTP.Numeric
 import FastHTTP.Lexical
+import FastHTTP.Fields
 
 namespace FastHTTP
 
@@ -280,21 +281,9 @@ def chunkExtensions (line : ByteArray) (start : Nat) : Except Nat Unit := do
       i := i + 1
       while i < line.size && space line[i]! do i := i + 1
       if i < line.size && line[i]! == 34 then
-        i := i + 1
-        let mut closed := false
-        while i < line.size do
-          let b := line[i]!
-          i := i + 1
-          if b == 34 then
-            closed := true
-            break
-          if b == 92 then
-            if i == line.size then throw 400
-            let b := line[i]!
-            if (b < 32 && b != 9) || b == 127 then throw 400
-            i := i + 1
-          else if (b < 32 && b != 9) || b == 127 then throw 400
-        if !closed then throw 400
+        match quotedEnd line i line.size with
+        | none => throw 400
+        | some last => i := last
       else
         let start := i
         while i < line.size && token line[i]! do i := i + 1

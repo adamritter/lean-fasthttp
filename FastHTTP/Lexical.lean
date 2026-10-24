@@ -18,6 +18,26 @@ decreasing_by simp_all; omega
 @[inline] def targetOctet (b : UInt8) : Bool := b >= 33 && b <= 126 && b != 35
 @[inline] def fieldOctet (b : UInt8) : Bool := (b >= 32 && b != 127) || b == 9
 
+/-- qdtext excludes the quote and backslash delimiters. -/
+@[inline] def quoteText (b : UInt8) : Bool := fieldOctet b && b != 34 && b != 92
+
+/-- Scan a quoted-string body, returning the first position after its closing
+quote. Escaped field octets are preserved; invalid controls and DEL are rejected. -/
+def quotedTail (bytes : ByteArray) (stop i : Nat) : Option Nat :=
+  if i < stop then
+    let b := bytes[i]!
+    if b == 34 then some (i + 1)
+    else if b == 92 then
+      if i + 1 < stop && fieldOctet bytes[i + 1]! then quotedTail bytes stop (i + 2) else none
+    else if quoteText b then quotedTail bytes stop (i + 1) else none
+  else none
+termination_by stop - i
+decreasing_by all_goals simp_all; omega
+
+def quotedEnd (bytes : ByteArray) (start stop : Nat) : Option Nat :=
+  if start < stop && stop ≤ bytes.size && bytes[start]! == 34 then quotedTail bytes stop (start + 1)
+  else none
+
 structure RequestLine where
   methodStart : Nat
   methodEnd : Nat

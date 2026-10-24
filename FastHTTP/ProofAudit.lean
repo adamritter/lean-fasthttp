@@ -1,3 +1,4 @@
+import FastHTTP.QuotedProofs
 import FastHTTP.LimitsProofs
 import FastHTTP.StreamMachineProofs
 import FastHTTP.WireProofs
@@ -172,3 +173,9 @@ import FastHTTP.BodyFastProofs
 #print axioms FastHTTP.Protocol.headStep_protocolBudget
 #print axioms FastHTTP.Protocol.feed_protocolBudget
 #print axioms FastHTTP.Protocol.feed_request_body_bound
+
+#print axioms FastHTTP.Protocol.quoteText_iff
+#print axioms FastHTTP.Protocol.quotedTail_sound
+#print axioms FastHTTP.Protocol.quotedTail_complete
+#print axioms FastHTTP.Protocol.quotedTail_bounds
+#print axioms FastHTTP.Protocol.quotedEnd_iff

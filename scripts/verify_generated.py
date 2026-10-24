@@ -244,6 +244,21 @@ def main():
             error=0 if n <= limit else 413, limits=[16384,limit,1024,16384,65536],
             label='hexadecimal-leading-zeros-budget')
 
+    # Every qdtext and quoted-pair octet in the two production consumers.
+    for escaped in [False, True]:
+        for byte in range(256):
+            field_octet = byte == 9 or (32 <= byte <= 255 and byte != 127)
+            valid = field_octet and (escaped or byte not in (34,92))
+            quoted = b'"' + (b'\\' if escaped else b'') + bytes([byte]) + b'"'
+            _, r, _ = request(b'x')
+            wire = b'POST /body HTTP/1.1\r\nHost: localhost\r\nTransfer-Encoding: chunked\r\n\r\n'
+            wire += b'1;x=' + quoted + b'\r\nx\r\n0\r\n\r\n'
+            add(fragments(wire,rng), [r] if valid else [], error=0 if valid else 400,
+                label='chunk-quoted-string-all-octets')
+            wire = b'GET / HTTP/1.1\r\nHost: localhost\r\nTransfer-Encoding: gzip;x=' + quoted + b',chunked\r\n\r\n'
+            add(fragments(wire,rng), [], error=501 if valid else 400,
+                label='transfer-quoted-string-all-octets')
+
     payload = ''.join(json.dumps(case) + '\n' for case in inputs).encode()
     run = subprocess.run([str(args.probe)], input=payload, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
     assert run.returncode == 0, run.stderr.decode()
