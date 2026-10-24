@@ -5,9 +5,13 @@ import FastHTTP.BodyLimitProofs
 import FastHTTP.BodyProofs
 import FastHTTP.ChunkGrammarProofs
 import FastHTTP.DateSyntaxProofs
+import FastHTTP.DriverInputProofs
 import FastHTTP.DriverNativeProofs
+import FastHTTP.DriverOutputProofs
+import FastHTTP.DriverProgressProofs
 import FastHTTP.DriverProofs
 import FastHTTP.DriverRequestProofs
+import FastHTTP.EndToEndProofs
 import FastHTTP.FeedProofs
 import FastHTTP.FieldsProofs
 import FastHTTP.HeadGrammarProofs
@@ -118,11 +122,52 @@ import FastHTTP.WireProofs
 #print axioms FastHTTP.Protocol.chunkSize_grammar
 #print axioms FastHTTP.Protocol.dateNumber_iff
 #print axioms FastHTTP.Protocol.validDateHeader_iff
+#print axioms FastHTTP.Protocol.request_wire_suffix
+#print axioms FastHTTP.Protocol.input_initial
+#print axioms FastHTTP.Protocol.input_reject
+#print axioms FastHTTP.Protocol.input_accept
+#print axioms FastHTTP.Protocol.input_resume
+#print axioms FastHTTP.Protocol.input_stream_command
+#print axioms FastHTTP.Protocol.input_stream_event
+#print axioms FastHTTP.Protocol.input_stop
+#print axioms FastHTTP.Protocol.driver_step_input
+#print axioms FastHTTP.Protocol.driver_replay_input
+#print axioms FastHTTP.Protocol.input_shift_partition
+#print axioms FastHTTP.Protocol.input_event_window
+#print axioms FastHTTP.Protocol.input_shift_window
+#print axioms FastHTTP.Protocol.read_octets_cons
+#print axioms FastHTTP.Protocol.input_trace_origin
+#print axioms FastHTTP.Protocol.driver_native_input_trace
+#print axioms FastHTTP.Protocol.driver_native_input_origin
 #print axioms FastHTTP.Protocol.driver_finalizer_weight
 #print axioms FastHTTP.Protocol.driver_actual_cleanup
 #print axioms FastHTTP.Protocol.driver_actual_cleanup_complete
 #print axioms FastHTTP.Protocol.driver_actual_output_prefix
 #print axioms FastHTTP.Protocol.driver_actual_graceful_output
+#print axioms FastHTTP.Protocol.output_reject
+#print axioms FastHTTP.Protocol.output_accept
+#print axioms FastHTTP.Protocol.output_resume
+#print axioms FastHTTP.Protocol.output_stop
+#print axioms FastHTTP.Protocol.output_stream_command
+#print axioms FastHTTP.Protocol.output_stream_head_safe
+#print axioms FastHTTP.Protocol.output_stream_written_enabled
+#print axioms FastHTTP.Protocol.output_stream_result_enabled
+#print axioms FastHTTP.Protocol.output_stream_step
+#print axioms FastHTTP.Protocol.output_stream_event
+#print axioms FastHTTP.Protocol.driver_step_output
+#print axioms FastHTTP.Protocol.driver_replay_output
+#print axioms FastHTTP.Protocol.driver_output_prefixes
+#print axioms FastHTTP.Protocol.driver_native_output_order
+#print axioms FastHTTP.Protocol.stream_resume_gate
+#print axioms FastHTTP.Protocol.reject_ne_handler
+#print axioms FastHTTP.Protocol.stop_ne_handler
+#print axioms FastHTTP.Protocol.stream_command_handler
+#print axioms FastHTTP.Protocol.stream_event_handler
+#print axioms FastHTTP.Protocol.driver_handler_gate
+#print axioms FastHTTP.Protocol.active_reply_busy
+#print axioms FastHTTP.Protocol.reject_reply_rank
+#print axioms FastHTTP.Protocol.driver_reply_descent
+#print axioms FastHTTP.Protocol.driver_eventual_reply
 #print axioms FastHTTP.Protocol.driver_reject_empty
 #print axioms FastHTTP.Protocol.driver_accept_empty
 #print axioms FastHTTP.Protocol.driver_resume_empty
@@ -143,6 +188,9 @@ import FastHTTP.WireProofs
 #print axioms FastHTTP.Protocol.driver_step_request_valid
 #print axioms FastHTTP.Protocol.driver_replay_requests_valid
 #print axioms FastHTTP.Protocol.driver_native_requests_valid
+#print axioms FastHTTP.Protocol.request_wire_deterministic
+#print axioms FastHTTP.Protocol.request_wire_body_bound
+#print axioms FastHTTP.Protocol.http11_end_to_end
 #print axioms FastHTTP.Protocol.append_unless_empty
 #print axioms FastHTTP.Protocol.extract_prefix_append
 #print axioms FastHTTP.Protocol.extract_suffix_append

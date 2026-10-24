@@ -38,6 +38,11 @@ def main():
     sources = [ROOT / 'FastHTTP.lean', *sorted((ROOT / 'FastHTTP').glob('*.lean'))]
     hashes = {str(path.relative_to(ROOT)):hashlib.sha256(path.read_bytes()).hexdigest() for path in sources}
     print(json.dumps({'result':'PASS', 'theorems':theorem_count, 'certificate_factories':sorted(CERTIFICATE_FACTORIES), 'axioms':rows,
+        'top_level_safety_theorem':'FastHTTP.Protocol.http11_end_to_end',
+        'liveness_theorem':'FastHTTP.Protocol.driver_eventual_reply',
+        'explicit_native_hypotheses':['Machine.ExecutionContract','Machine.AdapterContract','Contract.NativeContract','Machine.CompletionContract'],
+        'explicit_progress_hypotheses':['Machine.ResponsiveContract','FastHTTP.Protocol.FiniteProducerBudget'],
+        'native_implementation_proved':False, 'http_correctness_assumed':False,
         'source_sha256':hashes, 'lean':subprocess.check_output(['lean','--version'], text=True).strip()}, indent=2))
 
 if __name__ == '__main__':

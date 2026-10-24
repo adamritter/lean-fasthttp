@@ -1,9 +1,45 @@
-# Formal scope and remaining obligations
+# Conditional end-to-end HTTP/1.1 proof
 
 The checked statements are about the executable Lean protocol functions. The
 kernel checks every proof; the audit rejects missing theorem entries, `sorryAx`
 and any axiom beyond `propext`, `Classical.choice` and `Quot.sound`. There is no
 `native_decide`, custom axiom or unchecked implementation override in these proofs.
+
+## Top-level statements and exact scope
+
+`http11_end_to_end` in [EndToEndProofs](FastHTTP/EndToEndProofs.lean)
+proves `HTTP11RunCorrect` for every finite observation of **FastHTTP.UV.serve**.
+The model covers the supported origin-server request grammar, exact binary bodies
+and trailers, Expect, persistent/pipelined request processing, generated response
+wire grammar, streaming/HEAD ordering, limits and actual cleanup invocations.
+The record contains the real receive/consume ledger, request origin in native
+input, body bounds, grammatical phase/command order at every prefix, ordered TCP
+output, complete acknowledged writes, exact graceful output and cleanup accounting.
+`RequestWire` is deterministic and the production parser accepts exactly this
+supported grammar, under any finite receive fragmentation.
+
+`driver_eventual_reply` in [DriverProgressProofs](FastHTTP/DriverProgressProofs.lean)
+proves conditional liveness from a dispatched request. The HTTP phase rank is
+proved to decrease; external responsiveness and a finite bound on application
+chunks yield an eventual final write acknowledgment or explicit interruption.
+A blocked handler/promise and a deliberately infinite SSE producer cannot be
+assigned unconditional finite completion. Safety still covers every finite SSE
+prefix. Receiving an entire input message is an external precondition for dispatch;
+`feed_live_fragments_grammar_iff` proves completion after all its fragments arrive.
+
+These are complete conditional proofs of the **declared wire/framing model**,
+not a claim that every feature or application semantic in all HTTP RFCs is
+implemented. The text-to-formal-model correspondence is documented and reviewed,
+not a mechanized proof of the English RFCs. CONNECT tunneling, upgrades, TLS,
+HTTP/2, caching, decompression and application representation semantics are outside
+this origin-server profile. Custom application fields have field-envelope checks;
+for example, whether an ETag describes the representation or a Content-Type names
+its true media type is an application responsibility. Date's IMF-fixdate wire
+syntax is proved; real clock/calendar truth relies on the clock and Std.Time.
+
+The complete controller theorem applies to the UV backend. The retained Std
+backend shares the proved parser, response constructors and stream policy and
+passes the wire suites, but has no separate end-to-end IO refinement theorem.
 
 ## Established properties
 
@@ -22,9 +58,12 @@ and any axiom beyond `propext`, `Classical.choice` and `Quot.sound`. There is no
 | `parseRequestLine_iff` / `parseFieldLine_iff` in `LexicalProofs` | Soundness and completeness against independent wire-envelope grammars: nonempty tchar method and field name, exact SP/colon/CRLF positions, supported HTTP/1.x version digits, ASCII target envelope, all field-value octets including obs-text, exact returned spans and target limit. URI and field-specific semantics are separate obligations. |
 | `feed_request_grammar_iff` / `feed_live_fragments_grammar_iff` in `MessageGrammarProofs` | Exact complete RequestWire equivalence for the public parser, including independent first-delimiter, head and body grammars, all request fields and untouched pipeline bytes. Arbitrary fragmentation and acknowledgment of Expect after each fragment produce the same complete result. |
 | `prepared_buffers_grammar` / `streaming_buffers_grammar` / `encoded_chunk_grammar` in `ResponseProofs` | Every prepared/streaming response, Date header, connection/version/HEAD choice and binary chunk. Complete wire productions include exact three-digit status, decimal/hexadecimal byte counts, field grammar, managed/duplicate field policy, Date grammar, body suppression and the final empty line. Response objects carry erased grammar certificates; their factory definitions are separately axiom-audited. |
-| `driver_native_requests_valid` in `DriverRequestProofs` | Every handler command in an arbitrary actual controller replay has a complete RequestWire witness. Linking that witness to the actual receive ledger is still a separate obligation below. |
+| `driver_native_requests_valid` in `DriverRequestProofs` | Every handler command in an arbitrary actual controller replay has a complete RequestWire witness. DriverInputProofs strengthens it to the actual receive/consume ledger and native network input. |
+| `driver_native_input_trace` / `driver_native_input_origin` in `DriverInputProofs` | Every actual handler command receives the first complete grammatical message from its current receive window. Windows grow only by actual read bytes or shrink by exactly one grammatical request; consumption is at least sixteen bytes and preserves the exact suffix. Every request has a contiguous witness in native input. |
+| `driver_native_output_order` / `driver_handler_gate` in `DriverOutputProofs` | The actual controller has the required outstanding operation and response grammar at every scheduled prefix. New handlers are gated by input/Expect/final-response completion or a released stored continuation; HEAD has no producer/body phase and the final chunk is acknowledged before resuming a pipeline. |
+| `driver_reply_descent` / `driver_eventual_reply` in `DriverProgressProofs` | A proved natural rank for every active response phase, including deferred handlers, producer promises, chunk writes, EOF cleanup and final acknowledgment. Native responsiveness plus the explicit finite-producer budget implies eventual completion or interruption. |
 | `driver_step_resource` / `driver_replay_resource` in `DriverProofs` | Every transition and finite trace of the actual complete HTTP reactor conserves acquired stream cleanup rights. Error, close, malformed event ordering, deferred responses, stream completion and pipeline continuation are covered. |
-| `driver_actual_cleanup` / `driver_actual_graceful_output` in `DriverNativeProofs` | Conditional native transfer under the visible lean-uv ExecutionContract, AdapterContract and NativeContract. Actual cleanup invocations conserve acquired rights; TCP output is an ordered prefix of selected controller output, or the exact selected output after successful graceful close. Complete response serialization is proved separately in ResponseProofs; the cross-request composition remains below. |
+| `driver_actual_cleanup` / `driver_actual_graceful_output` in `DriverNativeProofs` | Conditional native transfer under the visible lean-uv ExecutionContract, AdapterContract and NativeContract. Actual cleanup invocations conserve acquired rights; TCP output is an ordered prefix of selected controller output, or the exact selected output after successful graceful close. Complete response serialization is proved separately in ResponseProofs; EndToEndProofs composes it with actual input provenance and the response-order invariant. |
 | `parseHead_grammar_iff` in `HeadGrammarProofs` | Exact equivalence of the complete production head parser and independently specified request-line, all four target forms, complete ordered header semantics, framing and supported-feature policy. Includes every returned routing span, HTTP version, connection/HEAD/Expect flag and duplicate-field rejection. |
 | `parseField_grammar_iff` / `parseHeaders_grammar_iff` | Each grammatical field updates exactly the accumulated Content-Length, Transfer-Encoding, Host, Expect and Connection state; both directions cover the complete ordered field block and mandatory Host policy. |
 | `decodeBody_grammar_iff` / `decodeChunked_grammar_iff` in `BodyGrammarProofs` | The actual optimized decoder succeeds iff the input has an independently grammatical body prefix. Exact decoded payload, raw trailers, stopping cursor and untouched suffix are included. `BodyWire` is an inductive operational wire grammar; its byte productions use independent numeral, extension and trailer grammars, not calls to the body parser. |
@@ -51,28 +90,30 @@ and the entire optimized fold to `BodyWire`, including limits and trailers.
 The proof does not rely on generated test cases. `BodyWire` is an operational
 wire grammar, not a transcription of RFC ABNF into a separate grammar language.
 
-## Not yet a full HTTP/1.1 conformance proof
+## Explicit trust boundary
 
-The following obligations are not established by these theorems:
+No HTTP grammar or controller correctness is an external assumption. The
+conditional theorem exposes these **generic** records from the pinned lean-uv:
 
-* The actual-input provenance and full cross-request dispatch/response invariant.
-  Complete parser grammar equivalence, response wire grammar, grammatical
-  handler dispatch and cleanup conservation are proved. Native read/write/finalizer
-  refinement is an explicit generic contract, with conditional transfer proofs.
-* Liveness and the external application's producer/cancellation semantics.
-  Native C/libuv socket lifetimes, callback delivery and IO.Ref execution are
-  explicit trusted assumptions, not claimed as C implementation proofs.
+| Hypothesis | External obligation |
+|---|---|
+| `Machine.ExecutionContract` | Observed states/commands equal the actual pure reactor replay; callback and result scheduling match pending operations. `Driver.EffectShape` describes only external job/result constructors. |
+| `Machine.AdapterContract` | Actual reads match reactor reads; split gather writes preserve the selected byte order; graceful shutdown submits the complete selected output; actual finalizer invocations match finalized commands. |
+| `Contract.NativeContract` | Native read/write FIFO, worker ownership and serial callbacks, write-buffer lifetime accounting, close semantics and graceful drain. |
+| `Machine.CompletionContract` | A logical written acknowledgment means the preceding complete writes reached the TCP stack, on prefixes without a failed native write. It does not mean peer application consumption. |
+| `Machine.ResponsiveContract` (liveness only) | Pending I/O and external work eventually produce a matching next dispatch; failures/close may interrupt. Polling/waiting may take any finite time. |
+| `FiniteProducerBudget` (liveness only) | The application's remaining nonempty chunk count has a finite natural bound, does not grow inside one response, and strictly decreases when a nonempty chunk is returned. |
 
-These areas have independent generated and real-socket regressions, including
-all byte values in field values, independently generated IPv6 addresses, malformed
-framing, every split of representative messages, dynamic four-worker pipelines,
-deferred promises, slow readers, half-close and producer failure. Tests are
-empirical evidence, not formal proofs of the remaining obligations. Therefore
-**the repository must not be described as a fully proved HTTP/1.1 implementation**.
+These are visible theorem arguments, not custom axioms. Native C/libuv, IO.Ref,
+compiler/runtime execution and OS behavior are trusted at this boundary. The
+application owns the internal meaning of its cleanup action; the theorem counts
+actual exactly-once invocations for adopted stream rights. It does not prove
+cancellation of arbitrary independently spawned application tasks.
 
-The trust boundary includes the Lean kernel, compiler and runtime, the native
-implementations of Lean's primitive data structures, the C FFI, libuv and the OS.
-The C FFI's sanitizer evidence is stored in the pinned lean-uv repository; its
-prebuilt Lean runtime is not sanitizer-instrumented. No TLS correctness claim is
-made. CONNECT/upgrade are unsupported application/transport features; their
-absence alone is not the definition of an HTTP parsing error.
+The concrete finalizer implementation was corrected before stating its refinement
+contract: a diagnostic old-command control lost all 255 cleanup invocations at a
+cooperative yield, while the immediate-finalize path invoked all 255 exactly once.
+That negative result and both-version sanitizer regressions are preserved in the
+[pinned lean-uv evidence](https://github.com/adamritter/lean-uv/tree/180889f287f7e7c45ae5334e63375315dd603521/results/pure-machine).
+Its prebuilt Lean runtime is not sanitizer-instrumented. Sanitizer/wire tests are
+empirical checks of this boundary, distinct from the kernel proofs.
