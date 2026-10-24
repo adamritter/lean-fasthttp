@@ -24,7 +24,9 @@ and any axiom beyond `propext`, `Classical.choice` and `Quot.sound`. There is no
 | `decimal_wire_roundtrip` / `encodeChunk_wire` in `WireProofs` | Every natural length and every binary payload. The actual decimal formatter round-trips through the production bounded parser; the actual chunk encoder emits hexadecimal length + CRLF, the unchanged payload and CRLF. UTF-8 ASCII correspondence and positional value are proved for all bases 2..16, without a machine-word bound. |
 | `streamStep_*` / `streamTrace_*` / `streamCommands_head` in `StreamMachineProofs` | Both actual transports execute `Protocol.streamStep`. Every finite callback-event trace conserves a single cleanup right; cleanup occurs at most once and exactly once after ownership ends. Producer pulls require a write-completion event; body writes require a pending producer result; HEAD never pulls or emits body chunks; HTTP/1.0 EOF and HTTP/1.1 final-chunk ordering are distinguished. |
 | `feed_protocolBudget` / `feed_request_body_bound` in `LimitsProofs` | End-to-end body-limit preservation for the production feed function. Content-Length interpretation, framing selection, hexadecimal chunk sizes, all byte-machine phases and every bulk path are covered. Every need/continue preserves the budget and every delivered Request.body fits maxBodyBytes. Initial head states satisfy the invariant. |
-| `hexadecimal_iff` / `chunkSize_numeral` in `HexProofs` | The production bounded hexadecimal parser accepts exactly nonempty HEXDIG sequences with the stated positional value within the limit. Every accepted chunk-size line has that numeral and an accepted extension suffix; lexical correctness of the latter remains separate. |
+| `hexadecimal_iff` / `chunkSize_numeral` in `HexProofs` | The production bounded hexadecimal parser accepts exactly nonempty HEXDIG sequences with the stated positional value within the limit. Every accepted chunk-size line has that numeral and an accepted extension suffix; the latter is now connected to the complete extension grammar by `chunkSize_grammar`. |
+| `chunkExtensions_iff` / `chunkSize_grammar` in `ChunkGrammarProofs` | The complete production chunk-extension parser accepts exactly the independently specified RFC BWS/semicolon/token/optional-value grammar. Both directions include all whitespace positions and arbitrary quoted values. No maximal-token assumption is added to the specification. Chunk-size acceptance combines this with the exact bounded hexadecimal numeral. |
+| `trailer_iff` / `trimSpan_exact` in `TrailerProofs` | Exact equivalence of the production trailer parser to the independent field-line envelope, the explicit forbidden-name policy, and the original binary value with only outer OWS removed. Every interior octet is preserved, including obs-text and all-whitespace values. |
 | `quotedEnd_iff` in `QuotedProofs` | Soundness/completeness against an independent RFC 9110 quoted-string grammar, including every escaped octet, obs-text, rejected controls/DEL, missing terminators and the exact closing cursor. The same production function is called for chunk extensions and Transfer-Encoding parameters. |
 | `decimal_iff` in `NumericProofs` | Every byte array, interval, limit and result; the production Content-Length parser succeeds iff the interval is nonempty and in bounds, contains only RFC ASCII DIGIT octets, and its positional decimal value equals the result without exceeding the limit. |
 | `validPathQuery_iff` / `uriComponent_iff` in `SyntaxProofs` | Every wire interval and literal alphabet; acceptance is equivalent to an independent inductive grammar whose productions consume one literal or exactly percent + two ASCII HEXDIG octets. The path/query instantiation uses the RFC 3986 pchar, slash and question-mark alphabet. |
@@ -45,10 +47,11 @@ The following obligations are not established by these theorems:
   Expect and Transfer-Encoding semantics against the RFCs. The request-line
   envelope, field-line envelope, complete accepted header-block structure and
   URI atom grammar now have independent formal specifications and proofs.
-* Composition of the complete chunk-extension/trailer grammar. The quoted-string
-  subgrammar, used in both chunk and transfer-coding parameters, is proved. Both
-  decimal and hexadecimal numeral parsing and wire serialization are now
-  established, as is the complete receive-body budget invariant.
+* An independent whole-message chunked-body ABNF equivalence. The complete
+  chunk-extension grammar, trailer field grammar, quoted strings, decimal and
+  hexadecimal numerals and wire serialization now have proofs; the body automaton
+  has bulk-loop refinement, fragmentation and budget proofs. These are not yet a
+  single whole-message RFC grammar equivalence theorem.
 * Application dispatch and the IO acknowledgment of actions. Pure head-plus-body
   feed composition, including all metadata and Expect buffering, is established.
 * End-to-end IO refinement and liveness, cancellation of application-owned

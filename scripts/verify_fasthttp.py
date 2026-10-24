@@ -9,6 +9,7 @@ import socket
 import subprocess
 import time
 
+from artifacts import assert_current
 from verify import connect, REQUEST
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,6 +28,7 @@ def server(executable, port):
     if os.environ.get("FASTHTTP_BACKEND") == "uv":
         executable = executable.with_name(executable.name.replace("lean-fast-http", "lean-uv-http"))
         extra = ["1"]
+    assert_current(executable)
     p = subprocess.Popen(["taskset", "-c", os.environ.get("FASTHTTP_TEST_CPU", str(min(os.sched_getaffinity(0)))) , str(executable), str(port), *extra],
                          env={**os.environ, "LEAN_NUM_THREADS": "1"},
                          stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)

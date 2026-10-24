@@ -1,3 +1,4 @@
+import FastHTTP.TrailerProofs
 import FastHTTP.QuotedProofs
 import FastHTTP.LimitsProofs
 import FastHTTP.StreamMachineProofs
@@ -179,3 +180,23 @@ import FastHTTP.BodyFastProofs
 #print axioms FastHTTP.Protocol.quotedTail_complete
 #print axioms FastHTTP.Protocol.quotedTail_bounds
 #print axioms FastHTTP.Protocol.quotedEnd_iff
+
+#print axioms FastHTTP.Protocol.space_iff
+#print axioms FastHTTP.Protocol.spanEnd_whitespace
+#print axioms FastHTTP.Protocol.spanEnd_token
+#print axioms FastHTTP.Protocol.chunkExtension_sound
+#print axioms FastHTTP.Protocol.chunkExtensions_sound
+#print axioms FastHTTP.Protocol.token_not_space
+#print axioms FastHTTP.Protocol.space_not_token
+#print axioms FastHTTP.Protocol.chunkExtensions_lead
+#print axioms FastHTTP.Protocol.chunkExtension_complete
+#print axioms FastHTTP.Protocol.chunkExtensions_complete
+#print axioms FastHTTP.Protocol.chunkExtensions_iff
+#print axioms FastHTTP.Protocol.chunkSize_grammar
+#print axioms FastHTTP.Protocol.trimEnd_spec
+#print axioms FastHTTP.Protocol.trimSpan_spec
+#print axioms FastHTTP.Protocol.trimEnd_complete
+#print axioms FastHTTP.Protocol.trimSpan_exact
+#print axioms FastHTTP.Protocol.trailer_sound
+#print axioms FastHTTP.Protocol.trailer_complete
+#print axioms FastHTTP.Protocol.trailer_iff

@@ -3,6 +3,7 @@
 CPU groups must be disjoint. --validate-bodies checks every timed response with
 a Lua hook; independent socket validation also runs before and after each round.
 """
+from artifacts import assert_current
 import argparse
 import datetime
 import hashlib
@@ -84,6 +85,7 @@ def main():
     assert clients.issubset(available)
     assert set(range(args.first_cpu, args.first_cpu+max(n for _, n in configs))).issubset(available)
     binaries = {"uv": ROOT/"bin/lean-uv-http", "std": ROOT/"bin/lean-fast-http"}
+    for kind in {kind for kind, _ in configs}: assert_current(binaries[kind])
     metadata = {"started_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "platform": platform.platform(), "lscpu": output(["lscpu"]), "lean": output(["lean", "--version"]),
                 "git_commit": output(["git", "rev-parse", "HEAD"]),

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Exact-fragment tests of the executable parser, with independently generated
 expected requests. No TCP coalescing can hide a fragmentation failure here."""
+from artifacts import assert_current
 import argparse
 import hashlib
 import json
@@ -56,6 +57,7 @@ def main():
     p.add_argument('--cases', type=int, default=1000)
     p.add_argument('--probe', type=Path, default=ROOT / 'bin/protocol-probe')
     args = p.parse_args(); rng = random.Random(args.seed)
+    checkpoint_verified = assert_current(args.probe)
     inputs, expected, labels = [], [], []
 
     def add(chunks, requests, continues=0, error=0, limits=None, label='generated', raw_headers=None):
@@ -244,6 +246,49 @@ def main():
             error=0 if n <= limit else 413, limits=[16384,limit,1024,16384,65536],
             label='hexadecimal-leading-zeros-budget')
 
+    # Generate directly from the chunk-ext ABNF, with independent expected
+    # payload and trailer slices, plus a forbidden trailing-BWS mutation.
+    tchars = b"!#$%&'*+-.^_`|~0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    qdtext = bytes([9, 32, 33] + list(range(35, 92)) + list(range(93, 127)) + list(range(128, 256)))
+    field_octets = bytes([9] + list(range(32, 127)) + list(range(128, 256)))
+    def bws(): return rng.choice([b'', b' ', b'\t', b' \t  '])
+    def generated_extension():
+        out = bws() + b';' + bws() + bytes(rng.choices(tchars, k=rng.randint(1, 12)))
+        if rng.randrange(3):
+            if rng.randrange(2):
+                value = bytes(rng.choices(tchars, k=rng.randint(1, 16)))
+            else:
+                value = b'"'
+                for _ in range(rng.randrange(16)):
+                    value += (b'\\' + bytes([rng.choice(field_octets)])) if rng.randrange(2) else bytes([rng.choice(qdtext)])
+                value += b'"'
+            out += bws() + b'=' + bws() + value
+        return out
+    for _ in range(512):
+        extension = b''.join(generated_extension() for _ in range(rng.randint(1, 7)))
+        ending = b''.join(generated_extension() for _ in range(rng.randint(0, 4)))
+        value = bytes(rng.choices(field_octets, k=rng.randrange(40)))
+        raw_value = bws() + value + bws()
+        trailer_line = b'X-Generated:' + raw_value
+        wire = prefix + b'1' + extension + b'\r\nx\r\n0' + ending + b'\r\n' + trailer_line + b'\r\n\r\n'
+        expected_request = {**one, 'trailers': [['X-Generated', raw_value.strip(b' \t').hex()]]}
+        add(fragments(wire, rng), [expected_request], label='generated-chunk-abnf-and-trailer-trim')
+        bad = prefix + b'1' + extension + b' \r\nx\r\n0\r\n\r\n'
+        add(fragments(bad, rng), [], error=400, label='generated-chunk-trailing-bws-rejected')
+    for byte in range(256):
+        name = bytes([byte])
+        valid = byte in tchars
+        wire = prefix + b'0\r\n' + name + b': v\r\n\r\n'
+        expected_request = {**empty, 'trailers': [[name.decode('latin1'), b'v'.hex()]]}
+        add(fragments(wire, rng), [expected_request] if valid else [], error=0 if valid else 400,
+            label='all-trailer-name-octets')
+        value = b' \t a' + name + b'b \t '
+        valid = byte in field_octets
+        wire = prefix + b'0\r\nX:' + value + b'\r\n\r\n'
+        expected_request = {**empty, 'trailers': [['X', value.strip(b' \t').hex()]]}
+        add(fragments(wire, rng), [expected_request] if valid else [], error=0 if valid else 400,
+            label='all-trailer-value-octets')
+
     # Every qdtext and quoted-pair octet in the two production consumers.
     for escaped in [False, True]:
         for byte in range(256):
@@ -270,7 +315,7 @@ def main():
             assert got[key] == value, (i, labels[i], key, got, want, inputs[i])
         if not want['error']:
             assert got['pending'] == 'idle', (i, got)
-    print(json.dumps({'result':'PASS', 'seed':args.seed, 'generated_pipelines':args.cases,
+    print(json.dumps({'result':'PASS', 'checkpoint_verified':checkpoint_verified, 'seed':args.seed, 'generated_pipelines':args.cases,
         'exact_fragment_cases':len(inputs), 'input_sha256':hashlib.sha256(payload).hexdigest(),
         'probe_sha256':hashlib.sha256(args.probe.read_bytes()).hexdigest(),
         'case_classes':{label:labels.count(label) for label in sorted(set(labels))}}, indent=2))

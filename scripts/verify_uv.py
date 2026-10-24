@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Fresh multi-worker HTTP integration tests using the complete public handler API."""
+from artifacts import assert_current
 import concurrent.futures
 from collections import Counter
 import hashlib
@@ -22,6 +23,7 @@ def main():
     cpus = sorted(os.sched_getaffinity(0))[:4]
     # CI may expose fewer than four CPUs; still exercise four distinct I/O loops.
     binary = ROOT / 'bin/lean-uv-http-example'
+    assert_current(binary)
     with socket.socket() as reservation:
         reservation.bind(('127.0.0.1', 0))
         port = reservation.getsockname()[1]

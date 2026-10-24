@@ -1,0 +1,6 @@
+{
+  "accepted_probe_sha256": "03b302dec3bc0592ac1b0c9284547b90620db7b8d805ee70f822740cb7123631",
+  "discarded_run": "discarded-stale-copy-run.json",
+  "reason": "The first local regression invocation used the previous installed bin/ copy after lake build changed .lake/build/bin. It does not validate the new chunk/trailer implementation. All regressions and both socket suites were rerun after scripts/build.sh installed the current executables. A source/dependency/build/copy SHA-256 manifest now makes all current validation entry points fail closed on this mismatch.",
+  "freshness_guard_regression_cases": 5
+}

@@ -2,6 +2,7 @@ import FastHTTP.Syntax
 import FastHTTP.Numeric
 import FastHTTP.Lexical
 import FastHTTP.Fields
+import FastHTTP.Chunks
 
 namespace FastHTTP
 
@@ -263,33 +264,6 @@ inductive BodyResult where
   | done (body : ByteArray) (trailers : Array (String × ByteArray)) (stop : Nat)
   | error (status : Nat)
 
-/-- Chunk extensions: token names and token/quoted-string values, with BWS. -/
-def chunkExtensions (line : ByteArray) (start : Nat) : Except Nat Unit := do
-  let mut i := start
-  while i < line.size do
-    while i < line.size && space line[i]! do i := i + 1
-    if i == line.size || line[i]! != 59 then throw 400
-    i := i + 1
-    while i < line.size && space line[i]! do i := i + 1
-    let start := i
-    while i < line.size && token line[i]! do i := i + 1
-    if i == start then throw 400
-    let nameEnd := i
-    while i < line.size && space line[i]! do i := i + 1
-    if i == line.size && i != nameEnd then throw 400
-    if i < line.size && line[i]! == 61 then
-      i := i + 1
-      while i < line.size && space line[i]! do i := i + 1
-      if i < line.size && line[i]! == 34 then
-        match quotedEnd line i line.size with
-        | none => throw 400
-        | some last => i := last
-      else
-        let start := i
-        while i < line.size && token line[i]! do i := i + 1
-        if i == start then throw 400
-  return ()
-
 /-- The numeral and extension grammar are separate. The bounded numeric parser
 has an independent positional-value soundness/completeness proof. -/
 def chunkSize (line : ByteArray) (limit : Nat) : Except Nat Nat :=
@@ -301,23 +275,20 @@ def chunkSize (line : ByteArray) (limit : Nat) : Except Nat Nat :=
       | .error status => .error status
       | .ok () => .ok n
 
-def trailer (line : ByteArray) : Except Nat (String × ByteArray) := do
-  let mut i := 0
-  while i < line.size && token line[i]! do i := i + 1
-  if i == 0 || i == line.size || line[i]! != 58 then throw 400
-  -- Trailer fields never overwrite request headers or framing information.
-  for name in ["content-length", "transfer-encoding", "host", "connection", "trailer",
-      "authorization", "proxy-authorization", "content-type", "content-encoding", "expect", "upgrade"] do
-    if equals line 0 i name true then throw 400
-  let name := String.fromUTF8! (line.extract 0 i)
-  let mut first := i + 1
-  let mut last := line.size
-  for j in [first:last] do
-    let b := line[j]!
-    if (b < 32 && b != 9) || b == 127 then throw 400
-  while first < last && space line[first]! do first := first + 1
-  while last > first && space line[last - 1]! do last := last - 1
-  return (name, line.extract first last)
+/-- Fields that cannot modify framing, routing or request semantics via trailers. -/
+def forbiddenTrailers : List String :=
+  ["content-length", "transfer-encoding", "host", "connection", "trailer",
+   "authorization", "proxy-authorization", "content-type", "content-encoding", "expect", "upgrade"]
+
+def trailer (line : ByteArray) : Except Nat (String × ByteArray) :=
+  let colon := spanEnd line line.size token 0
+  if colon == 0 || colon ≥ line.size || line[colon]! != 58 then .error 400
+  else if forbiddenTrailers.any (fun name => equals line 0 colon name true) then .error 400
+  else if spanEnd line line.size fieldOctet (colon + 1) != line.size then .error 400
+  else
+    let first := spanEnd line line.size space (colon + 1)
+    let last := trimEnd line first line.size
+    .ok (String.fromUTF8! (line.extract 0 colon), line.extract first last)
 
 /-- Byte-level body automaton. A terminal outcome is absorbing: bytes belonging
 to a pipelined request cannot be interpreted as additional body data. -/
