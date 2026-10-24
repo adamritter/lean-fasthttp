@@ -41,6 +41,39 @@ theorem request_wire_body_bound (cfg : Config) (wire : ByteArray) (request : Req
     have saved : ProtocolBudget cfg state := by simpa only [step, ProtocolStepBudget] using budget
     exact feed_request_body_bound cfg state .empty request rest saved parsed
 
+/-- Once a complete message is present, dispatch is immediate or waits only
+for the single 100-continue write acknowledgment. This is a real controller
+transition, not merely existence of a parser result. -/
+theorem complete_request_dispatch (cfg : Config) (step : Step) (request : Request) (rest : ByteArray)
+    (complete : acknowledge cfg step = .request request rest) :
+    Driver.accept step = (.handling request rest, .perform (.handle request)) ∨
+      ∃ parser, Driver.accept step = (.continuing parser, .write #["HTTP/1.1 100 Continue\r\n\r\n".toUTF8]) ∧
+        Driver.step cfg (.continuing parser) .written = (.handling request rest, .perform (.handle request)) := by
+  cases step with
+  | need parser => contradiction
+  | reject status => contradiction
+  | request current suffix =>
+    simp only [acknowledge, Step.request.injEq] at complete
+    obtain ⟨rfl, rfl⟩ := complete
+    exact Or.inl rfl
+  | «continue» parser =>
+    change feed cfg parser .empty = .request request rest at complete
+    exact Or.inr ⟨parser, rfl, by simp only [Driver.step, complete, Driver.accept]⟩
+
+/-- Final reception cannot strand a complete grammatical request in a read state.
+The wire witness is the accumulated real input window plus this received fragment. -/
+theorem received_request_dispatch (cfg : Config) (wire bytes : ByteArray) (parser : State)
+    (request : Request) (rest : ByteArray) (reading : InputState cfg wire (.reading parser))
+    (grammar : RequestWire cfg (wire ++ bytes) request rest) :
+    Driver.step cfg (.reading parser) (.data bytes) = (.handling request rest, .perform (.handle request)) ∨
+      ∃ continuation,
+        Driver.step cfg (.reading parser) (.data bytes) =
+          (.continuing continuation, .write #["HTTP/1.1 100 Continue\r\n\r\n".toUTF8]) ∧
+        Driver.step cfg (.continuing continuation) .written = (.handling request rest, .perform (.handle request)) := by
+  have complete := (feed_request_grammar_iff cfg (wire ++ bytes) request rest).mpr grammar
+  rw [feed_acknowledged_fragmentation, reading.2] at complete
+  exact complete_request_dispatch cfg (feed cfg parser bytes) request rest complete
+
 /-- The claims about one actual finite native observation. `OutputPair` is the
 independent response-wire grammar plus the outstanding protocol phase at every
 prefix; `InputTrace` is the receive/consume ledger with exact grammatical suffixes.

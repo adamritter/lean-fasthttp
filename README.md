@@ -3,7 +3,7 @@
 HTTP/1.1 in Lean 4.35.0, with prepared responses, asynchronous streaming and
 independent lean-uv workers. The UV server has a **complete conditional proof of
 its documented origin-server wire/framing model**: `http11_end_to_end` and
-`driver_eventual_reply`. The audit checks **360 kernel theorems and four erased
+`driver_eventual_reply`. The audit checks **362 kernel theorems and four erased
 certificate factories**, with no `sorry`, custom axioms or `native_decide`.
 
 [Exact model, statements and assumptions](FORMAL_SCOPE.md) ·
@@ -25,7 +25,7 @@ bin/lean-uv-http 18098 4
 ```
 
 `FastHTTP` uses Lean 4.35. The pinned
-[lean-uv](https://github.com/adamritter/lean-uv/commit/180889f287f7e7c45ae5334e63375315dd603521)
+[lean-uv](https://github.com/adamritter/lean-uv/commit/1d116e2a8c368ca932efbf6a16a6c8ef1e548596)
 works on Lean 4.26 and 4.35, with both-version contract audits and native
 ASan/UBSan regressions. Build artifacts are generated locally; every test and
 benchmark rejects stale installed executables using source/dependency/binary
@@ -79,6 +79,7 @@ def main : IO Unit := do
       if request.targetIs "/" then return .ready reply
       let echo ← IO.ofExcept ((FastHTTP.Response.create request.body).mapError IO.userError)
       return .ready echo
+  pure ()
 ```
 
 `Request.method`, `.target`, `.requestTarget`, `.authority`, `.header?`,

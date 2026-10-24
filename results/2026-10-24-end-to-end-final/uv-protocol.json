@@ -1,0 +1,22 @@
+{
+  "static": "PASS: 200, exact 1024-byte body, Content-Length/Type, 150 keep-alive requests, all splits, 128 pipelined responses, concurrent clients, Connection: close",
+  "protocol": {
+    "result": "PASS",
+    "all_splits": true,
+    "one_byte_fragments": true,
+    "fixed_and_chunked_body_sizes": [
+      0,
+      1,
+      8191,
+      8192,
+      8193,
+      65536,
+      1048576
+    ],
+    "streaming": "8 MiB, delayed reader, HEAD suppression, producer error, exactly-once release",
+    "abandoned_pending_streams": 16,
+    "invalid_cases": 32,
+    "concurrent_pipelined_posts": 1280,
+    "head_no_body_statuses_trailers_expect_headers_deferred_half_close": "PASS"
+  }
+}

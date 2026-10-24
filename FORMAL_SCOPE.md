@@ -26,6 +26,8 @@ A blocked handler/promise and a deliberately infinite SSE producer cannot be
 assigned unconditional finite completion. Safety still covers every finite SSE
 prefix. Receiving an entire input message is an external precondition for dispatch;
 `feed_live_fragments_grammar_iff` proves completion after all its fragments arrive.
+`received_request_dispatch` proves actual handler dispatch immediately after final
+reception, or after the single 100-continue write acknowledgment.
 
 These are complete conditional proofs of the **declared wire/framing model**,
 not a claim that every feature or application semantic in all HTTP RFCs is
@@ -101,7 +103,7 @@ conditional theorem exposes these **generic** records from the pinned lean-uv:
 | `Machine.AdapterContract` | Actual reads match reactor reads; split gather writes preserve the selected byte order; graceful shutdown submits the complete selected output; actual finalizer invocations match finalized commands. |
 | `Contract.NativeContract` | Native read/write FIFO, worker ownership and serial callbacks, write-buffer lifetime accounting, close semantics and graceful drain. |
 | `Machine.CompletionContract` | A logical written acknowledgment means the preceding complete writes reached the TCP stack, on prefixes without a failed native write. It does not mean peer application consumption. |
-| `Machine.ResponsiveContract` (liveness only) | Pending I/O and external work eventually produce a matching next dispatch; failures/close may interrupt. Polling/waiting may take any finite time. |
+| `Machine.ResponsiveContract` (liveness only) | Pending I/O and external work eventually produce the exact next event in the observed execution history; failures/close may interrupt. Polling/waiting may take any finite time. |
 | `FiniteProducerBudget` (liveness only) | The application's remaining nonempty chunk count has a finite natural bound, does not grow inside one response, and strictly decreases when a nonempty chunk is returned. |
 
 These are visible theorem arguments, not custom axioms. Native C/libuv, IO.Ref,
@@ -114,6 +116,6 @@ The concrete finalizer implementation was corrected before stating its refinemen
 contract: a diagnostic old-command control lost all 255 cleanup invocations at a
 cooperative yield, while the immediate-finalize path invoked all 255 exactly once.
 That negative result and both-version sanitizer regressions are preserved in the
-[pinned lean-uv evidence](https://github.com/adamritter/lean-uv/tree/180889f287f7e7c45ae5334e63375315dd603521/results/pure-machine).
+[pinned lean-uv evidence](https://github.com/adamritter/lean-uv/tree/1d116e2a8c368ca932efbf6a16a6c8ef1e548596/results/pure-machine).
 Its prebuilt Lean runtime is not sanitizer-instrumented. Sanitizer/wire tests are
 empirical checks of this boundary, distinct from the kernel proofs.

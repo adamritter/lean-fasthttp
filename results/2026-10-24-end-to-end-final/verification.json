@@ -1,0 +1,213 @@
+{
+  "git_commit": "e8b36a5f81d8f1df81ec9a154334ad3552421ad6",
+  "lean_uv_commit": "180889f287f7e7c45ae5334e63375315dd603521",
+  "fresh_generated_seed": 14188605260999449713,
+  "build_manifest": {
+    "source_sha256": {
+      "Bench/Baseline.lean": "6fde1e53a25893fad41588914cc1d16d4dc9de779a9f18cec351e104f4db82a9",
+      "Bench/BaselineMain.lean": "c67e17c77e0a2ba350dceec969c3081766e63725072a8aa72f32ec89521f10a8",
+      "Bench/H1Main.lean": "2a12238160dce6e4da41be909213c6368b17be0fdd3c9993285be5a461de7177",
+      "Bench/Main.lean": "f9552211071ecc8f196988ee73deea0ff43df545d057efff69367c736155fd4a",
+      "Bench/UVMain.lean": "08b96ab2143d43f5909644145fa2f550322400a4111bf9832fc80d5df07804e9",
+      "Bench/V1.lean": "fad20d123206f667935f050044e48e1123fbaac10414958822cf204eee72ecc6",
+      "Bench/V1Main.lean": "d33ca6aade4089a5b097c06cddaef6875999eae002886dd765464edbefd920ff",
+      "Bench/V1Protocol.lean": "1e3fda3188fad3c17757dfb713e32755cd5b1a8a25af8e96a3fc6428315aa350",
+      "Bench/V1Response.lean": "33b82e91ac2a1d8c59e652a53a6bebe5e4848efd592df9da586bdf9c617629d5",
+      "Bench/V1Stream.lean": "545b1edb78838e2b23d4181be7cf47e412e5579d08684cd95be6a7a96baa286c",
+      "FastHTTP.lean": "6c2149dba361427150b2b43637413b2e9fd6f489537955ebaafd6976aa630972",
+      "FastHTTP/Authority.lean": "92b2611440eec511baa1f1788101a8fb42e2b6f31844d41de9dac0fc3b350d0f",
+      "FastHTTP/AuthorityProofs.lean": "4a1a3f855f220fbb35299a74d34d6df488b08c78688e9e6df4b434770bf709f7",
+      "FastHTTP/BodyFastProofs.lean": "b3fbce8a4a7bcbeef7bbf9f0812a803cfb4fd3f4caa390f1f94f8635fe56c912",
+      "FastHTTP/BodyGrammarProofs.lean": "cef9e7552b75a210f5fa3bd2f5da9b242d7487c767c36781326bc4902b3eb8b4",
+      "FastHTTP/BodyLimitProofs.lean": "bcfbf9a42f71851bf819074a375d2a87ea72c21be61fc91b2ab16b14201854c9",
+      "FastHTTP/BodyProofs.lean": "82c0a661d6df14efd1438e71bd218033e01edfda03c6e7236d7e5e32b2535fab",
+      "FastHTTP/ChunkGrammarProofs.lean": "7a741989a0d541749b2ee380be1ee8db835a4a7d7e1285cc3d8684f591cac2ee",
+      "FastHTTP/Chunks.lean": "513f3171cc1a2012aa15dbd65c498bc6d7febcaa8d3e7e297f2c37b777a9d7b9",
+      "FastHTTP/Date.lean": "00906a935f6dac75670a6e3910da23c13bd69662898d27c6169f50969822562f",
+      "FastHTTP/DateHeader.lean": "1431b9119f464eb0abd66ad089cd26219584b4c75b4784b09149745e5ef41005",
+      "FastHTTP/DateSyntax.lean": "992a621ad04e9093cecc71c524e29adf439f235b78ec3fb0b6f5b582c2cb8cf0",
+      "FastHTTP/DateSyntaxProofs.lean": "95554a461becade84e50b197c4ecc9b9377dd63dfa5be437b322be899da0fd6e",
+      "FastHTTP/Driver.lean": "0006153cd0f640af7bbc0f2637812fb0cc31a5c5c934e5c6e84b6a29dda67968",
+      "FastHTTP/DriverInputProofs.lean": "b480e4d171e23d83f5d60cc7c12e988e105d221fe9715f6ebe57b153943e62dc",
+      "FastHTTP/DriverNativeProofs.lean": "df99492b2002577828182c2762a93408f887ea044507924ae3c3250e6469d244",
+      "FastHTTP/DriverOutputProofs.lean": "a2a2d6e3596c7ce82e446d632b68b844691f345084966c6487687e3e39678a78",
+      "FastHTTP/DriverProgressProofs.lean": "440e3fb37013929008f7a71282d677ba0358e00fb244a9dcd1f4f24ddfc6038d",
+      "FastHTTP/DriverProofs.lean": "5195b10a762713058be7b423876bbc86684288fe21138715753f650f7434caaf",
+      "FastHTTP/DriverRequestProofs.lean": "a6b8df032adfdf2c5ff59767c277423dabfeaa3efa93a32d00e6aa2047a0c9cb",
+      "FastHTTP/EndToEndProofs.lean": "d440b9b22cfe5c4f21a1e00b79bbcf73fe6239059e28480e0ea3e65c94b1f4f0",
+      "FastHTTP/FeedProofs.lean": "43736b8165c00d47da4976e38bfe90a7b41b0225733fb40f61a871afc4137ee4",
+      "FastHTTP/Fields.lean": "83cd0f9231d06d264945b4df04555e7d614392d86e48e337ade079141a3fec18",
+      "FastHTTP/FieldsProofs.lean": "2acafc675d8d39a11ba895f197863bc11354282526791b1c948e1886ab22118c",
+      "FastHTTP/H1.lean": "b4cb7324045efebc891a93eea4a555182157c43d8dc6488f852c496016feb8c6",
+      "FastHTTP/HeadGrammarProofs.lean": "7f9c594561bdd219f4c77364fa3d9ffa89c741fba8882606b1440398bf4a98e4",
+      "FastHTTP/HeaderLimitProofs.lean": "28e3609d1cbdd3f28b437668c48919085916a3fce5ac61ac0a38dcd6854f89c9",
+      "FastHTTP/HeaderProofs.lean": "b633716af5a9a82298f9cbafceae57625e67b96a3a378ccb227a2dc3928dfebd",
+      "FastHTTP/HeaderSemanticsProofs.lean": "f0b0548e7f86af29ccdca34b53fe58ea46ce26c2aa8f49934b3cc9d4884eb2ab",
+      "FastHTTP/HexProofs.lean": "cce36ce963fe08807a62423dc14c5e7476a7ed25e5b352770536c40b950df3ec",
+      "FastHTTP/IPv6Proofs.lean": "f8757dde05a51a8d2c1c03f6cba3ae34dac0311bf033ac86c450f1470fa873ff",
+      "FastHTTP/Lexical.lean": "4ef5f52e07b971377dce4f75c3ee232d05706e432ca8a2ea796abe75d969cea0",
+      "FastHTTP/LexicalProofs.lean": "c98f9d4e5dde45b654040c4b030fec8d8967b959694a8a4fe4e396f5baa31cd5",
+      "FastHTTP/LimitsProofs.lean": "22cbd659a0065ebd4433becc240cf10e1fa8e910c51abb404f0fd09077728549",
+      "FastHTTP/MessageGrammarProofs.lean": "9f1b00f9efea51ad886c10d84cf04a8e41e8ed65002e51197ed7b7a77cc692cb",
+      "FastHTTP/Numeric.lean": "993626ffbe843b7607ab0f6e042d1ee10e26f30d4580d8c9cd64abedb9ffc833",
+      "FastHTTP/NumericProofs.lean": "4fcab962a6ad73b97b8ebbea119c273cf733e5992a088caba79c637243f805f1",
+      "FastHTTP/ProofAudit.lean": "c75de0f342f39170cf81b501cadf652c6d291a55854b96bd3ca09c67b2b3956a",
+      "FastHTTP/Proofs.lean": "b901e7f969517e4da5c7ce06fa1ced33d2d16b4b713410db1ab323d9265de6ef",
+      "FastHTTP/Protocol.lean": "8571ff2d747afffa65dbf518361d781ebc53dcaafe3411f827378daa094457b7",
+      "FastHTTP/QuotedProofs.lean": "59fbca409197cd377f450e78bff72c493966974098dfde8db5f091461f7894b4",
+      "FastHTTP/Response.lean": "c06268f3b76feb345c1485d661b3edab85ce10e1b75068803d9aa3358d138d64",
+      "FastHTTP/ResponseChecked.lean": "b1d3f10be6413d6791e814dc5ccbcaf564427c2bc1b46f971cc228a3003d766f",
+      "FastHTTP/ResponseModel.lean": "23ffa41b71dcac9d2f8e872734dc25cbad519c51865177b24aba8d8fb51e39fb",
+      "FastHTTP/ResponseProofs.lean": "8d4327619a35167890502c428efef16f85be00345b815cd3230772d427e65fb3",
+      "FastHTTP/ResponseSyntax.lean": "25e44a939ae6c346175b9c5b4739d7decde2527211f1760f860354f85ff85ed8",
+      "FastHTTP/ResponseSyntaxProofs.lean": "c992bd4daa619036d81ddb4c807d997cc65af9397ea7ec4afb68df1420de7f74",
+      "FastHTTP/ScannerProofs.lean": "6c3d35a1c489837bc4fec11185c5bc1b6d456bc97ed6bf2641ebdb922e8769c5",
+      "FastHTTP/Stream.lean": "a432d1964f040f05955aa648d2df3c70d08e60867ff76cf3691ad901284e003e",
+      "FastHTTP/StreamMachine.lean": "791ddbe8a8c74e87ff3b4e85a9b3df535f093bde79e090c02217fe5cb86afdd2",
+      "FastHTTP/StreamMachineProofs.lean": "100ed916794e8b8cdbc42000f24da7a7692032b5d934f36a28eb66177c202155",
+      "FastHTTP/Syntax.lean": "834cab7eb5ceec3d85ebbbdea36f0439981a952a26f6f13e48b176afc7ce9390",
+      "FastHTTP/SyntaxProofs.lean": "33d5d2ba6971d2bb0d36a8611965a013dd9fc06726f6b08645fe56d4db438f6c",
+      "FastHTTP/TargetProofs.lean": "1c56a48c84614eeb61cdd5372689b14081ec01a45a4f42d9938400f590281047",
+      "FastHTTP/TrailerProofs.lean": "8988773fede687680a03bf0f5b093dded1d707797ead5ed92dd985e7fd051400",
+      "FastHTTP/UV.lean": "40a650b36de9ea863084f6903e317c4bbf958b84c8da21c8f12abb8ab722319c",
+      "FastHTTP/WireProofs.lean": "a730978457481e8b2a00a66f537c9ec72a96e1d2cf5da5c238ad87b7fb51273f",
+      "Tests/CertificateChecks.lean": "60f181d57503d79231e671d508c95a36683be0219b2763bc887fcdb008845e31",
+      "Tests/Handlers.lean": "84c99e2a422ee0b7e954c65e30549f2b4d0f2ab2b38bb739615e79045d7a51c0",
+      "Tests/ProtocolProbe.lean": "b3c8c51a8bd435c99c057419498c5e7089b6cd0643b5b90986234aa4b3a5d47d",
+      "Tests/Server.lean": "8f88b25c5fd9faa2a3904ac92b4152964044d409676c0901f0a1dfb052898e21",
+      "Tests/UVServer.lean": "8eae4ca21d947e548cf35a7b727e725b52f883eb5f65902c124edd4ab1326ac6",
+      "lake-manifest.json": "875b62e26cef11211b26765d3aced24c4502632240dcf3915b4048538c54713b",
+      "lakefile.toml": "0e194af95aea674908bb2b693fe94a5e4558ce54955815d273d7dd137345a81c",
+      "lean-toolchain": "ca5f1f601d34c49079e38d7e7041eb0f2a9c227fbc1df0f404820069a052330c",
+      "lean_uv/Examples/Echo.lean": "1dc28d91007dc0245de199ffe0504692c9dde1fd0b7cac392c3c602efc7eaf02",
+      "lean_uv/LeanUV.lean": "adcd76003d5bfeaa9c2c284331d92c966e6ea5aa59a846701b38edec606cefa2",
+      "lean_uv/LeanUV/AdapterContract.lean": "6bd0f01d81e30c37af8966072a66242912a78e51597ef7cdcaff411f64512820",
+      "lean_uv/LeanUV/Contract.lean": "b4e3a5f27e30c3bba925ea9a0a065c4df3d4f5bdd6aabf05f835a76e88a37425",
+      "lean_uv/LeanUV/ContractAudit.lean": "de4f7a52b902ef909b57da2c5b29afb743e274cf9c86b760ec63a4c6b2adf0ef",
+      "lean_uv/LeanUV/Machine.lean": "a425dc87223363749d97efdd14d4de36fa95589243743fc2203565e17b2878dc",
+      "lean_uv/LeanUV/ProgressContract.lean": "53de5bd4b1566736d53b08c46221c318664584547de51c505eb65cb34c0c6abd",
+      "lean_uv/LeanUV/TCP.lean": "493afa386caa69c4985bc93fa7fa6163757e7d4c92ac255cdbd17531e97331fa",
+      "lean_uv/LeanUVBench/Main.lean": "74c5304c0a1704ebd602fad2dc650d626c14ed02515d977a1e917df610c398a1",
+      "lean_uv/LeanUVBench/Native.c": "792b043013fcdb6ed30908d980edf2fe203d6a1003760559b66af6ab30be76e7",
+      "lean_uv/LeanUVBench/Protocol.lean": "575767bf43f0bd99010fe3dc7c3413835bc30f23a36f003f5f998743f78b08da",
+      "lean_uv/LeanUVBench/StdMain.lean": "ec40a2e8719e8bc81432116e8787f581b51b3e53c4b1c4e40570491279030503",
+      "lean_uv/LeanUVTests/Machine.lean": "b1ce2ec6dad7e92d8b75e297fa5fb1389ebde1dea0b4b32a2e88c9c602c9230d",
+      "lean_uv/LeanUVTests/SanitizerBaseline.lean": "d666693954174b1c2c8018a7b026f260a0c4d92f7ae71b3b4b28a8eff94b4369",
+      "lean_uv/LeanUVTests/Server.lean": "0ea50adb1375cd1638df2ec0baf5315bbe3f4dedef569dc1a060d0e124ec1b83",
+      "lean_uv/lake-manifest.json": "714f660f658b4c44e5b6430e72e6d9f3aa5a247b5df8e2735ac205a32fbb8385",
+      "lean_uv/lakefile.lean": "ac6ddc3289f79217e2f9844c241265506000577f917de4f8bea048db7d17f499",
+      "lean_uv/lean-toolchain": "e8173aad377a6d70041e5f7a5d8895ed587628f5cab243c53a18c40a1b7b6bf8",
+      "lean_uv/native/uv.c": "b4becf3d485c5662cc833b4797910228430bebab52a0cdb02c560017c522491d"
+    },
+    "binary_sha256": {
+      "lean-fast-http": "0d9b494e60c0fe034adc6d678d20a63d36ecd0d541f8f0f83b668cf2b994dd66",
+      "lean-fast-http-example": "867336c5ad899888a05bc640b904e2c9907826608e04630e3e04ce6b091bbfd0",
+      "lean-h1-http": "bc372dfbb09438728084f7d3f809e9e21d0174eb0b70981cbebad950583c27e0",
+      "lean-fast-http-before": "437635ebac6cb41514f4fc3bcc36f37e7df1e077a01ba1c8172d6d49ed704dd8",
+      "lean-fast-http-v1": "808640d9ca22b8bc7d3b29da4807460d5b3ed3bab59b0eae542fb698c1623dff",
+      "protocol-probe": "6f5330e8dbea841b5a7da80346e973f33b38149f159ba92f323b2d623bd64a99",
+      "lean-uv-http": "31bb380f30e171c7b79d7c65a17b6e36d78ab5dc82c695b27c9457bae4a86468",
+      "lean-uv-http-example": "246f01e21ff6feb0ccb0440e5b7d75c721211cf618a2eaffc4bc20633d5adca2"
+    },
+    "git_commit_at_build": "e8b36a5f81d8f1df81ec9a154334ad3552421ad6"
+  },
+  "checks": [
+    {
+      "name": "proof-audit",
+      "command": [
+        "python3",
+        "scripts/verify_proofs.py"
+      ],
+      "environment": {},
+      "exit_code": 0,
+      "elapsed_seconds": 0.7173561289673671,
+      "stdout_sha256": "749d4353abe54e3eaf79d8476c4cda780b726768055cc740f8faa9a42e94a002"
+    },
+    {
+      "name": "artifact-regression",
+      "command": [
+        "python3",
+        "scripts/verify_artifacts.py"
+      ],
+      "environment": {},
+      "exit_code": 0,
+      "elapsed_seconds": 0.07367772294674069,
+      "stdout_sha256": "bc4cf57b4be3412222c9e23c9c13d41d9cfc6e318717f76df437da30dae7bd0f"
+    },
+    {
+      "name": "generated",
+      "command": [
+        "python3",
+        "scripts/verify_generated.py",
+        "--cases",
+        "10000",
+        "--seed",
+        "14188605260999449713"
+      ],
+      "environment": {},
+      "exit_code": 0,
+      "elapsed_seconds": 2.9793481349479407,
+      "stdout_sha256": "a2fca3e309a9e2e3937ad789cb28e60558a0dee5fbdbb851fb1fd46e1003a4e5"
+    },
+    {
+      "name": "std-protocol",
+      "command": [
+        "python3",
+        "scripts/verify_fast_protocol.py"
+      ],
+      "environment": {},
+      "exit_code": 0,
+      "elapsed_seconds": 12.752518837922253,
+      "stdout_sha256": "5d46cb22fedca8dd986fbf3fa31e9ae780f10cb869c23bfccaaaaedc4bce82eb"
+    },
+    {
+      "name": "std-rfc",
+      "command": [
+        "python3",
+        "scripts/verify_rfc.py"
+      ],
+      "environment": {},
+      "exit_code": 0,
+      "elapsed_seconds": 8.683400728041306,
+      "stdout_sha256": "be4ebe004ef0923309131d9dd0d3ff0d5f1ed7cc9d9dc256e20e8aa5f3199d0d"
+    },
+    {
+      "name": "uv-protocol",
+      "command": [
+        "python3",
+        "scripts/verify_fast_protocol.py"
+      ],
+      "environment": {
+        "FASTHTTP_BACKEND": "uv"
+      },
+      "exit_code": 0,
+      "elapsed_seconds": 13.424713229993358,
+      "stdout_sha256": "5d46cb22fedca8dd986fbf3fa31e9ae780f10cb869c23bfccaaaaedc4bce82eb"
+    },
+    {
+      "name": "uv-rfc",
+      "command": [
+        "python3",
+        "scripts/verify_rfc.py"
+      ],
+      "environment": {
+        "FASTHTTP_BACKEND": "uv"
+      },
+      "exit_code": 0,
+      "elapsed_seconds": 8.690266850986518,
+      "stdout_sha256": "be4ebe004ef0923309131d9dd0d3ff0d5f1ed7cc9d9dc256e20e8aa5f3199d0d"
+    },
+    {
+      "name": "uv-integration",
+      "command": [
+        "python3",
+        "scripts/verify_uv.py"
+      ],
+      "environment": {},
+      "exit_code": 0,
+      "elapsed_seconds": 1.7069962860550731,
+      "stdout_sha256": "f179dd6743eed8908daf8304a1edf639f26b8ce695a385b2420106e2c4fc0254"
+    }
+  ],
+  "result": "PASS"
+}

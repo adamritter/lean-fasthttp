@@ -190,6 +190,8 @@ import FastHTTP.WireProofs
 #print axioms FastHTTP.Protocol.driver_native_requests_valid
 #print axioms FastHTTP.Protocol.request_wire_deterministic
 #print axioms FastHTTP.Protocol.request_wire_body_bound
+#print axioms FastHTTP.Protocol.complete_request_dispatch
+#print axioms FastHTTP.Protocol.received_request_dispatch
 #print axioms FastHTTP.Protocol.http11_end_to_end
 #print axioms FastHTTP.Protocol.append_unless_empty
 #print axioms FastHTTP.Protocol.extract_prefix_append

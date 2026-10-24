@@ -37,7 +37,7 @@ root = "Tests.ProtocolProbe"
 [[require]]
 name = "lean_uv"
 git = "https://github.com/adamritter/lean-uv.git"
-rev = "180889f287f7e7c45ae5334e63375315dd603521"
+rev = "1d116e2a8c368ca932efbf6a16a6c8ef1e548596"
 
 [[lean_exe]]
 name = "uv_http"

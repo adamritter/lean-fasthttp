@@ -179,9 +179,9 @@ This is an APPLICATION termination premise. Budget can reset after a response
 finishes/aborts; it cannot grow during one response. Infinite SSE intentionally
 does not satisfy it, while all safety theorems remain applicable to SSE. -/
 structure FiniteProducerBudget (cfg : Config) (states : Nat → Driver.State)
-    (commands : Nat → Driver.Command) (budget : Nat → Nat) : Prop where
+    (commands : Nat → Driver.Command) (histories : Nat → List Driver.Event) (budget : Nat → Nat) : Prop where
   remaining : ∀ first next event,
-    LeanUV.TCP.Machine.Dispatch (Driver.machine cfg) Driver.EffectShape states commands first next event →
+    LeanUV.TCP.Machine.Dispatch (Driver.machine cfg) Driver.EffectShape states commands histories first next event →
     ¬ReplyExit cfg (states first) event →
       budget next ≤ budget first ∧
       (∀ bytes, event = .result (.chunk (some bytes)) → budget next < budget first)
@@ -190,25 +190,26 @@ structure FiniteProducerBudget (cfg : Config) (states : Nat → Driver.State)
 a finite producer and responsive external operations eventually lead to a final
 write acknowledgment or an explicit interruption. Every observation's HTTP
 invariant is DERIVED from generic execution refinement, not assumed as progress.
+The progress dispatch extends the actual observed history by exactly one event.
 There is no fixed response-time bound and no claim that a remote app consumed it. -/
 theorem driver_eventual_reply (cfg : Config) (states : Nat → Driver.State)
-    (commands : Nat → Driver.Command) (budget : Nat → Nat)
-    (observed : ∀ n, ∃ events decisions,
-      LeanUV.TCP.Machine.ExecutionContract (Driver.machine cfg) events (states n) decisions Driver.EffectShape ∧
+    (commands : Nat → Driver.Command) (histories : Nat → List Driver.Event) (budget : Nat → Nat)
+    (observed : ∀ n, ∃ decisions,
+      LeanUV.TCP.Machine.ExecutionContract (Driver.machine cfg) (histories n) (states n) decisions Driver.EffectShape ∧
       commands n = decisions.getLastD .idle)
-    (responsive : LeanUV.TCP.Machine.ResponsiveContract (Driver.machine cfg) Driver.EffectShape states commands)
-    (finite : FiniteProducerBudget cfg states commands budget)
+    (responsive : LeanUV.TCP.Machine.ResponsiveContract (Driver.machine cfg) Driver.EffectShape states commands histories)
+    (finite : FiniteProducerBudget cfg states commands histories budget)
     (first : Nat) (active : ActiveReply (states first)) :
     ∃ checkpoint next event, first ≤ checkpoint ∧
-      LeanUV.TCP.Machine.Dispatch (Driver.machine cfg) Driver.EffectShape states commands checkpoint next event ∧
+      LeanUV.TCP.Machine.Dispatch (Driver.machine cfg) Driver.EffectShape states commands histories checkpoint next event ∧
       ReplyExit cfg (states checkpoint) event := by
   have valid : ∀ n, OutputPair (states n) (commands n) := by
     intro n
-    obtain ⟨events, decisions, execution, command⟩ := observed n
+    obtain ⟨decisions, execution, command⟩ := observed n
     rw [command]
     exact LeanUV.TCP.Machine.execution_scheduled_invariant (Driver.machine cfg) Driver.EffectShape OutputPair
-      rfl (driver_step_output cfg) events (states n) decisions execution
-  apply LeanUV.TCP.Machine.responsive_descent (Driver.machine cfg) Driver.EffectShape states commands responsive
+      rfl (driver_step_output cfg) (histories n) (states n) decisions execution
+  apply LeanUV.TCP.Machine.responsive_descent (Driver.machine cfg) Driver.EffectShape states commands histories responsive
     (fun n => ActiveReply (states n)) (fun n => ReplyRank (budget n) (states n) (commands n)) (ReplyExit cfg)
     (fun n h => active_reply_busy _ _ (valid n) h) ?_ first active
   intro n next event current dispatch unfinished
