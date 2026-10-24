@@ -84,6 +84,7 @@ def main():
         for method in ['GET','POST','PUT','PATCH','DELETE','OPTIONS','CUSTOM']:
             exchange(req(method,'/method'),method.encode())
         exchange(req('OPTIONS','*'))
+        exchange(req(headers=b'Connection: upgrade\r\nUpgrade: websocket\r\n'))
         fixed=req('POST','/body',b'Content-Length: 5\r\n',b'a\x00b\xffc')
         chunked=req('POST','/body',b'Transfer-Encoding: chunked\r\n',
             b'2;key="a\\\"b"\r\na\x00\r\n3;flag\r\nb\xffc\r\n0\r\nX-Final: yes\r\n\r\n')
@@ -143,7 +144,6 @@ def main():
             (req(headers=b'Content-Length: 1048577\r\n'),413),
             (req(headers=b'Content-Length: '+b'9'*5000+b'\r\n'),413),
             (req(headers=b'Expect: something\r\n'),417),
-            (req(headers=b'Upgrade: websocket\r\n'),501),
             (req('CONNECT','example.com:443'),501),
             (req(target='/bad%'),400),(req(target='/bad%zz'),400),(req(target='/#fragment'),400),
             (req(headers=b'Bad Header: x\r\n'),400),(req(headers=b'X: a\x00b\r\n'),400),

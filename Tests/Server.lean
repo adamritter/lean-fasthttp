@@ -29,6 +29,11 @@ def main (args : List String) : IO Unit := do
       let response ← IO.ofExcept ((FastHTTP.StreamResponse.create next
         (released.modify (· + 1))).mapError IO.userError)
       return .streaming response
+    if request.targetIs "/authority" then return .ready (← prepared request.authority)
+    if request.targetIs "/request-target" then return .ready (← prepared request.requestTarget)
+    if request.targetIs "/raw-trailers" then
+      let value := (request.rawTrailers[0]?.map Prod.snd).getD .empty
+      return .ready (← IO.ofExcept ((FastHTTP.Response.create value).mapError IO.userError))
     if request.targetIs "/body" then
       return .ready (← IO.ofExcept ((FastHTTP.Response.create request.body).mapError IO.userError))
     if request.targetIs "/trailers" then

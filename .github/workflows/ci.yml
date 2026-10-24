@@ -11,3 +11,4 @@ jobs:
       - run: scripts/build.sh
       - run: lake env lean FastHTTP/ProofAudit.lean
       - run: python3 scripts/verify_fast_protocol.py
+      - run: python3 scripts/verify_rfc.py

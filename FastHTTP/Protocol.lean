@@ -1,28 +1,6 @@
-import Init
+import FastHTTP.Syntax
 
 namespace FastHTTP
-
-def lower (b : UInt8) : UInt8 := if b >= 65 && b <= 90 then b + 32 else b
-
-def equals (bytes : ByteArray) (start stop : Nat) (text : String)
-    (ignoreCase := false) : Bool :=
-  stop - start == text.utf8ByteSize && loop 0
-where
-  loop (i : Nat) : Bool :=
-    if h : i < text.utf8ByteSize then
-      let a := bytes[start + i]!
-      let b := text.getUTF8Byte ⟨i⟩ h
-      (if ignoreCase then lower a == lower b else a == b) && loop (i + 1)
-    else true
-  termination_by text.utf8ByteSize - i
-
-def token (b : UInt8) : Bool :=
-  (b >= 65 && b <= 90) || (b >= 97 && b <= 122) || (b >= 48 && b <= 57) ||
-  b == 33 || b == 35 || b == 36 || b == 37 || b == 38 || b == 39 ||
-  b == 42 || b == 43 || b == 45 || b == 46 || b == 94 || b == 95 ||
-  b == 96 || b == 124 || b == 126
-
-def space (b : UInt8) : Bool := b == 32 || b == 9
 
 /-- Owns the receive buffer: safe to retain across asynchronous work. String
 conversion is lazy; routing with `targetIs` does not copy the target bytes. -/
@@ -36,18 +14,33 @@ structure Request where
   close : Bool
   isHead : Bool
   body : ByteArray := .empty
-  trailers : Array (String × String) := #[]
+  rawTrailers : Array (String × ByteArray) := #[]
+  versionMinor : Nat := 1
+  pathStart : Option Nat := none
+  authoritySpan : Option (Nat × Nat) := none
+  schemeEnd : Option Nat := none
 
 def Request.method (r : Request) : String :=
   String.fromUTF8! (r.raw.extract 0 r.methodEnd)
-def Request.target (r : Request) : String :=
+def Request.requestTarget (r : Request) : String :=
   String.fromUTF8! (r.raw.extract r.targetStart r.targetEnd)
+def Request.target (r : Request) : String :=
+  let start := r.pathStart.getD r.targetStart
+  let path := String.fromUTF8! (r.raw.extract start r.targetEnd)
+  if r.pathStart.isSome && (start == r.targetEnd || r.raw[start]! == 63) then "/" ++ path else path
 def Request.targetIs (r : Request) (target : String) : Bool :=
-  equals r.raw r.targetStart r.targetEnd target
+  let start := r.pathStart.getD r.targetStart
+  if r.pathStart.isSome && (start == r.targetEnd || r.raw[start]! == 63) then r.target == target
+  else equals r.raw start r.targetEnd target
+
+/-- Text convenience view; rawTrailers preserves every field-value octet, including obs-text. -/
+def Request.trailers (r : Request) : Array (String × String) :=
+  r.rawTrailers.map fun (name, value) =>
+    (name, (String.fromUTF8? value).getD (String.ofList (value.data.toList.map (Char.ofNat ·.toNat))))
 
 /-- First matching header, ASCII case insensitive; trims optional whitespace.
 Lookup allocates only when called by the application. -/
-def Request.header? (r : Request) (name : String) : Option String := Id.run do
+def Request.headerBytes? (r : Request) (name : String) : Option ByteArray := Id.run do
   let mut start := r.headersStart
   let mut colon := start
   for i in [start:r.headEnd - 2] do
@@ -59,10 +52,22 @@ def Request.header? (r : Request) (name : String) : Option String := Id.run do
         let mut last := i
         while first < last && space r.raw[first]! do first := first + 1
         while last > first && space r.raw[last - 1]! do last := last - 1
-        return String.fromUTF8? (r.raw.extract first last)
+        return some (r.raw.extract first last)
       start := i + 2
       colon := start
   return none
+
+def Request.header? (r : Request) (name : String) : Option String :=
+  (r.headerBytes? name).bind String.fromUTF8?
+
+/-- Effective authority for routing: absolute-form overrides the received Host. -/
+def Request.authority (r : Request) : String :=
+  match r.authoritySpan with
+  | some (first, last) => String.fromUTF8! (r.raw.extract first last)
+  | none => (r.header? "host").getD ""
+
+def Request.scheme? (r : Request) : Option String :=
+  r.schemeEnd.map fun last => String.fromUTF8! (r.raw.extract r.targetStart last)
 
 def hasClose (bytes : ByteArray) (start stop : Nat) : Bool := Id.run do
   let mut first := start
@@ -144,7 +149,7 @@ structure HeaderState where
   host : Bool := false
   expectContinue : Bool := false
 
-private def parseField (cfg : Config) (bytes : ByteArray) (i stop : Nat)
+private def parseField (cfg : Config) (bytes : ByteArray) (i stop minor : Nat)
     (initial : HeaderState) : Except Nat HeaderState := do
   let mut state := initial
   if i + 1 >= stop || bytes[i + 1]! != 10 || state.colon == state.line then throw 400
@@ -162,31 +167,28 @@ private def parseField (cfg : Config) (bytes : ByteArray) (i stop : Nat)
     | none => throw 413
     | some n => state := { state with length := some n }
   else if equals bytes state.line state.colon "transfer-encoding" true then
-    if state.chunked || !equals bytes first last "chunked" true then throw 400
+    if minor == 0 || state.chunked || !equals bytes first last "chunked" true then throw 400
     state := { state with chunked := true }
   else if equals bytes state.line state.colon "host" true then
-    if state.host || first == last then throw 400
-    for k in [first:last] do
-      let c := bytes[k]!
-      if c <= 32 || c >= 127 || c == 44 || c == 47 || c == 64 || c == 92 then throw 400
+    if state.host || !validAuthority bytes first last then throw 400
     state := { state with host := true }
-  else if equals bytes state.line state.colon "expect" true then
+  else if minor != 0 && equals bytes state.line state.colon "expect" true then
     if state.expectContinue || !equals bytes first last "100-continue" true then throw 417
     state := { state with expectContinue := true }
-  else if equals bytes state.line state.colon "upgrade" true then throw 501
-  else if equals bytes state.line state.colon "connection" true && hasClose bytes first last then
-    state := { state with close := true }
+  else if equals bytes state.line state.colon "connection" true then
+    let closing ← connectionOptions bytes first last
+    state := { state with close := state.close || closing }
   return { state with line := i + 2, colon := i + 2 }
 
 /-- Tail recursion avoids constructing nested mutable-variable tuples per byte. -/
-private def parseHeaders (cfg : Config) (bytes : ByteArray) (headersStart stop : Nat) :
+private def parseHeaders (cfg : Config) (bytes : ByteArray) (headersStart stop minor : Nat) :
     Except Nat HeaderState := loop headersStart { line := headersStart, colon := headersStart }
 where
   loop (i : Nat) (state : HeaderState) : Except Nat HeaderState :=
     if i < stop - 2 then
       let b := bytes[i]!
       if b == 13 then
-        match parseField cfg bytes i stop state with
+        match parseField cfg bytes i stop minor state with
         | .error code => .error code
         | .ok state => loop (i + 1) state
       else if b == 10 then
@@ -197,13 +199,13 @@ where
         else if !token b then .error 400 else loop (i + 1) state
       else if (b < 32 && b != 9) || b == 127 then .error 400
       else loop (i + 1) state
-    else if state.line != stop - 2 || !state.host then .error 400 else .ok state
+    else if state.line != stop - 2 || (minor != 0 && !state.host) then .error 400 else .ok state
   termination_by stop - 2 - i
 
 /-- Strict origin-server grammar. Duplicated framing fields and obsolete folding
 are rejected; methods are tokens, targets are origin-form or OPTIONS *. -/
 def parseHead (cfg : Config) (bytes : ByteArray) (stop : Nat) : Except Nat Head := do
-  if stop > bytes.size || stop < 18 then throw 400
+  if stop > bytes.size || stop < 18 || !equals bytes (stop - 4) stop "\r\n\r\n" then throw 400
   let mut methodEnd := 0
   while methodEnd < stop && bytes[methodEnd]! != 32 do
     if !token bytes[methodEnd]! then throw 400
@@ -217,26 +219,27 @@ def parseHead (cfg : Config) (bytes : ByteArray) (stop : Nat) : Except Nat Head 
     -- Percent escapes must contain exactly two hex digits (checked below).
     targetEnd := targetEnd + 1
   if targetEnd == targetStart then throw 400
-  if equals bytes 0 methodEnd "CONNECT" then throw 501
-  if bytes[targetStart]! != 47 &&
-      !(equals bytes 0 methodEnd "OPTIONS" && equals bytes targetStart targetEnd "*") then
-    throw 400
-  let mut j := targetStart
-  while j < targetEnd do
-    if bytes[j]! == 37 then
-      if j + 2 >= targetEnd then throw 400
-      for k in [j+1:j+3] do
-        let b := lower bytes[k]!
-        if !((b >= 48 && b <= 57) || (b >= 97 && b <= 102)) then throw 400
-      j := j + 3
-    else j := j + 1
   if targetEnd + 11 > stop ||
-      !equals bytes (targetEnd + 1) (targetEnd + 11) "HTTP/1.1\r\n" then throw 400
+      !equals bytes (targetEnd + 1) (targetEnd + 6) "HTTP/" ||
+      bytes[targetEnd + 7]! != 46 || bytes[targetEnd + 9]! != 13 || bytes[targetEnd + 10]! != 10 then
+    throw 400
+  let major := bytes[targetEnd + 6]!
+  let minor := bytes[targetEnd + 8]!
+  if major < 48 || major > 57 || minor < 48 || minor > 57 then throw 400
+  if major != 49 then throw 505
+  let minor := minor.toNat - 48
+  let target ← parseTarget bytes targetStart targetEnd
+    (equals bytes 0 methodEnd "OPTIONS") (equals bytes 0 methodEnd "CONNECT")
   let headersStart := targetEnd + 11
-  let fields ← parseHeaders cfg bytes headersStart stop
+  let fields ← parseHeaders cfg bytes headersStart stop minor
   let framing ← chooseFraming fields.length fields.chunked
-  return ⟨⟨bytes, methodEnd, targetStart, targetEnd, headersStart, stop, fields.close,
-    equals bytes 0 methodEnd "HEAD", .empty, #[]⟩, framing, fields.expectContinue⟩
+  if equals bytes 0 methodEnd "CONNECT" then throw 501
+  let request : Request := {
+    raw := bytes, methodEnd, targetStart, targetEnd, headersStart, headEnd := stop
+    close := fields.close || minor == 0, isHead := equals bytes 0 methodEnd "HEAD"
+    versionMinor := minor, pathStart := if target.authority.isSome then some target.pathStart else none
+    authoritySpan := target.authority, schemeEnd := target.schemeEnd }
+  return ⟨request, framing, fields.expectContinue⟩
 
 /-- Used for both fixed bodies and chunk data. Slice boundaries are proved in Proofs. -/
 def takeCount (remaining available : Nat) : Nat := min remaining available
@@ -260,12 +263,12 @@ structure BodyState where
   line : ByteArray := .empty
   sawCR : Bool := false
   trailerBytes : Nat := 0
-  trailers : Array (String × String) := #[]
+  trailers : Array (String × ByteArray) := #[]
   chunks : Nat := 0
 
 inductive BodyResult where
   | need (state : BodyState)
-  | done (body : ByteArray) (trailers : Array (String × String)) (stop : Nat)
+  | done (body : ByteArray) (trailers : Array (String × ByteArray)) (stop : Nat)
   | error (status : Nat)
 
 /-- Chunk extensions: token names and token/quoted-string values, with OWS. -/
@@ -315,7 +318,7 @@ def chunkSize (line : ByteArray) (limit : Nat) : Except Nat Nat := do
         if i == start then throw 400
   return n
 
-def trailer (line : ByteArray) : Except Nat (String × String) := do
+def trailer (line : ByteArray) : Except Nat (String × ByteArray) := do
   let mut i := 0
   while i < line.size && token line[i]! do i := i + 1
   if i == 0 || i == line.size || line[i]! != 58 then throw 400
@@ -331,10 +334,7 @@ def trailer (line : ByteArray) : Except Nat (String × String) := do
     if (b < 32 && b != 9) || b == 127 then throw 400
   while first < last && space line[first]! do first := first + 1
   while last > first && space line[last - 1]! do last := last - 1
-  -- Raw header octets remain accessible in Request.raw; trailer API is UTF-8 only.
-  match String.fromUTF8? (line.extract first last) with
-  | none => throw 400
-  | some value => return (name, value)
+  return (name, line.extract first last)
 
 /-- Pure, bounded buffered-body decoder. It stops exactly at the message boundary. -/
 def decodeBody (cfg : Config) (bytes : ByteArray) (start : Nat) (initial : BodyState) : BodyResult := Id.run do
@@ -416,7 +416,7 @@ def bodyStep (cfg : Config) (request : Request) (decoder : BodyState)
   | .need next => .need (.body request next)
   | .error status => .reject status
   | .done body trailers stop =>
-    .request { request with body, trailers } (bytes.extract stop bytes.size)
+    .request { request with body, rawTrailers := trailers } (bytes.extract stop bytes.size)
 
 /-- No socket, promise, task, or H1 dependency. One input produces one action.
 The driver resumes the returned continuation only after sending the response. -/

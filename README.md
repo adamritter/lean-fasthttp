@@ -95,15 +95,15 @@ Files:
 
 ## Supported HTTP profile
 
-HTTP/1.1 origin-form requests, OPTIONS `*`, token methods including POST/PUT/
-PATCH/DELETE and extension methods, required single nonempty Host, keep-alive,
+HTTP/1.1 origin-form and absolute HTTP(S) requests, OPTIONS `*`, token methods including POST/PUT/
+PATCH/DELETE and extension methods, required single syntactically valid Host, keep-alive,
 pipelining, Connection: close, HEAD, fixed and chunked request bodies, chunk
 extensions, separate trailers, and automatic 100 Continue. Final prepared
 responses support 200..599, with body suppression and Content-Length rules for
 HEAD/204/205/304. Streaming responses use chunked transfer coding.
 
 Malformed requests receive 400 and close; resource limits use 413/431,
-unsupported expectations 417, CONNECT/Upgrade 501. Conflicting CL/TE, duplicated
+unsupported expectations 417, CONNECT 501. Upgrade offers are ignored. Conflicting CL/TE, duplicated
 framing headers, unsupported transfer codings, obsolete folding and bare LF are
 rejected. Rejecting duplicated identical Content-Length values is an intentional
 strict policy. Unknown methods are dispatched to the application.
@@ -115,11 +115,13 @@ Header/trailer fields and chunk metadata cannot cause unbounded integer growth.
 This is **not a complete RFC-conforming or production-ready HTTP server**.
 The protocol rules were checked against [RFC 9112](https://www.rfc-editor.org/rfc/rfc9112.html)
 and [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html), but the current profile
-omits HTTP/1.0, absolute-form targets, CONNECT tunnels, protocol upgrades,
-automatic Date fields and full URI/Host grammar validation. It validates common
-origin-form and Host syntax, not every URI production. Non-UTF-8 trailer values
-are rejected; raw request header values can still be accessed in the receive
-buffer. There is no transparent decompression or application caching logic.
+still omits complete HTTP/1.0 response handling, CONNECT tunnels, protocol upgrades,
+and automatic Date fields. Request targets validate URI characters and percent
+escapes; Host validates reg-name, bracketed IPv6/IPvFuture, and decimal port syntax.
+Absolute HTTP(S) targets route by path/query; `requestTarget` retains the wire
+form and `authority` uses the URI authority, ignoring Host for absolute targets.
+`rawTrailers` and `headerBytes?` preserve non-UTF-8 field values. The text
+`trailers` view decodes UTF-8 where possible, otherwise maps octets to Latin-1. There is no transparent decompression or application caching logic.
 
 Lifecycle work also remains: no header/idle deadlines, active connection limit,
 server shutdown handle, TLS, or request-body streaming API. A promise that never
