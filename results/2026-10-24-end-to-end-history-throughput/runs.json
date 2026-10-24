@@ -1,0 +1,71 @@
+[
+  {
+    "kind": "uv",
+    "workers_or_cpu_budget": 4,
+    "repeat": 1,
+    "command": [
+      "taskset",
+      "-c",
+      "16-19",
+      "/dev/shm/lean-fasthttp-20261024/bin/lean-uv-http",
+      "18176",
+      "4",
+      "16"
+    ],
+    "LEAN_NUM_THREADS": "1",
+    "os_threads": 12,
+    "elapsed_s": 15.04930232395418,
+    "cpu_s": 60.029999999999994,
+    "requests_per_second": 402827.99,
+    "completed_requests": 6053894,
+    "raw": "Running 15s test @ http://127.0.0.1:18176/\n  8 threads and 256 connections\n  Thread Stats   Avg      Stdev     Max   +/- Stdev\n    Latency   631.68us  113.48us   9.06ms   86.66%\n    Req/Sec    50.71k     1.24k   61.20k    76.92%\n  Latency Distribution\n     50%  629.00us\n     75%  701.00us\n     90%  735.00us\n     99%    1.10ms\n  6053894 requests in 15.03s, 6.57GB read\nRequests/sec: 402827.99\nTransfer/sec:    447.94MB\nValidated responses: 6053894; invalid: 0; completed: 6053894",
+    "server_exit": 0,
+    "server_stats": "worker=0 accepted=145 reads=1806097 sends=1806097 bytes=2105909102 queued=0 errors=0 peer_disconnects=130 elapsed_ns=18126500220\nworker=1 accepted=116 reads=1816675 sends=1816675 bytes=2118243050 queued=0 errors=0 peer_disconnects=99 elapsed_ns=18126455516\nworker=2 accepted=135 reads=1817376 sends=1817376 bytes=2119060416 queued=0 errors=0 peer_disconnects=118 elapsed_ns=18126522428\nworker=3 accepted=120 reads=1823486 sends=1823486 bytes=2126184676 queued=0 errors=0 peer_disconnects=107 elapsed_ns=18126519708\n"
+  },
+  {
+    "kind": "uv",
+    "workers_or_cpu_budget": 4,
+    "repeat": 2,
+    "command": [
+      "taskset",
+      "-c",
+      "16-19",
+      "/dev/shm/lean-fasthttp-20261024/bin/lean-uv-http",
+      "18176",
+      "4",
+      "16"
+    ],
+    "LEAN_NUM_THREADS": "1",
+    "os_threads": 12,
+    "elapsed_s": 15.048424139036797,
+    "cpu_s": 59.92,
+    "requests_per_second": 417212.5,
+    "completed_requests": 6270492,
+    "raw": "Running 15s test @ http://127.0.0.1:18176/\n  8 threads and 256 connections\n  Thread Stats   Avg      Stdev     Max   +/- Stdev\n    Latency   657.01us    1.13ms  39.57ms   99.75%\n    Req/Sec    52.52k     2.63k   65.57k    74.00%\n  Latency Distribution\n     50%  557.00us\n     75%  759.00us\n     90%  821.00us\n     99%    1.08ms\n  6270492 requests in 15.03s, 6.81GB read\nRequests/sec: 417212.50\nTransfer/sec:    463.93MB\nValidated responses: 6270492; invalid: 0; completed: 6270492",
+    "server_exit": 0,
+    "server_stats": "worker=0 accepted=121 reads=1905151 sends=1905151 bytes=2221406066 queued=0 errors=0 peer_disconnects=93 elapsed_ns=18107545711\nworker=1 accepted=124 reads=1876383 sends=1876383 bytes=2187862578 queued=0 errors=0 peer_disconnects=99 elapsed_ns=18116932180\nworker=2 accepted=150 reads=1897728 sends=1897728 bytes=2212750848 queued=0 errors=0 peer_disconnects=122 elapsed_ns=18116835699\nworker=3 accepted=121 reads=1875322 sends=1875322 bytes=2186625452 queued=0 errors=0 peer_disconnects=97 elapsed_ns=18116570960\n"
+  },
+  {
+    "kind": "uv",
+    "workers_or_cpu_budget": 4,
+    "repeat": 3,
+    "command": [
+      "taskset",
+      "-c",
+      "16-19",
+      "/dev/shm/lean-fasthttp-20261024/bin/lean-uv-http",
+      "18176",
+      "4",
+      "16"
+    ],
+    "LEAN_NUM_THREADS": "1",
+    "os_threads": 12,
+    "elapsed_s": 15.051144390949048,
+    "cpu_s": 60.050000000000004,
+    "requests_per_second": 413593.88,
+    "completed_requests": 6216493,
+    "raw": "Running 15s test @ http://127.0.0.1:18176/\n  8 threads and 256 connections\n  Thread Stats   Avg      Stdev     Max   +/- Stdev\n    Latency   614.08us   84.38us   7.53ms   92.05%\n    Req/Sec    52.06k     1.37k   64.24k    79.00%\n  Latency Distribution\n     50%  610.00us\n     75%  640.00us\n     90%  666.00us\n     99%    1.14ms\n  6216493 requests in 15.03s, 6.75GB read\nRequests/sec: 413593.88\nTransfer/sec:    459.91MB\nValidated responses: 6216493; invalid: 0; completed: 6216493",
+    "server_exit": 0,
+    "server_stats": "worker=0 accepted=130 reads=1805028 sends=1805028 bytes=2104662648 queued=0 errors=0 peer_disconnects=112 elapsed_ns=18125101197\nworker=1 accepted=138 reads=1928877 sends=1928877 bytes=2249070582 queued=0 errors=0 peer_disconnects=116 elapsed_ns=18125325743\nworker=2 accepted=119 reads=1886765 sends=1886765 bytes=2199967990 queued=0 errors=0 peer_disconnects=100 elapsed_ns=18125063148\nworker=3 accepted=129 reads=1858760 sends=1858760 bytes=2167314160 queued=0 errors=0 peer_disconnects=103 elapsed_ns=18125247662\n"
+  }
+]

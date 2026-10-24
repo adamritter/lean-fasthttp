@@ -1,0 +1,26 @@
+{
+  "result": "PASS",
+  "source_commit": "db977633ade3d3a55cbffc55130c0c150fc48f7c",
+  "lean_uv_commit": "1d116e2a8c368ca932efbf6a16a6c8ef1e548596",
+  "kernel_theorems": 362,
+  "certificate_factories": 4,
+  "fresh_fragment_cases": 29984,
+  "fresh_pipeline_cases": 10000,
+  "fresh_integration_responses": 993,
+  "timed_validated_responses": 18540879,
+  "invalid_timed_responses": 0,
+  "median_rps": 413593.88,
+  "min_rps": 402827.99,
+  "max_rps": 417212.5,
+  "io_workers": 4,
+  "server_cpu_affinity": [
+    16,
+    17,
+    18,
+    19
+  ],
+  "observed_os_threads": 12,
+  "wire_model": "FastHTTP.UV supported HTTP/1.1 origin-server wire/framing model",
+  "native_implementation_proved": false,
+  "assumptions_document": "FORMAL_SCOPE.md"
+}

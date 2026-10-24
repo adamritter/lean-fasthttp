@@ -3,7 +3,7 @@
 HTTP/1.1 in Lean 4.35.0, with prepared responses, asynchronous streaming and
 independent lean-uv workers. The UV server has a **complete conditional proof of
 its documented origin-server wire/framing model**: `http11_end_to_end` and
-`driver_eventual_reply`. The audit checks **362 kernel theorems and four erased
+`driver_eventual_reply`. The audit checks **362 kernel theorems and four
 certificate factories**, with no `sorry`, custom axioms or `native_decide`.
 
 [Exact model, statements and assumptions](FORMAL_SCOPE.md) ·
@@ -123,6 +123,25 @@ Defaults: 16 KiB head, 8 KiB target, 1 MiB decoded body, 1 KiB chunk/trailer lin
 read-idle timeout, 4 MiB retained-write budget and 65,536 connections per worker.
 It supports signal shutdown. A total header deadline and request-body streaming
 are not provided by this buffered API.
+
+## Final checkpoint results
+
+The final source [`db97763`](https://github.com/adamritter/lean-fasthttp/commit/db977633ade3d3a55cbffc55130c0c150fc48f7c)
+passes 29,984 exact-fragment cases with a fresh seed, both transports' wire suites,
+and 993 fresh four-worker integration responses. The kernel audit checks
+362 theorems and the four certificate factories.
+
+On GH200, **413,594 completed requests/s** is the median of three
+15-second runs with four I/O workers and the whole server pinned to four CPUs.
+All runs exceed 400k/s (**402,828–417,212/s**).
+The timed clients checked all **18,540,879** complete 1 KiB response bodies,
+with zero invalid responses. This uses loopback HTTP/1.1 keep-alive, 256
+connections, eight client threads on separate CPUs, no TLS and no pipelining.
+There are 12 OS threads including runtime helpers, all restricted to four server
+CPUs. Proof terms are erased; constructor validation still executes normally.
+
+[Final verification and assumptions](results/2026-10-24-end-to-end-history-final/) ·
+[All throughput runs and metadata](results/2026-10-24-end-to-end-history-throughput/)
 
 ## Reproduce validation and throughput
 
