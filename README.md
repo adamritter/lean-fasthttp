@@ -44,32 +44,40 @@ outside that proof. All 182 theorems are audited for axioms. [Detailed formal sc
 distinguishes these guarantees from the still-unproved full RFC grammar and I/O
 interpreter; this is not a full formal proof of HTTP/1.1 conformance.
 
-The earlier measured production-code checkpoint
-[`0fbd69b`](https://github.com/adamritter/lean-fasthttp/commit/0fbd69bbca866724d941dae29b3907fe4fd36ab2)
-reaches **479,333 completed requests/s** (median of three 15-second runs), with
+The measured production-code checkpoint
+[`6210652`](https://github.com/adamritter/lean-fasthttp/commit/6210652caf65b443e657b67ea7f3eccd7d459088)
+reaches **474,364 completed requests/s** (median of three 15-second runs), with
 four I/O workers in one process restricted to four GH200 CPU cores. All three
-runs exceed 400k/s: **472,558–493,836/s**. The timed clients verify the status,
-Content-Length and complete 1 KiB body of **all 21,726,656 responses**, with zero
+runs exceed 400k/s: **470,320–475,033/s**. The timed clients verify status,
+Content-Length and the complete 1 KiB body of **21,330,064 responses**, with zero
 invalid responses. This is HTTP/1.1 keep-alive on Linux loopback, 256 connections,
 eight client threads on separate CPUs, no pipelining and no TLS.
 
-| Same complete HTTP parser/handler | 1 server CPU | 4 server CPUs |
+The whole server uses about 3.99 CPU seconds per wall second. There are four
+I/O workers plus runtime/helper threads (12 observed OS threads total); the whole
+process is restricted to CPUs 16–19. This is a four-worker/four-CPU result, not a
+claim that the process creates only four OS threads.
+
+The same checkpoint passes **28,390 exact-fragment cases** with a new seed,
+including 10,000 generated pipelines and their random fragmentations, plus a
+fresh four-worker dynamic-response corpus with 975 checked responses and 160
+stream cleanup checks. Its GitHub CI passes.
+[Verification manifest](results/2026-10-24-protocol-proof-checkpoint/verification.json),
+[raw throughput and metadata](results/2026-10-24-protocol-proof-throughput/).
+The build manifest binds the evaluated source, pinned lean-uv source and installed
+executables. A detected stale-copy development run is retained and explicitly
+excluded in the [validation note](results/2026-10-24-chunk-trailer-proofs/validation-note.json).
+
+The earlier `0fbd69b` transport comparison remains historical evidence:
+
+| Same complete HTTP parser/handler at `0fbd69b` | 1 server CPU | 4 server CPUs |
 |---|---:|---:|
 | Original Std transport | 51,654 req/s | 41,198 req/s |
-| lean-uv transport | 108,522 req/s | **479,333 req/s** |
+| lean-uv transport | 108,522 req/s | 479,333 req/s |
 
-The four-worker server consumes about 3.99 CPU seconds per wall second. It has
-four I/O workers plus runtime/helper threads (12 observed OS threads total); the
-entire process is restricted to CPUs 16–19. The Std four-CPU control uses one
-shared I/O loop and four Lean scheduler threads. Fixed total concurrency means
-per-worker connection counts differ across the scaling configurations.
-
-A fresh final evaluation passes **23,554 exact-fragment cases**, including
-10,000 newly generated pipelines and their random fragmentations, plus a new
-four-worker dynamic-response corpus. The code checkpoint's CI passes.
-[Verification manifest](results/2026-10-24-uv-final/verification.json),
-[raw throughput and metadata](results/2026-10-24-uv-final-throughput/),
-[formal scope](FORMAL_SCOPE.md).
+The Std four-CPU control uses one shared I/O loop and four Lean scheduler threads.
+Fixed total concurrency means per-worker connection counts differ across these
+scaling configurations. [Historical results](results/2026-10-24-uv-final-throughput/).
 
 The byte-only body decoder initially regressed 1 MiB echo throughput from about
 513 to 52 MiB/s. Proved bulk-copy refinement restored approximately 534–536 MiB/s
@@ -259,13 +267,19 @@ checkpoint audit for the exact statements and source hashes.
 | `decodeBody` | Successful stop cursors stay within the supplied input; consumed wire prefix and untouched suffix reconstruct the input exactly |
 | `wireBody` / `responseLength` | HEAD/204/304 emit no body; 204 omits Content-Length; ordinary response declared lengths match emitted body size |
 
-**These do not prove the whole server correct.** In particular, header/URI grammar acceptance, lexical correctness of chunk sizes/extensions/trailers,
-composition of the complete `feed` across arbitrary inputs, decimal/hex wire
-formatting, stream ordering/cancellation/liveness, and the UV interpreter remain
-tested rather than fully verified. The byte-slicing theorems assume a valid input
-cursor; the driver establishing that precondition everywhere is not yet proved.
-The Lean kernel, compiler/runtime, native ByteArray implementations, libuv and OS
-remain in the trusted base. No claim of end-to-end RFC conformance is made.
+The proved scope also includes complete `feed` fragmentation with exact request
+metadata and Expect buffering, accepted request-line/header-block envelopes,
+bounded decimal and hexadecimal parsing, decimal/hexadecimal wire serialization,
+complete chunk-extension and trailer grammar equivalence, exact whitespace
+trimming, and end-to-end body-size limits. The stream state machine used by both
+transports proves cleanup ownership and write/producer ordering for every finite
+event trace. [Formal scope](FORMAL_SCOPE.md) lists the precise quantifiers.
+
+**These do not prove the whole server correct.** URI authority/IPv6 and some
+field-specific RFC semantics, a whole-message chunked ABNF equivalence, and the
+IO interpreter/liveness remain open formal obligations. The Lean kernel,
+compiler/runtime, native ByteArray implementations, C FFI, libuv and OS remain in
+the trusted base. No claim of end-to-end RFC conformance is made.
 
 ## Reproduce validation and throughput
 

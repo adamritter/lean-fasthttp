@@ -1,0 +1,121 @@
+{
+  "evaluated_source_commit": "6210652caf65b443e657b67ea7f3eccd7d459088",
+  "lean_uv_commit": "7d6928df3c0a61490b037b616148c2f1beeede54",
+  "lean": "Lean (version 4.35.0, aarch64-unknown-linux-gnu, commit eb6cafb7290e8bd5f2937522d8d804f58f02bafc, Release)",
+  "source_and_binary_hashes_rechecked": true,
+  "formal": {
+    "kernel_checked_theorems": 182,
+    "scope": "partial",
+    "full_http11_conformance_proved": false,
+    "scope_document": "FORMAL_SCOPE.md",
+    "audit": "results/2026-10-24-chunk-trailer-proofs/proof-audit.json"
+  },
+  "fresh_exact_fragment_evaluation": {
+    "result": "PASS",
+    "checkpoint_verified": true,
+    "seed": 16204023061647128093,
+    "generated_pipelines": 10000,
+    "exact_fragment_cases": 28390,
+    "input_sha256": "1999a0e0cee6a1b3e8de1509b34a44c1c2feab553c0852c8bf6f901459a09c1b",
+    "probe_sha256": "03b302dec3bc0592ac1b0c9284547b90620db7b8d805ee70f822740cb7123631",
+    "case_classes": {
+      "absolute-uri-scheme": 5,
+      "all-field-name-octets": 256,
+      "all-field-value-octets": 256,
+      "all-method-octets": 256,
+      "all-trailer-name-octets": 256,
+      "all-trailer-value-octets": 256,
+      "authority-boundaries": 7,
+      "body-limit": 1,
+      "bounded-decimal-leading-zeros": 256,
+      "chunk-limit-exceeded": 1,
+      "chunk-quoted-string-all-octets": 512,
+      "chunked-cumulative-body-budget": 256,
+      "close-stops-pipeline": 3,
+      "combined-transfer-coding-fields": 4,
+      "every-split": 351,
+      "exact-chunk-limit": 1,
+      "exact-limits": 1,
+      "generated": 10000,
+      "generated-chunk-abnf-and-trailer-trim": 512,
+      "generated-chunk-trailing-bws-rejected": 512,
+      "head-limit": 1,
+      "hexadecimal-leading-zeros-budget": 256,
+      "independent-ipv6": 500,
+      "invalid-chunk-extensions": 5,
+      "invalid-ipv6": 1000,
+      "leading-crlf-splits": 65,
+      "limit-error-fragmentation": 8,
+      "malformed": 14,
+      "malformed-fragments": 14,
+      "minimal-http10-method": 1309,
+      "one-octet-fragments": 10,
+      "percent-escape-octets": 256,
+      "random-fragments": 10000,
+      "raw-header-and-pipeline-fragmentation": 732,
+      "transfer-coding-order": 5,
+      "transfer-quoted-string-all-octets": 512,
+      "zero-data-chunks": 1
+    }
+  },
+  "fresh_four_worker_wire_evaluation": {
+    "result": "PASS",
+    "seed": 13202364501338987955,
+    "workers": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "server_cpus": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "connections": 160,
+    "checked_responses": 975,
+    "completed_streams_by_worker": {
+      "0": 33,
+      "1": 37,
+      "2": 36,
+      "3": 54
+    },
+    "cleanup_check_connections": 7,
+    "request_semantics": "fixed, chunked, deferred, dynamic streaming, per-worker exactly-once cleanup, HEAD, close, half-close, pipeline ordering",
+    "input_sha256": "4896b3b65adf98c48b87157623e9854f9322d6f09cf580e84cc3e5f75a978e0b",
+    "binary_sha256": "b05c421c53e7dc0960028864294928be0dd8645b4b8348fd859b88c01abb0117"
+  },
+  "wire_regressions": {
+    "std": "results/2026-10-24-chunk-trailer-proofs/std-wire.log",
+    "lean_uv": "results/2026-10-24-chunk-trailer-proofs/uv-wire.log"
+  },
+  "throughput": {
+    "directory": "results/2026-10-24-protocol-proof-throughput",
+    "kind": "uv",
+    "workers_or_cpu_budget": 4,
+    "median_rps": 474364.08,
+    "min_rps": 470320.28,
+    "max_rps": 475032.65,
+    "runs": [
+      475032.65,
+      470320.28,
+      474364.08
+    ],
+    "timed_responses_validated": 21330064,
+    "invalid_responses": 0,
+    "io_workers": 4,
+    "server_cpu_budget": 4,
+    "total_os_threads": [
+      12
+    ],
+    "protocol": "HTTP/1.1 keep-alive, no pipelining, 1024-byte response, Linux loopback, no TLS",
+    "cpu_seconds_per_wall_second": [
+      3.988807933935151,
+      3.9925848095803085,
+      3.990693411040415
+    ]
+  },
+  "ci": "https://github.com/adamritter/lean-fasthttp/actions/runs/40117533948",
+  "ci_result": "success"
+}
