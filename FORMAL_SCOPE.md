@@ -17,6 +17,8 @@ and any axiom beyond `propext`, `Classical.choice` and `Quot.sound`. There is no
 | `decodeBody_pipeline_suffix` | Any completed public-decoder result and any appended byte suffix; the body, trailers and stop offset remain unchanged. |
 | `decodeBody_done_bounds` / `decodeBody_partition` | For any valid starting cursor, a successful stop stays inside the input; the consumed wire prefix and untouched suffix partition that input. |
 | `bodyByte_live` / `bodyList_more` | Every suspended state has a nonempty fixed remainder or a chunk phase; suspension consumes the entire supplied fragment. This is used in the public decoder composition proof. |
+| `feed_fragmentation` / `feed_fragments` in `FeedProofs` | The complete production `feed` function, every bounded state and every pair/finite list of byte buffers. Equality includes the complete Request (raw header bytes, all metadata, binary body, raw trailers), rejection status, Expect continuation and untouched pipeline bytes. `appendStep` explicitly buffers bytes arriving while a 100-continue action awaits acknowledgment. |
+| `feed_bound` / `feed_body_no_continue` | Every emitted continuation preserves the cursor invariants; a body continuation cannot emit another 100-continue action. |
 | `decimal_iff` in `NumericProofs` | Every byte array, interval, limit and result; the production Content-Length parser succeeds iff the interval is nonempty and in bounds, contains only RFC ASCII DIGIT octets, and its positional decimal value equals the result without exceeding the limit. |
 | `validPathQuery_iff` / `uriComponent_iff` in `SyntaxProofs` | Every wire interval and literal alphabet; acceptance is equivalent to an independent inductive grammar whose productions consume one literal or exactly percent + two ASCII HEXDIG octets. The path/query instantiation uses the RFC 3986 pchar, slash and question-mark alphabet. |
 | `chooseFraming`, `takeCount`, `takeBody` | Conflicting CL/TE rejection; exact declared fixed lengths; bounded byte slices, conservation, partition and fixed-body fragmentation. |
@@ -36,8 +38,8 @@ The following obligations are not established by these theorems:
   against an independently formalized RFC 9110/9112/3986 specification.
 * Hex parsing and chunk extension/trailer lexical correspondence with
   that grammar, and correctness of decimal/hex wire serialization.
-* Composition and semantic equivalence of the entire head-plus-body `feed`
-  interface, including header metadata, Expect/continue and application dispatch.
+* Application dispatch and the IO acknowledgment of actions. Pure head-plus-body
+  feed composition, including all metadata and Expect buffering, is established.
 * Response/stream ordering, cancellation, cleanup and liveness of the actual IO
   interpreter, and the C/libuv socket lifetime implementation.
 

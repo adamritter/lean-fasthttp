@@ -1,3 +1,4 @@
+import FastHTTP.FeedProofs
 import FastHTTP.NumericProofs
 import FastHTTP.SyntaxProofs
 import FastHTTP.ScannerProofs
@@ -84,3 +85,25 @@ import FastHTTP.BodyFastProofs
 #print axioms FastHTTP.Protocol.uriLoop_iff
 #print axioms FastHTTP.Protocol.uriComponent_iff
 #print axioms FastHTTP.Protocol.validPathQuery_iff
+
+#print axioms FastHTTP.Protocol.append_unless_empty
+#print axioms FastHTTP.Protocol.extract_prefix_append
+#print axioms FastHTTP.Protocol.extract_suffix_append
+#print axioms FastHTTP.Protocol.decodeBody_extract
+#print axioms FastHTTP.Protocol.bodyStep_extract
+#print axioms FastHTTP.Protocol.bodyStep_append
+#print axioms FastHTTP.Protocol.bodyStep_append_start
+#print axioms FastHTTP.Protocol.scanByte_bounds
+#print axioms FastHTTP.Protocol.scanList_bounds
+#print axioms FastHTTP.Protocol.scanFeedFast_bounds
+#print axioms FastHTTP.Protocol.headStep_append
+#print axioms FastHTTP.Protocol.feed_head_fragmentation
+#print axioms FastHTTP.Protocol.feed_body_fragmentation
+#print axioms FastHTTP.Protocol.feed_fragmentation
+#print axioms FastHTTP.Protocol.initial_state_bound
+#print axioms FastHTTP.Protocol.feed_initial_fragmentation
+#print axioms FastHTTP.Protocol.feed_fragments
+#print axioms FastHTTP.Protocol.bodyStep_bound
+#print axioms FastHTTP.Protocol.headStep_bound
+#print axioms FastHTTP.Protocol.feed_bound
+#print axioms FastHTTP.Protocol.feed_body_no_continue

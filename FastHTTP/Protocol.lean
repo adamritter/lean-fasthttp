@@ -3,7 +3,8 @@ import FastHTTP.Numeric
 
 namespace FastHTTP
 
-/-- Owns the receive buffer: safe to retain across asynchronous work. String
+/-- Owns exactly the wire header prefix, excluding body/pipeline bytes; safe to
+retain across asynchronous work and independent of TCP fragmentation. String
 conversion is lazy; routing with `targetIs` does not copy the target bytes. -/
 structure Request where
   raw : ByteArray
@@ -519,30 +520,35 @@ def headLimitStatus (cfg : Config) (bytes : ByteArray) : Nat := Id.run do
   while i < bytes.size && bytes[i]! > 32 && bytes[i]! < 127 do i := i + 1
   return if i - first > cfg.maxTargetBytes then 414 else 431
 
+/-- Interpret a completed/incomplete head scan. Only the exact header prefix is
+retained in Request.raw; body and pipeline bytes have their own ownership. Error
+classification uses only the bytes inspected before the configured limit. -/
+def headStep (cfg : Config) (bytes : ByteArray) (scanner : ScanState) : Step :=
+  if scanner.invalid then .reject (headLimitStatus cfg (bytes.extract 0 scanner.count))
+  else match scanner.stop with
+  | none => .need (.head bytes scanner)
+  | some stop =>
+    match parseHead cfg (bytes.extract 0 stop) stop with
+    | .error status => .reject status
+    | .ok head =>
+      if head.framing == .fixed 0 then
+        .request head.request (bytes.extract stop bytes.size)
+      else
+        let decoder : BodyState := { phase := match head.framing with
+          | .fixed n => .fixed n
+          | .chunked => .sizeLine }
+        if head.expectContinue then .«continue» (.body head.request decoder bytes stop)
+        else bodyStep cfg head.request decoder bytes stop
+
 /-- No socket, promise, task, or H1 dependency. One input produces one action.
 The driver resumes the returned continuation only after sending the response. -/
 def feed (cfg : Config) (state : State) (input : ByteArray) : Step :=
   match state with
   | .body request decoder pending start =>
     bodyStep cfg request decoder (if pending.isEmpty then input else pending ++ input) start
-  | .head pending scanner => Id.run do
-    let scanner := scanFeedFast cfg.maxHeaderBytes scanner input
-    let bytes := if pending.isEmpty then input else pending ++ input
-    if scanner.invalid then return .reject (headLimitStatus cfg bytes)
-    match scanner.stop with
-    | none => return .need (.head bytes scanner)
-    | some stop =>
-      match parseHead cfg bytes stop with
-      | .error status => return .reject status
-      | .ok head =>
-        if head.framing == .fixed 0 then
-          return .request head.request (bytes.extract stop bytes.size)
-        let decoder : BodyState := { phase := match head.framing with
-          | .fixed n => .fixed n
-          | .chunked => .sizeLine }
-        if head.expectContinue && head.framing != .fixed 0 then
-          return .«continue» (.body head.request decoder bytes stop)
-        return bodyStep cfg head.request decoder bytes stop
+  | .head pending scanner =>
+    headStep cfg (if pending.isEmpty then input else pending ++ input)
+      (scanFeedFast cfg.maxHeaderBytes scanner input)
 
 end Protocol
 end FastHTTP

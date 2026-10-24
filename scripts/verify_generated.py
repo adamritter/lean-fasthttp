@@ -58,11 +58,12 @@ def main():
     args = p.parse_args(); rng = random.Random(args.seed)
     inputs, expected, labels = [], [], []
 
-    def add(chunks, requests, continues=0, error=0, limits=None, label='generated'):
+    def add(chunks, requests, continues=0, error=0, limits=None, label='generated', raw_headers=None):
         case = {'chunks': [c.hex() for c in chunks]}
         if limits is not None: case['limits'] = limits
         inputs.append(case); expected.append(dict(requests=requests, continues=continues, error=error))
         labels.append(label)
+        if raw_headers is not None: expected[-1]['raw_headers'] = [h.hex() for h in raw_headers]
 
     for i in range(args.cases):
         pipeline, requests, count = b'', [], 0
@@ -191,6 +192,25 @@ def main():
         add(fragments(wire, rng), [r] if n <= limit else [],
             error=0 if n <= limit else 413, limits=[16384,limit,1024,16384,65536],
             label='bounded-decimal-leading-zeros')
+
+    # Full raw-header equality across header/body/pipeline splits. Previously
+    # Request.raw exposed different body/pipeline suffixes for different receives.
+    for chunked in [False, True]:
+        for expect in [False, True]:
+            first, r1, continues = request(b'body\x00\xff\r\n\r\n', chunked=chunked, expect=expect)
+            second, r2, _ = request(b'next', target='/next')
+            wire = first + second
+            raw = [first.split(b'\r\n\r\n',1)[0] + b'\r\n\r\n',
+                second.split(b'\r\n\r\n',1)[0] + b'\r\n\r\n']
+            for split in range(len(wire)+1):
+                add([wire[:split], wire[split:]], [r1,r2], continues,
+                    label='raw-header-and-pipeline-fragmentation', raw_headers=raw)
+    # A limit rejection must not inspect unconsumed future bytes to decide
+    # between 431 and 414. An eight-byte limit precedes the long target.
+    wire = b'GET /' + b'x'*10000 + b' HTTP/1.1\r\nHost: localhost\r\n\r\n'
+    for split in [0,1,7,8,9,10,9000,len(wire)]:
+        add([wire[:split], wire[split:]], [], error=431,
+            limits=[8,1048576,1024,16384,65536], label='limit-error-fragmentation')
 
     payload = ''.join(json.dumps(case) + '\n' for case in inputs).encode()
     run = subprocess.run([str(args.probe)], input=payload, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)

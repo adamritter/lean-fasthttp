@@ -29,6 +29,7 @@ private def requestJSON (r : Request) : Json := Json.mkObj [
 
 private structure Result where
   requests : Array Json := #[]
+  rawHeaders : Array String := #[]
   continues : Nat := 0
   error : Nat := 0
 
@@ -41,7 +42,7 @@ private def drain (cfg : Config) (step : Protocol.Step) (out : Result) :
     | .«continue» state => drain cfg (Protocol.feed cfg state .empty)
         { out with continues := out.continues + 1 } fuel
     | .request r rest =>
-      let out := { out with requests := out.requests.push (requestJSON r) }
+      let out := { out with requests := out.requests.push (requestJSON r), rawHeaders := out.rawHeaders.push (hex r.raw) }
       -- A closing request ends the connection; pipeline bytes must not dispatch.
       if r.close then (.head, out)
       else if rest.isEmpty then (.head, out)
@@ -71,7 +72,7 @@ private def evaluate (input : Json) : Except String Json := do
     | .head bytes _ => if bytes.isEmpty then "idle" else "head"
     | .body .. => "body"
   return Json.mkObj [("requests", .arr out.requests), ("continues", toJson out.continues),
-    ("error", toJson out.error), ("pending", toJson pending)]
+    ("error", toJson out.error), ("pending", toJson pending), ("raw_headers", toJson out.rawHeaders)]
 
 def main : IO Unit := do
   let stdin ← IO.getStdin
