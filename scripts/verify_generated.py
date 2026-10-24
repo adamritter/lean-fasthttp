@@ -131,6 +131,35 @@ def main():
         wire, r, _ = request(); wire = wire.replace(b'Host: localhost', b'Host: ' + host.encode())
         r['authority'] = host; add(fragments(wire, rng), [r], label='authority-boundaries')
 
+    # Independent stdlib IPv6 oracle, covering every decimal octet boundary,
+    # leading zeros, every compression position and non-ASCII literal bytes.
+    ipv6_candidates = [f'::ffff:{n}.1.2.3' for n in range(1000)]
+    ipv6_candidates += [f'::ffff:{n:02d}.1.2.3' for n in range(256)]
+    for count in range(11):
+        pieces = [f'{rng.randrange(65536):x}' for _ in range(count)]
+        ipv6_candidates.append(':'.join(pieces))
+        for position in range(count + 1):
+            ipv6_candidates.append(':'.join(pieces[:position]) + '::' + ':'.join(pieces[position:]))
+    for literal in ipv6_candidates:
+        try: ipaddress.IPv6Address(literal); valid = True
+        except ipaddress.AddressValueError: valid = False
+        host = '[' + literal + ']'
+        wire, r, _ = request(); wire = wire.replace(b'Host: localhost', b'Host: ' + host.encode())
+        r['authority'] = host
+        add(fragments(wire, rng), [r] if valid else [], error=0 if valid else 400,
+            label='ipv6-group-and-decimal-boundaries')
+    for byte in range(256):
+        host = b'[::' + bytes([byte]) + b']'
+        valid = byte in b'0123456789abcdefABCDEF'
+        wire, r, _ = request(); wire = wire.replace(b'Host: localhost', b'Host: ' + host)
+        r['authority'] = host.decode('latin1')
+        add(fragments(wire, rng), [r] if valid else [], error=0 if valid else 400,
+            label='all-ipv6-literal-octets-no-panic')
+    for count in [16, 64, 256, 1024, 4096]:
+        host = b'[' + b':'.join([b'1'] * count) + b']'
+        wire, _, _ = request(); wire = wire.replace(b'Host: localhost', b'Host: ' + host)
+        add(fragments(wire, rng), [], error=400, label='long-malformed-ipv6-groups')
+
     # Exercise the entire octet alphabet for field values, including obs-text.
     for b in range(256):
         wire, r, _ = request()
@@ -307,6 +336,7 @@ def main():
     payload = ''.join(json.dumps(case) + '\n' for case in inputs).encode()
     run = subprocess.run([str(args.probe)], input=payload, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
     assert run.returncode == 0, run.stderr.decode()
+    assert not run.stderr, run.stderr.decode(errors="replace")
     lines = run.stdout.splitlines()
     assert len(lines) == len(inputs), (len(lines), len(inputs), run.stderr)
     for i, (line, want) in enumerate(zip(lines, expected)):

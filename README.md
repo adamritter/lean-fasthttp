@@ -2,7 +2,7 @@
 
 Experimental callback HTTP/1.1 server in Lean 4.35.0, with a pure protocol state
 machine, built-in or per-worker lean-uv networking, prepared responses, streaming
-output, and 182 kernel-checked feed, framing, header, numeric and URI properties. **Not a fully verified or
+output, and 195 kernel-checked feed, framing, header, numeric and URI properties. **Not a fully verified or
 production-ready HTTP implementation.**
 
 ```sh
@@ -40,7 +40,7 @@ and limit-error classification. Both transports also execute the same proved str
 finite callback trace preserves single ownership of cleanup, HEAD suppression,
 producer/write sequencing and the different HTTP/1.0 and HTTP/1.1 endings.
 The IO interpreter, native callback delivery and application liveness remain
-outside that proof. All 182 theorems are audited for axioms. [Detailed formal scope](FORMAL_SCOPE.md)
+outside that proof. All 195 theorems are audited for axioms. [Detailed formal scope](FORMAL_SCOPE.md)
 distinguishes these guarantees from the still-unproved full RFC grammar and I/O
 interpreter; this is not a full formal proof of HTTP/1.1 conformance.
 
@@ -244,7 +244,7 @@ and throughput harness reject stale installed binaries or source changes after
 the build. A stale-copy regression covers changes to the source, lean-uv source,
 installed executable, Lake executable, and a missing manifest.
 
-`lake build FastHTTP.ProofAudit` checks 182 theorems
+`lake build FastHTTP.ProofAudit` checks 195 theorems
 without `sorry`, custom axioms, `unsafe` or `native_decide`. The optimized runtime
 scanner and decoder are proved equivalent to explicit references, not replaced
 by an unproved `implemented_by` implementation. Proof terms are erased and do
@@ -275,7 +275,7 @@ trimming, and end-to-end body-size limits. The stream state machine used by both
 transports proves cleanup ownership and write/producer ordering for every finite
 event trace. [Formal scope](FORMAL_SCOPE.md) lists the precise quantifiers.
 
-**These do not prove the whole server correct.** URI authority/IPv6 and some
+**These do not prove the whole server correct.** URI authority composition and some
 field-specific RFC semantics, a whole-message chunked ABNF equivalence, and the
 IO interpreter/liveness remain open formal obligations. The Lean kernel,
 compiler/runtime, native ByteArray implementations, C FFI, libuv and OS remain in

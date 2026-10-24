@@ -1,3 +1,4 @@
+import FastHTTP.IPv6Proofs
 import FastHTTP.TrailerProofs
 import FastHTTP.QuotedProofs
 import FastHTTP.LimitsProofs
@@ -200,3 +201,17 @@ import FastHTTP.BodyFastProofs
 #print axioms FastHTTP.Protocol.trailer_sound
 #print axioms FastHTTP.Protocol.trailer_complete
 #print axioms FastHTTP.Protocol.trailer_iff
+
+#print axioms FastHTTP.Protocol.validDecOctet_sound
+#print axioms FastHTTP.Protocol.validDecOctet_complete
+#print axioms FastHTTP.Protocol.validDecOctet_iff
+#print axioms FastHTTP.Protocol.validIPv4_iff
+#print axioms FastHTTP.Protocol.validH16_iff
+#print axioms FastHTTP.Protocol.ipv6Parts_sound
+#print axioms FastHTTP.Protocol.ipv6Parts_complete
+#print axioms FastHTTP.Protocol.ipv6Parts_iff
+#print axioms FastHTTP.Protocol.ipv6Groups_iff
+#print axioms FastHTTP.Protocol.validIPv6_iff
+#print axioms FastHTTP.Protocol.decOctet_value_bound
+#print axioms FastHTTP.Protocol.utf8IPv6_iff
+#print axioms FastHTTP.Protocol.invalid_utf8_ipv6_rejected

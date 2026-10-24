@@ -14,7 +14,7 @@ def main():
     invalid_hosts = [b'bad host', b'user@host', b'host/path', b'host#frag', b'host?query',
         b'[:::1]', b'[1:2:3:4:5:6:7]', b'[1:2:3:4:5:6:7:8:9]', b'[1:2:3:4:5:6:7:8::]',
         b'[::ffff:192.00.2.1]', b'[::ffff:256.1.2.3]', b'[::1', b'::1', b'host:port',
-        b'host:12:34', b'%zz', b'[v.a]', b'[v1.]', b'[::1]junk', b'\\host']
+        b'host:12:34', b'%zz', b'[v.a]', b'[v1.]', b'[::1]junk', b'\\host', b'[\xff]', b'[::\xc0\x80]', b'[::\xed\xa0\x80]']
     with server(ROOT / 'bin/lean-fast-http-example', PORT):
         for host in valid_hosts:
             exchange(b'GET /authority HTTP/1.1\r\nHost: ' + host + b'\r\n\r\n', host)

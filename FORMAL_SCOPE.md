@@ -29,6 +29,7 @@ and any axiom beyond `propext`, `Classical.choice` and `Quot.sound`. There is no
 | `trailer_iff` / `trimSpan_exact` in `TrailerProofs` | Exact equivalence of the production trailer parser to the independent field-line envelope, the explicit forbidden-name policy, and the original binary value with only outer OWS removed. Every interior octet is preserved, including obs-text and all-whitespace values. |
 | `quotedEnd_iff` in `QuotedProofs` | Soundness/completeness against an independent RFC 9110 quoted-string grammar, including every escaped octet, obs-text, rejected controls/DEL, missing terminators and the exact closing cursor. The same production function is called for chunk extensions and Transfer-Encoding parameters. |
 | `decimal_iff` in `NumericProofs` | Every byte array, interval, limit and result; the production Content-Length parser succeeds iff the interval is nonempty and in bounds, contains only RFC ASCII DIGIT octets, and its positional decimal value equals the result without exceeding the limit. |
+| `validIPv4_iff` / `validIPv6_iff` / `utf8IPv6_iff` in `IPv6Proofs` | Exact equivalence to the RFC decimal-octet and counted IPv6 group grammar: eight 16-bit pieces, one optional compression eliding at least one piece, and an IPv4 tail only in the final two pieces. Decimal octets exclude leading zeros and values above 255. Malformed UTF-8 is rejected without panic. Group traversal uses structural list recursion rather than repeated indexing. |
 | `validPathQuery_iff` / `uriComponent_iff` in `SyntaxProofs` | Every wire interval and literal alphabet; acceptance is equivalent to an independent inductive grammar whose productions consume one literal or exactly percent + two ASCII HEXDIG octets. The path/query instantiation uses the RFC 3986 pchar, slash and question-mark alphabet. |
 | `chooseFraming`, `takeCount`, `takeBody` | Conflicting CL/TE rejection; exact declared fixed lengths; bounded byte slices, conservation, partition and fixed-body fragmentation. |
 | `wireBody`, `responseLength` | HEAD/204/304 body suppression and ordinary prepared-body length correspondence; 204 omits Content-Length. |
@@ -43,10 +44,11 @@ equivalent to RFC ABNF: that distinction matters for the lexical helpers below.
 
 The following obligations are not established by these theorems:
 
-* The remaining URI authority/IPv6 grammar and field-specific Host, Connection,
+* URI authority composition and field-specific Host, Connection,
   Expect and Transfer-Encoding semantics against the RFCs. The request-line
   envelope, field-line envelope, complete accepted header-block structure and
-  URI atom grammar now have independent formal specifications and proofs.
+  URI atom grammar and the IPv4/IPv6 counted-group grammar now have independent
+  formal specifications and proofs.
 * An independent whole-message chunked-body ABNF equivalence. The complete
   chunk-extension grammar, trailer field grammar, quoted strings, decimal and
   hexadecimal numerals and wire serialization now have proofs; the body automaton

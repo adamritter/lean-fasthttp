@@ -57,28 +57,38 @@ def validPathQuery (bytes : ByteArray) (start stop : Nat) : Bool :=
   uriComponent bytes start stop fun b =>
     unreserved b || subDelimiter b || b == 58 || b == 64 || b == 47 || b == 63
 
-private def validIPv4 (s : String) : Bool :=
-  let parts := s.splitOn "."
-  parts.length == 4 && parts.all fun p =>
-    !p.isEmpty && p.utf8ByteSize <= 3 &&
-    (p.utf8ByteSize == 1 || !p.startsWith "0") &&
-    p.toUTF8.data.all (fun b => b >= 48 && b <= 57) &&
-    (p.toNat?.isSome && p.toNat! <= 255)
+/-- RFC 3986 dec-octet: the five ASCII alternatives exclude leading zeros
+and values above 255 without integer conversion or overflow. -/
+def validDecOctet (xs : List UInt8) : Bool :=
+  let digit (b : UInt8) := b >= 48 && b <= 57
+  match xs with
+  | [a] => digit a
+  | [a, b] => a >= 49 && a <= 57 && digit b
+  | [a, b, c] =>
+    (a == 49 && digit b && digit c) ||
+    (a == 50 && b >= 48 && b <= 52 && digit c) ||
+    (a == 50 && b == 53 && c >= 48 && c <= 53)
+  | _ => false
 
-private def ipv6Groups (s : String) (ipv4 : Bool) : Option Nat := do
-  if s.isEmpty then return 0
-  let parts := s.splitOn ":"
-  let mut n := 0
-  for i in [:parts.length] do
-    let p := parts[i]!
-    if p.isEmpty then failure
+def validIPv4 (s : String) : Bool :=
+  let parts := s.splitOn "."
+  parts.length == 4 && parts.all fun p => validDecOctet p.toUTF8.data.toList
+
+def validH16 (s : String) : Bool :=
+  s.utf8ByteSize > 0 && s.utf8ByteSize ≤ 4 && s.toUTF8.data.all hexDigit
+
+/-- Structural traversal is linear in the number of groups, including malformed
+long inputs; the old indexed List traversal was quadratic. -/
+def ipv6Parts (parts : List String) (ipv4 : Bool) : Option Nat :=
+  match parts with
+  | [] => some 0
+  | p :: rest =>
     if p.contains '.' then
-      if !ipv4 || i + 1 != parts.length || !validIPv4 p then failure
-      n := n + 2
-    else
-      if p.utf8ByteSize > 4 || !p.toUTF8.data.all hexDigit then failure
-      n := n + 1
-  return n
+      if ipv4 && rest.isEmpty && validIPv4 p then some 2 else none
+    else if validH16 p then (ipv6Parts rest ipv4).map (· + 1) else none
+
+def ipv6Groups (s : String) (ipv4 : Bool) : Option Nat :=
+  if s.isEmpty then some 0 else ipv6Parts (s.splitOn ":") ipv4
 
 /-- RFC 3986 IPv6address, including a final IPv4 ls32 and a single :: compression. -/
 def validIPv6 (s : String) : Bool :=
@@ -89,10 +99,16 @@ def validIPv6 (s : String) : Bool :=
     | _, _ => false
   | _ => false
 
+/-- Reject malformed UTF-8 without panic before interpreting an IPv6 literal. -/
+def utf8IPv6 (bytes : ByteArray) : Bool :=
+  match String.fromUTF8? bytes with
+  | none => false
+  | some text => validIPv6 text
+
 private def validIPLiteral (bytes : ByteArray) (start stop : Nat) : Bool := Id.run do
   if start == stop then return false
   if lower bytes[start]! != 118 then
-    return validIPv6 (String.fromUTF8! (bytes.extract start stop))
+    return utf8IPv6 (bytes.extract start stop)
   let mut i := start + 1
   while i < stop && hexDigit bytes[i]! do i := i + 1
   if i == start + 1 || i >= stop || bytes[i]! != 46 then return false
