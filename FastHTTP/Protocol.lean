@@ -209,7 +209,8 @@ where
   termination_by stop - 2 - i
 
 /-- Strict origin-server grammar. Duplicated framing fields and obsolete folding
-are rejected; methods are tokens, targets are origin-form or OPTIONS *. -/
+are rejected; methods are tokens and targets support all four RFC forms.
+CONNECT and unsupported transfer codings/schemes receive 501. -/
 def parseHead (cfg : Config) (bytes : ByteArray) (stop : Nat) : Except Nat Head := do
   if stop > bytes.size || stop < 16 || bytes[stop - 4]! != 13 || bytes[stop - 3]! != 10 ||
       bytes[stop - 2]! != 13 || bytes[stop - 1]! != 10 then throw 400

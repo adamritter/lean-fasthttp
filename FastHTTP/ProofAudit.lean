@@ -1,12 +1,15 @@
 import FastHTTP.AuthorityProofs
 import FastHTTP.BodyFastProofs
+import FastHTTP.BodyGrammarProofs
 import FastHTTP.BodyLimitProofs
 import FastHTTP.BodyProofs
 import FastHTTP.ChunkGrammarProofs
 import FastHTTP.FeedProofs
 import FastHTTP.FieldsProofs
+import FastHTTP.HeadGrammarProofs
 import FastHTTP.HeaderLimitProofs
 import FastHTTP.HeaderProofs
+import FastHTTP.HeaderSemanticsProofs
 import FastHTTP.HexProofs
 import FastHTTP.IPv6Proofs
 import FastHTTP.LexicalProofs
@@ -49,6 +52,17 @@ import FastHTTP.WireProofs
 #print axioms FastHTTP.Protocol.decodeBody_partition
 #print axioms FastHTTP.Protocol.decodeBody_fixed_exact
 #print axioms FastHTTP.Protocol.decodeBody_pipeline_suffix
+#print axioms FastHTTP.Protocol.hex_is_token
+#print axioms FastHTTP.Protocol.chunkSize_complete
+#print axioms FastHTTP.Protocol.chunkSize_iff
+#print axioms FastHTTP.Protocol.pair_witness
+#print axioms FastHTTP.Protocol.bodyByte_grammar
+#print axioms FastHTTP.Protocol.bodyWire_fold
+#print axioms FastHTTP.Protocol.bodyList_live_wire
+#print axioms FastHTTP.Protocol.bodyList_wire
+#print axioms FastHTTP.Protocol.bodyScan_done_iff
+#print axioms FastHTTP.Protocol.decodeBody_grammar_iff
+#print axioms FastHTTP.Protocol.decodeChunked_grammar_iff
 #print axioms FastHTTP.Protocol.bodyByte_budget
 #print axioms FastHTTP.Protocol.bodyInitial_budget
 #print axioms FastHTTP.Protocol.bodyAdvance_budget
@@ -134,6 +148,11 @@ import FastHTTP.WireProofs
 #print axioms FastHTTP.Protocol.transferList_sound
 #print axioms FastHTTP.Protocol.transferList_complete
 #print axioms FastHTTP.Protocol.transferCodings_iff
+#print axioms FastHTTP.Protocol.parseHeaders_meaning_sound
+#print axioms FastHTTP.Protocol.parseHeaders_meaning_complete
+#print axioms FastHTTP.Protocol.parseHeaders_grammar_iff
+#print axioms FastHTTP.Protocol.chooseFraming_grammar_iff
+#print axioms FastHTTP.Protocol.parseHead_grammar_iff
 #print axioms FastHTTP.Protocol.parseField_budget
 #print axioms FastHTTP.Protocol.parseHeaders_loop_budget
 #print axioms FastHTTP.Protocol.parseHeaders_budget
@@ -142,6 +161,12 @@ import FastHTTP.WireProofs
 #print axioms FastHTTP.Protocol.parseHeaders_loop_sound
 #print axioms FastHTTP.Protocol.parseHeaders_sound
 #print axioms FastHTTP.Protocol.parseHead_envelope
+#print axioms FastHTTP.Protocol.canonicalTrimmed_sound
+#print axioms FastHTTP.Protocol.canonicalTrimmed_complete
+#print axioms FastHTTP.Protocol.extract_octets
+#print axioms FastHTTP.Protocol.decimal_success_span
+#print axioms FastHTTP.Protocol.headerField_trim
+#print axioms FastHTTP.Protocol.parseField_grammar_iff
 #print axioms FastHTTP.Protocol.hexadecimalValue_mono
 #print axioms FastHTTP.Protocol.hexadecimalStep_iff
 #print axioms FastHTTP.Protocol.hexadecimalFold_none

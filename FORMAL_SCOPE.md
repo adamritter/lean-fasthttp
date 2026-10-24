@@ -20,6 +20,9 @@ and any axiom beyond `propext`, `Classical.choice` and `Quot.sound`. There is no
 | `feed_fragmentation` / `feed_fragments` in `FeedProofs` | The complete production `feed` function, every bounded state and every pair/finite list of byte buffers. Equality includes the complete Request (raw header bytes, all metadata, binary body, raw trailers), rejection status, Expect continuation and untouched pipeline bytes. `appendStep` explicitly buffers bytes arriving while a 100-continue action awaits acknowledgment. |
 | `feed_bound` / `feed_body_no_continue` | Every emitted continuation preserves the cursor invariants; a body continuation cannot emit another 100-continue action. |
 | `parseRequestLine_iff` / `parseFieldLine_iff` in `LexicalProofs` | Soundness and completeness against independent wire-envelope grammars: nonempty tchar method and field name, exact SP/colon/CRLF positions, supported HTTP/1.x version digits, ASCII target envelope, all field-value octets including obs-text, exact returned spans and target limit. URI and field-specific semantics are separate obligations. |
+| `parseHead_grammar_iff` in `HeadGrammarProofs` | Exact equivalence of the complete production head parser and independently specified request-line, all four target forms, complete ordered header semantics, framing and supported-feature policy. Includes every returned routing span, HTTP version, connection/HEAD/Expect flag and duplicate-field rejection. |
+| `parseField_grammar_iff` / `parseHeaders_grammar_iff` | Each grammatical field updates exactly the accumulated Content-Length, Transfer-Encoding, Host, Expect and Connection state; both directions cover the complete ordered field block and mandatory Host policy. |
+| `decodeBody_grammar_iff` / `decodeChunked_grammar_iff` in `BodyGrammarProofs` | The actual optimized decoder succeeds iff the input has an independently grammatical body prefix. Exact decoded payload, raw trailers, stopping cursor and untouched suffix are included. `BodyWire` is an inductive operational wire grammar; its byte productions use independent numeral, extension and trailer grammars, not calls to the body parser. |
 | `parseHead_envelope` in `HeaderProofs` | Every accepted production request head has that grammatical request line and a complete inductive sequence of valid field lines ending at the empty CRLF, with the exact raw bytes and metadata returned to the application. |
 | `decimal_wire_roundtrip` / `encodeChunk_wire` in `WireProofs` | Every natural length and every binary payload. The actual decimal formatter round-trips through the production bounded parser; the actual chunk encoder emits hexadecimal length + CRLF, the unchanged payload and CRLF. UTF-8 ASCII correspondence and positional value are proved for all bases 2..16, without a machine-word bound. |
 | `streamStep_*` / `streamTrace_*` / `streamCommands_head` in `StreamMachineProofs` | Both actual transports execute `Protocol.streamStep`. Every finite callback-event trace conserves a single cleanup right; cleanup occurs at most once and exactly once after ownership ends. Producer pulls require a write-completion event; body writes require a pending producer result; HEAD never pulls or emits body chunks; HTTP/1.0 EOF and HTTP/1.1 final-chunk ordering are distinguished. |
@@ -37,28 +40,16 @@ and any axiom beyond `propext`, `Classical.choice` and `Quot.sound`. There is no
 | `chooseFraming`, `takeCount`, `takeBody` | Conflicting CL/TE rejection; exact declared fixed lengths; bounded byte slices, conservation, partition and fixed-body fragmentation. |
 | `wireBody`, `responseLength` | HEAD/204/304 body suppression and ordinary prepared-body length correspondence; 204 omits Content-Length. |
 
-`bodyLoop`/`bodyFold` specify the byte-by-byte execution of `bodyByte`.
 `bodyFastLoop` is the implementation used by `decodeBody`, and `Protocol.feed`
-calls this decoder. The proof does not rely on generated test cases. It also
-does not assert that every branch of `bodyByte` has independently been proved
-equivalent to RFC ABNF: that distinction matters for the lexical helpers below.
+calls this decoder. `BodyGrammarProofs` connects every successful byte transition
+and the entire optimized fold to `BodyWire`, including limits and trailers.
+The proof does not rely on generated test cases. `BodyWire` is an operational
+wire grammar, not a transcription of RFC ABNF into a separate grammar language.
 
 ## Not yet a full HTTP/1.1 conformance proof
 
 The following obligations are not established by these theorems:
 
-* Field-specific Host, Connection, Expect and Transfer-Encoding state
-  accumulation across the complete header block. Authority and all request-target
-  forms and both complete Connection/Transfer-Encoding list parsers now have exact
-  independent grammar equivalence theorems. The request-line
-  envelope, field-line envelope, complete accepted header-block structure and
-  URI atom grammar and the IPv4/IPv6 counted-group grammar now have independent
-  formal specifications and proofs.
-* An independent whole-message chunked-body ABNF equivalence. The complete
-  chunk-extension grammar, trailer field grammar, quoted strings, decimal and
-  hexadecimal numerals and wire serialization now have proofs; the body automaton
-  has bulk-loop refinement, fragmentation and budget proofs. These are not yet a
-  single whole-message RFC grammar equivalence theorem.
 * Application dispatch and the IO acknowledgment of actions. Pure head-plus-body
   feed composition, including all metadata and Expect buffering, is established.
 * End-to-end IO refinement and liveness, cancellation of application-owned
