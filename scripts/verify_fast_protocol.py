@@ -81,6 +81,28 @@ def main():
             assert f.readline()==b'10000\r\n'; assert f.read(65536)==b's'*65536
             assert f.read(2)==b'\r\n'; assert f.read(1)==b''
         exchange(req(target='/released'),b'3')
+        # Closing while a producer promise is pending must release exactly once;
+        # a later completion must not revive the connection or run cleanup twice.
+        for _ in range(16):
+            with socket.create_connection(('127.0.0.1', PORT), timeout=5) as s:
+                s.sendall(req(target='/stream-deferred'))
+                header = b''
+                while not header.endswith(b'\r\n\r\n'):
+                    part = s.recv(1)
+                    assert part, 'EOF before stream headers'
+                    header += part
+                assert b'200 OK' in header
+        deadline = time.monotonic() + 5
+        while True:
+            try:
+                exchange(req(target='/released'),b'19')
+                break
+            except AssertionError:
+                if time.monotonic() >= deadline: raise
+                time.sleep(.05)
+        time.sleep(.3)
+        exchange(req(target='/released'),b'19')
+
         for method in ['GET','POST','PUT','PATCH','DELETE','OPTIONS','CUSTOM']:
             exchange(req(method,'/method'),method.encode())
         exchange(req('OPTIONS','*'))
@@ -179,6 +201,7 @@ def main():
         results['protocol']={'result':'PASS','all_splits':True,'one_byte_fragments':True,
             'fixed_and_chunked_body_sizes':[0,1,8191,8192,8193,65536,1048576],
             'streaming':'8 MiB, delayed reader, HEAD suppression, producer error, exactly-once release',
+            'abandoned_pending_streams':16,
             'invalid_cases':len(invalid),'concurrent_pipelined_posts':1280,
             'head_no_body_statuses_trailers_expect_headers_deferred_half_close':'PASS'}
     print(json.dumps(results,indent=2))

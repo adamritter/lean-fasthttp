@@ -12,18 +12,27 @@ private structure Context where
   dates : DateCache
   writeLimit : Nat
 
+private structure Streaming where
+  request : Request
+  rest : ByteArray
+  response : StreamResponse
+  control : IO.Ref Protocol.StreamState
+
 private structure Connection where
   socket : LeanUV.TCP.Socket
   state : IO.Ref Protocol.State
   pending : IO.Ref (Option (IO Unit))
-  release : IO.Ref (Option (IO Unit))
+  stream : IO.Ref (Option Streaming)
   closed : IO.Ref Bool
 
 private def release (c : Connection) : IO Unit := do
-  let action ← c.release.get
-  c.release.set none
-  if let some action := action then
-    try action catch _ => pure ()
+  let active ← c.stream.get
+  c.stream.set none
+  if let some stream := active then
+    let transition := Protocol.streamStep stream.request (← stream.control.get) .closed
+    stream.control.set transition.state
+    if transition.release then
+      try stream.response.release catch _ => pure ()
 
 private def abort (c : Connection) : IO Unit := do
   c.pending.set none
@@ -94,26 +103,36 @@ mutual
       | _ => reject c ctx 500
     else suspend c (deferred c ctx request rest promise)
 
-  private partial def streamResult (c : Connection) (ctx : Context)
-      (request : Request) (rest : ByteArray) (response : StreamResponse)
+  private partial def streamResult (c : Connection) (ctx : Context) (stream : Streaming)
       (promise : IO.Promise (Except IO.Error (Option ByteArray))) (fuel : Nat) : IO Unit := do
     if !(← IO.hasFinished promise.result?) then
-      return ← suspend c (streamResult c ctx request rest response promise 256)
+      return ← suspend c (streamResult c ctx stream promise 256)
     match promise.result?.get with
-    | some (.ok none) =>
-      release c
-      if request.versionMinor == 0 then finish c
-      else write c ctx #["0\r\n\r\n".toUTF8] (resume c ctx request rest fuel)
-    | some (.ok (some bytes)) =>
-      if bytes.isEmpty then return ← abort c
-      write c ctx (if request.versionMinor == 0 then #[bytes] else encodeChunk bytes)
-        (pullStream c ctx request rest response fuel)
-    | _ => abort c
+    | some (.ok none) => runStream c ctx stream .eof fuel
+    | some (.ok (some bytes)) => runStream c ctx stream (.chunk bytes) fuel
+    | _ => runStream c ctx stream .failed fuel
 
-  private partial def pullStream (c : Connection) (ctx : Context)
-      (request : Request) (rest : ByteArray) (response : StreamResponse) (fuel : Nat) : IO Unit := do
-    if fuel == 0 then return ← suspend c (pullStream c ctx request rest response 256)
-    streamResult c ctx request rest response (← response.next) (fuel - 1)
+  private partial def pullStream (c : Connection) (ctx : Context) (stream : Streaming) (fuel : Nat) : IO Unit := do
+    if fuel == 0 then return ← suspend c (pullStream c ctx stream 256)
+    streamResult c ctx stream (← stream.response.next) (fuel - 1)
+
+  /-- Commit the proved transition before executing its effects. Wakeups and
+  producer completions remain on the socket's owning worker. -/
+  private partial def runStream (c : Connection) (ctx : Context) (stream : Streaming)
+      (event : Protocol.StreamEvent) (fuel : Nat) : IO Unit := do
+    let transition := Protocol.streamStep stream.request (← stream.control.get) event
+    stream.control.set transition.state
+    if transition.release then
+      try stream.response.release catch _ => pure ()
+    match transition.command with
+    | .idle => pure ()
+    | .resume =>
+      c.stream.set none
+      resume c ctx stream.request stream.rest fuel
+    | .finish => finish c
+    | .abort => abort c
+    | .pull => pullStream c ctx stream fuel
+    | .write buffers => write c ctx buffers (runStream c ctx stream .written fuel)
 
   private partial def process (c : Connection) (ctx : Context)
       (step : Protocol.Step) (fuel : Nat) : IO Unit := do
@@ -129,12 +148,11 @@ mutual
       | .ready response => send c ctx request rest response fuel
       | .deferred promise => deferred c ctx request rest promise
       | .streaming response =>
-        c.release.set (some response.release)
-        write c ctx (response.buffers request.close (request.versionMinor == 0) (← ctx.dates.get)) do
-          if request.isHead then
-            release c
-            resume c ctx request rest fuel
-          else pullStream c ctx request rest response fuel
+        let stream : Streaming := ⟨request, rest, response, ← IO.mkRef {}⟩
+        c.stream.set (some stream)
+        write c ctx (response.buffers request.close (request.versionMinor == 0) (← ctx.dates.get))
+          (runStream c ctx stream .written fuel)
+
 end
 
 /-- Create handlers and mutable application state inside `makeHandler`, once per

@@ -13,6 +13,30 @@ def makeHandler : IO FastHTTP.Handler := do
   let released ← IO.mkRef 0
   return fun request => do
     if request.targetIs "/released" then return .ready (← prepared (toString (← released.get)))
+    if request.targetIs "/stream-body" then
+      let offset ← IO.mkRef 0
+      let next := do
+        let promise ← IO.Promise.new
+        let first ← offset.get
+        if first == request.body.size then promise.resolve (.ok none)
+        else
+          let last := min request.body.size (first + 1024)
+          offset.set last
+          promise.resolve (.ok (some (request.body.extract first last)))
+        return promise
+      let response ← IO.ofExcept ((FastHTTP.StreamResponse.create next
+        (released.modify (· + 1))).mapError IO.userError)
+      return .streaming response
+    if request.targetIs "/stream-deferred" then
+      let next := do
+        let promise ← IO.Promise.new
+        let _ ← IO.asTask (prio := .dedicated) do
+          IO.sleep 100
+          promise.resolve (.ok (some "later".toUTF8))
+        return promise
+      let response ← IO.ofExcept ((FastHTTP.StreamResponse.create next
+        (released.modify (· + 1))).mapError IO.userError)
+      return .streaming response
     if request.targetIs "/stream" || request.targetIs "/stream-error" then
       let remaining ← IO.mkRef (if request.targetIs "/stream-error" then 1 else 128)
       let chunk := (String.ofList (List.replicate 65536 's')).toUTF8

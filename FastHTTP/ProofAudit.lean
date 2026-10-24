@@ -1,3 +1,4 @@
+import FastHTTP.StreamMachineProofs
 import FastHTTP.WireProofs
 import FastHTTP.HeaderProofs
 import FastHTTP.FeedProofs
@@ -134,3 +135,16 @@ import FastHTTP.BodyFastProofs
 #print axioms FastHTTP.Protocol.decimal_wire_encoding
 #print axioms FastHTTP.Protocol.decimal_wire_roundtrip
 #print axioms FastHTTP.Protocol.encodeChunk_wire
+
+#print axioms FastHTTP.Protocol.streamStep_resource
+#print axioms FastHTTP.Protocol.streamStep_done
+#print axioms FastHTTP.Protocol.streamStep_pull_after_write
+#print axioms FastHTTP.Protocol.streamStep_write_from_producer
+#print axioms FastHTTP.Protocol.streamStep_head
+#print axioms FastHTTP.Protocol.streamStep_legacy_chunk
+#print axioms FastHTTP.Protocol.streamStep_legacy_eof
+#print axioms FastHTTP.Protocol.streamStep_modern_eof
+#print axioms FastHTTP.Protocol.streamTrace_resource
+#print axioms FastHTTP.Protocol.streamTrace_release_once
+#print axioms FastHTTP.Protocol.streamTrace_cleanup_complete
+#print axioms FastHTTP.Protocol.streamCommands_head

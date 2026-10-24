@@ -22,6 +22,7 @@ and any axiom beyond `propext`, `Classical.choice` and `Quot.sound`. There is no
 | `parseRequestLine_iff` / `parseFieldLine_iff` in `LexicalProofs` | Soundness and completeness against independent wire-envelope grammars: nonempty tchar method and field name, exact SP/colon/CRLF positions, supported HTTP/1.x version digits, ASCII target envelope, all field-value octets including obs-text, exact returned spans and target limit. URI and field-specific semantics are separate obligations. |
 | `parseHead_envelope` in `HeaderProofs` | Every accepted production request head has that grammatical request line and a complete inductive sequence of valid field lines ending at the empty CRLF, with the exact raw bytes and metadata returned to the application. |
 | `decimal_wire_roundtrip` / `encodeChunk_wire` in `WireProofs` | Every natural length and every binary payload. The actual decimal formatter round-trips through the production bounded parser; the actual chunk encoder emits hexadecimal length + CRLF, the unchanged payload and CRLF. UTF-8 ASCII correspondence and positional value are proved for all bases 2..16, without a machine-word bound. |
+| `streamStep_*` / `streamTrace_*` / `streamCommands_head` in `StreamMachineProofs` | Both actual transports execute `Protocol.streamStep`. Every finite callback-event trace conserves a single cleanup right; cleanup occurs at most once and exactly once after ownership ends. Producer pulls require a write-completion event; body writes require a pending producer result; HEAD never pulls or emits body chunks; HTTP/1.0 EOF and HTTP/1.1 final-chunk ordering are distinguished. |
 | `decimal_iff` in `NumericProofs` | Every byte array, interval, limit and result; the production Content-Length parser succeeds iff the interval is nonempty and in bounds, contains only RFC ASCII DIGIT octets, and its positional decimal value equals the result without exceeding the limit. |
 | `validPathQuery_iff` / `uriComponent_iff` in `SyntaxProofs` | Every wire interval and literal alphabet; acceptance is equivalent to an independent inductive grammar whose productions consume one literal or exactly percent + two ASCII HEXDIG octets. The path/query instantiation uses the RFC 3986 pchar, slash and question-mark alphabet. |
 | `chooseFraming`, `takeCount`, `takeBody` | Conflicting CL/TE rejection; exact declared fixed lengths; bounded byte slices, conservation, partition and fixed-body fragmentation. |
@@ -45,8 +46,10 @@ The following obligations are not established by these theorems:
   with that grammar. Decimal/hex numeral wire serialization is now established.
 * Application dispatch and the IO acknowledgment of actions. Pure head-plus-body
   feed composition, including all metadata and Expect buffering, is established.
-* Response/stream ordering, cancellation, cleanup and liveness of the actual IO
-  interpreter, and the C/libuv socket lifetime implementation.
+* End-to-end IO refinement and liveness, cancellation of application-owned
+  producers, and the C/libuv socket lifetime implementation. Stream control and
+  cleanup decisions are now proved and executed by both adapters; callback
+  delivery, IO.Ref behavior and native writes remain inside the trust boundary.
 
 These areas have independent generated and real-socket regressions, including
 all byte values in field values, independently generated IPv6 addresses, malformed

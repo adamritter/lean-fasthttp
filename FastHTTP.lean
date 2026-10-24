@@ -1,6 +1,6 @@
 import Std.Internal.UV.TCP
 import FastHTTP.Protocol
-import FastHTTP.Stream
+import FastHTTP.StreamMachine
 import FastHTTP.Date
 
 namespace FastHTTP
@@ -19,6 +19,12 @@ private structure Context where
   handler : Handler
   config : Config
   dates : DateCache
+
+private structure Streaming where
+  request : Request
+  rest : ByteArray
+  response : StreamResponse
+  control : IO.Ref Protocol.StreamState
 
 private abbrev Socket := Std.Internal.UV.TCP.Socket
 
@@ -70,15 +76,12 @@ mutual
         match ← ctx.handler request with
         | .ready response => send client ctx request rest response
         | .streaming response =>
+          let stream : Streaming := ⟨request, rest, response, ← IO.mkRef {}⟩
           try
             after (← client.send (response.buffers request.close (request.versionMinor == 0) (← ctx.dates.get))) fun
-              | .error _ => endStream client response
-              | .ok () => do
-                if request.isHead then
-                  releaseStream response
-                  resume client ctx request rest
-                else pullStream client ctx request rest response
-          catch _ => endStream client response
+              | .error _ => runStream client ctx stream .failed
+              | .ok () => runStream client ctx stream .written
+          catch _ => runStream client ctx stream .failed
         | .deferred promise =>
           after promise fun
             | .ok response => send client ctx request rest response
@@ -100,41 +103,31 @@ mutual
     else if rest.isEmpty then receive client ctx (.head)
     else process client ctx (Protocol.feed ctx.config (.head) rest)
 
-  private partial def releaseStream (response : StreamResponse) : IO Unit := do
-    try response.release
-    catch _ => pure ()
-
-  private partial def endStream (client : Socket) (response : StreamResponse) : IO Unit := do
-    releaseStream response
-    finish client
-
-  private partial def writeStreamEnd (client : Socket) (ctx : Context)
-      (request : Request) (rest : ByteArray) (response : StreamResponse) : IO Unit := do
-    releaseStream response
-    if request.versionMinor == 0 then return ← finish client
-    try
-      after (← client.send #["0\r\n\r\n".toUTF8]) fun
-        | .ok () => resume client ctx request rest
-        | .error _ => finish client
-    catch _ => finish client
-
-  private partial def writeStreamChunk (client : Socket) (ctx : Context)
-      (request : Request) (rest : ByteArray) (response : StreamResponse) (bytes : ByteArray) : IO Unit := do
-    if bytes.isEmpty then return ← endStream client response
-    try
-      after (← client.send (if request.versionMinor == 0 then #[bytes] else encodeChunk bytes)) fun
-        | .ok () => pullStream client ctx request rest response
-        | .error _ => endStream client response
-    catch _ => endStream client response
-
-  private partial def pullStream (client : Socket) (ctx : Context)
-      (request : Request) (rest : ByteArray) (response : StreamResponse) : IO Unit := do
-    try
-      after (← response.next) fun
-        | .error _ => endStream client response
-        | .ok none => writeStreamEnd client ctx request rest response
-        | .ok (some bytes) => writeStreamChunk client ctx request rest response bytes
-    catch _ => endStream client response
+  /-- Both transports execute the same proved stream transition policy. State
+  is committed before cleanup/IO, so a failure cannot replay resource release. -/
+  private partial def runStream (client : Socket) (ctx : Context) (stream : Streaming)
+      (event : Protocol.StreamEvent) : IO Unit := do
+    let transition := Protocol.streamStep stream.request (← stream.control.get) event
+    stream.control.set transition.state
+    if transition.release then
+      try stream.response.release catch _ => pure ()
+    match transition.command with
+    | .idle => pure ()
+    | .resume => resume client ctx stream.request stream.rest
+    | .finish | .abort => finish client
+    | .pull =>
+      try
+        after (← stream.response.next) fun
+          | .error _ => runStream client ctx stream .failed
+          | .ok none => runStream client ctx stream .eof
+          | .ok (some bytes) => runStream client ctx stream (.chunk bytes)
+      catch _ => runStream client ctx stream .failed
+    | .write buffers =>
+      try
+        after (← client.send buffers) fun
+          | .ok () => runStream client ctx stream .written
+          | .error _ => runStream client ctx stream .failed
+      catch _ => runStream client ctx stream .failed
 
 end
 
