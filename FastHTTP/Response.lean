@@ -13,10 +13,10 @@ end Protocol
 
 /-- Prepared responses, including HEAD variants retaining representation length. -/
 structure Response where
-  private keepAlive : Array ByteArray
-  private closing : Array ByteArray
-  private headKeepAlive : Array ByteArray
-  private headClosing : Array ByteArray
+  private keepAlive : ByteArray
+  private closing : ByteArray
+  private legacy : ByteArray
+  private payload : ByteArray
 
 def validFieldValue (text : String) : Bool :=
   text.toUTF8.data.all fun b => (b >= 32 && b != 127) || b == 9
@@ -26,7 +26,7 @@ def responseFields (headers : Array (String × String)) : Except String String :
   for (name, value) in headers do
     if name.isEmpty || !name.toUTF8.data.all token || !validFieldValue value then
       throw "invalid response header"
-    if ["content-length", "transfer-encoding", "connection", "trailer", "upgrade"].contains name.toLower then
+    if ["content-length", "transfer-encoding", "connection", "trailer", "upgrade", "date"].contains name.toLower then
       throw "response framing fields are managed by FastHTTP"
     out := out ++ s!"{name}: {value}\r\n"
   return out
@@ -42,14 +42,17 @@ def Response.create (body : ByteArray) (status : Nat := 200) (reason := "OK")
   let length := match Protocol.responseLength status body with
     | none => ""
     | some n => s!"Content-Length: {n}\r\n"
-  let headerStart := s!"HTTP/1.1 {status} {reason}\r\n{length}Content-Type: {contentType}\r\n{fields}Connection: "
-  let keep := (headerStart ++ "keep-alive\r\n\r\n").toUTF8
-  let close := (headerStart ++ "close\r\n\r\n").toUTF8
-  let payload := Protocol.wireBody status false body
-  return ⟨#[keep ++ payload], #[close ++ payload], #[keep], #[close]⟩
+  let headerStart := s!"{status} {reason}\r\n{length}Content-Type: {contentType}\r\n{fields}Connection: "
+  let keep := ("HTTP/1.1 " ++ headerStart ++ "keep-alive\r\n").toUTF8
+  let close := ("HTTP/1.1 " ++ headerStart ++ "close\r\n").toUTF8
+  let legacy := ("HTTP/1.0 " ++ headerStart ++ "close\r\n").toUTF8
+  return ⟨keep, close, legacy, Protocol.wireBody status false body⟩
 
-def Response.buffers (r : Response) (close isHead : Bool) : Array ByteArray :=
-  if isHead then (if close then r.headClosing else r.headKeepAlive)
-  else if close then r.closing else r.keepAlive
+/-- Gather writes share the body and cached Date bytes. No payload copy or header
+serialization occurs per request. The server supplies a current Date buffer. -/
+def Response.buffers (r : Response) (close isHead : Bool)
+    (date : ByteArray := "\r\n".toUTF8) (http10 := false) : Array ByteArray :=
+  let header := if http10 then r.legacy else if close then r.closing else r.keepAlive
+  if isHead || r.payload.isEmpty then #[header, date] else #[header, date, r.payload]
 
 end FastHTTP

@@ -67,7 +67,10 @@ converted to text. Request bodies are buffered before invoking the handler.
 
 `Response.create body status reason contentType headers` validates response
 fields and prepares reusable wire buffers, including HEAD and connection-close
-variants. Applications cannot override framing fields with custom headers.
+variants. Applications cannot override framing fields or the managed Date field with custom headers.
+A per-server UTC Date cache refreshes at most once per monotonic second; even
+indefinitely reused prepared responses receive a fresh Date. Header, Date, and
+payload buffers are shared through gather writes without copying the payload.
 Repeated non-framing fields such as Set-Cookie are preserved. This path still
 serializes **once when the response is constructed**, not on every request.
 
@@ -98,7 +101,8 @@ Files:
 HTTP/1.1 origin-form and absolute HTTP(S) requests, OPTIONS `*`, token methods including POST/PUT/
 PATCH/DELETE and extension methods, required single syntactically valid Host, keep-alive,
 pipelining, Connection: close, HEAD, fixed and chunked request bodies, chunk
-extensions, separate trailers, and automatic 100 Continue. Final prepared
+extensions, separate trailers, and automatic 100 Continue. HTTP/1.0 requests receive HTTP/1.0 responses and close after the response;
+streamed HTTP/1.0 bodies use EOF framing. Final prepared
 responses support 200..599, with body suppression and Content-Length rules for
 HEAD/204/205/304. Streaming responses use chunked transfer coding.
 
@@ -115,8 +119,7 @@ Header/trailer fields and chunk metadata cannot cause unbounded integer growth.
 This is **not a complete RFC-conforming or production-ready HTTP server**.
 The protocol rules were checked against [RFC 9112](https://www.rfc-editor.org/rfc/rfc9112.html)
 and [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html), but the current profile
-still omits complete HTTP/1.0 response handling, CONNECT tunnels, protocol upgrades,
-and automatic Date fields. Request targets validate URI characters and percent
+does not implement CONNECT tunnels or protocol upgrades. Request targets validate URI characters and percent
 escapes; Host validates reg-name, bracketed IPv6/IPvFuture, and decimal port syntax.
 Absolute HTTP(S) targets route by path/query; `requestTarget` retains the wire
 form and `authority` uses the URI authority, ignoring Host for absolute targets.

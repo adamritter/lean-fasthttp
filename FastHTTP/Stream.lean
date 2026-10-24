@@ -9,6 +9,7 @@ it must return promptly. Pending producer cancellation is not implemented. -/
 structure StreamResponse where
   private keepAlive : ByteArray
   private closing : ByteArray
+  private legacy : ByteArray
   next : IO (IO.Promise (Except IO.Error (Option ByteArray)))
   release : IO Unit
 
@@ -21,11 +22,15 @@ def StreamResponse.create (next : IO (IO.Promise (Except IO.Error (Option ByteAr
     throw "invalid response reason"
   let fields ← responseFields headers
   let start := s!"HTTP/1.1 {status} {reason}\r\nTransfer-Encoding: chunked\r\n{fields}Connection: "
-  return ⟨(start ++ "keep-alive\r\n\r\n").toUTF8,
-    (start ++ "close\r\n\r\n").toUTF8, next, release⟩
+  return ⟨(start ++ "keep-alive\r\n").toUTF8,
+    (start ++ "close\r\n").toUTF8,
+    s!"HTTP/1.0 {status} {reason}\r\n{fields}Connection: close\r\n".toUTF8, next, release⟩
 
 def StreamResponse.head (r : StreamResponse) (close : Bool) : ByteArray :=
-  if close then r.closing else r.keepAlive
+  (if close then r.closing else r.keepAlive) ++ "\r\n".toUTF8
+
+def StreamResponse.buffers (r : StreamResponse) (close http10 : Bool) (date : ByteArray) : Array ByteArray :=
+  #[if http10 then r.legacy else if close then r.closing else r.keepAlive, date]
 
 /-- ByteArray.size, not String.length, determines the chunk's declared byte count. -/
 def encodeChunk (bytes : ByteArray) : Array ByteArray :=

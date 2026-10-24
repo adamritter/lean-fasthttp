@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Independent wire regressions for RFC 9112 targets, authority, and framing."""
 import json
+import time
+from email.utils import parsedate_to_datetime
 from verify import connect
 from verify_fasthttp import ROOT, server
 from verify_fast_protocol import PORT, req, exchange, receive, reject
@@ -50,9 +52,40 @@ def main():
         reject(req().replace(b'HTTP/1.1', b'HTTP/2.0'), 505)
         exchange(req().replace(b'HTTP/1.1', b'HTTP/1.9'))
         exchange(req(headers=b'Upgrade: websocket\r\nConnection: Upgrade\r\n'))
+        first = exchange(req())[b'date']
+        time.sleep(1.1)
+        second = exchange(req())[b'date']
+        assert len(first) == len(second) == 1 and first != second
+        for value in first + second:
+            assert value.endswith(b' GMT')
+            assert abs(parsedate_to_datetime(value.decode()).timestamp() - time.time()) < 4
+        assert b'date' in exchange(req('GET', '/status/204'), b'hidden', 204)
+        assert b'date' in exchange(req('GET', '/status/304'), b'hidden', 304)
+        # HTTP/1.0 has no chunked coding or implicit persistence. A streamed
+        # body is delimited by EOF; a HEAD stream must not invoke the producer.
+        for target, expected, is_head in [('/', b'ready', False), ('/stream', b's' * 8388608, False),
+                ('/stream', b'', True)]:
+            with connect(PORT) as s, s.makefile('rb') as f:
+                s.settimeout(20)
+                method = 'HEAD' if is_head else 'GET'
+                s.sendall(f'{method} {target} HTTP/1.0\r\n\r\n'.encode())
+                assert f.readline().startswith(b'HTTP/1.0 200 ')
+                headers = {}
+                while (line := f.readline()) != b'\r\n':
+                    assert line
+                    k, v = line.split(b':', 1); headers[k.lower()] = v.strip()
+                assert headers[b'connection'] == b'close' and b'date' in headers
+                assert b'transfer-encoding' not in headers
+                assert f.read() == expected
+        with connect(PORT) as s, s.makefile('rb') as f:
+            s.sendall(b'POST /body HTTP/1.0\r\nContent-Length: 3\r\nExpect: 100-continue\r\n\r\nabc')
+            assert f.readline().startswith(b'HTTP/1.0 200 ')
+            assert f.read().endswith(b'\r\n\r\nabc')
+        reject(b'POST / HTTP/1.0\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\n')
     print(json.dumps({'result': 'PASS', 'host_valid': len(valid_hosts),
         'host_invalid': len(invalid_hosts), 'absolute_targets_and_authority': 'PASS',
-        'uri_octet_grammar_connection_lists_binary_trailers_versions': 'PASS'}, indent=2))
+        'uri_octet_grammar_connection_lists_binary_trailers_versions': 'PASS',
+        'date_freshness_and_http10_fixed_stream_head': 'PASS'}, indent=2))
 
 if __name__ == '__main__':
     main()

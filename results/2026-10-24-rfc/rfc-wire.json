@@ -3,5 +3,6 @@
   "host_valid": 8,
   "host_invalid": 20,
   "absolute_targets_and_authority": "PASS",
-  "uri_octet_grammar_connection_lists_binary_trailers_versions": "PASS"
+  "uri_octet_grammar_connection_lists_binary_trailers_versions": "PASS",
+  "date_freshness_and_http10_fixed_stream_head": "PASS"
 }
