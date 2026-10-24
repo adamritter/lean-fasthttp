@@ -4,6 +4,8 @@ import FastHTTP.BodyGrammarProofs
 import FastHTTP.BodyLimitProofs
 import FastHTTP.BodyProofs
 import FastHTTP.ChunkGrammarProofs
+import FastHTTP.DriverNativeProofs
+import FastHTTP.DriverProofs
 import FastHTTP.FeedProofs
 import FastHTTP.FieldsProofs
 import FastHTTP.HeadGrammarProofs
@@ -14,6 +16,7 @@ import FastHTTP.HexProofs
 import FastHTTP.IPv6Proofs
 import FastHTTP.LexicalProofs
 import FastHTTP.LimitsProofs
+import FastHTTP.MessageGrammarProofs
 import FastHTTP.NumericProofs
 import FastHTTP.Proofs
 import FastHTTP.QuotedProofs
@@ -105,6 +108,21 @@ import FastHTTP.WireProofs
 #print axioms FastHTTP.Protocol.chunkExtensions_complete
 #print axioms FastHTTP.Protocol.chunkExtensions_iff
 #print axioms FastHTTP.Protocol.chunkSize_grammar
+#print axioms FastHTTP.Protocol.driver_finalizer_weight
+#print axioms FastHTTP.Protocol.driver_actual_cleanup
+#print axioms FastHTTP.Protocol.driver_actual_cleanup_complete
+#print axioms FastHTTP.Protocol.driver_actual_output_prefix
+#print axioms FastHTTP.Protocol.driver_actual_graceful_output
+#print axioms FastHTTP.Protocol.driver_reject_empty
+#print axioms FastHTTP.Protocol.driver_accept_empty
+#print axioms FastHTTP.Protocol.driver_resume_empty
+#print axioms FastHTTP.Protocol.driver_stream_resource
+#print axioms FastHTTP.Protocol.driver_stop_resource
+#print axioms FastHTTP.Protocol.driver_step_resource
+#print axioms FastHTTP.Protocol.driver_replay_resource
+#print axioms FastHTTP.Protocol.driver_native_resource
+#print axioms FastHTTP.Protocol.driver_native_cleanup_at_most_acquired
+#print axioms FastHTTP.Protocol.driver_native_cleanup_complete
 #print axioms FastHTTP.Protocol.append_unless_empty
 #print axioms FastHTTP.Protocol.extract_prefix_append
 #print axioms FastHTTP.Protocol.extract_suffix_append
@@ -203,6 +221,18 @@ import FastHTTP.WireProofs
 #print axioms FastHTTP.Protocol.headStep_protocolBudget
 #print axioms FastHTTP.Protocol.feed_protocolBudget
 #print axioms FastHTTP.Protocol.feed_request_body_bound
+#print axioms FastHTTP.Protocol.bodyStep_grammar_iff
+#print axioms FastHTTP.Protocol.acknowledge_bodyStep
+#print axioms FastHTTP.Protocol.acknowledge_continue_body
+#print axioms FastHTTP.Protocol.headStep_grammar_iff
+#print axioms FastHTTP.Protocol.feed_request_grammar_iff
+#print axioms FastHTTP.Protocol.feed_fragmented_grammar_iff
+#print axioms FastHTTP.Protocol.headStep_no_head_continue
+#print axioms FastHTTP.Protocol.feed_continuation_bound
+#print axioms FastHTTP.Protocol.acknowledge_append
+#print axioms FastHTTP.Protocol.feed_acknowledged_fragmentation
+#print axioms FastHTTP.Protocol.feed_acknowledged_fragments
+#print axioms FastHTTP.Protocol.feed_live_fragments_grammar_iff
 #print axioms FastHTTP.Protocol.decimalValue_mono
 #print axioms FastHTTP.Protocol.decimalStep_iff
 #print axioms FastHTTP.Protocol.decimalFold_none

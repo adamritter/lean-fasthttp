@@ -20,6 +20,9 @@ and any axiom beyond `propext`, `Classical.choice` and `Quot.sound`. There is no
 | `feed_fragmentation` / `feed_fragments` in `FeedProofs` | The complete production `feed` function, every bounded state and every pair/finite list of byte buffers. Equality includes the complete Request (raw header bytes, all metadata, binary body, raw trailers), rejection status, Expect continuation and untouched pipeline bytes. `appendStep` explicitly buffers bytes arriving while a 100-continue action awaits acknowledgment. |
 | `feed_bound` / `feed_body_no_continue` | Every emitted continuation preserves the cursor invariants; a body continuation cannot emit another 100-continue action. |
 | `parseRequestLine_iff` / `parseFieldLine_iff` in `LexicalProofs` | Soundness and completeness against independent wire-envelope grammars: nonempty tchar method and field name, exact SP/colon/CRLF positions, supported HTTP/1.x version digits, ASCII target envelope, all field-value octets including obs-text, exact returned spans and target limit. URI and field-specific semantics are separate obligations. |
+| `feed_request_grammar_iff` / `feed_live_fragments_grammar_iff` in `MessageGrammarProofs` | Exact complete RequestWire equivalence for the public parser, including independent first-delimiter, head and body grammars, all request fields and untouched pipeline bytes. Arbitrary fragmentation and acknowledgment of Expect after each fragment produce the same complete result. |
+| `driver_step_resource` / `driver_replay_resource` in `DriverProofs` | Every transition and finite trace of the actual complete HTTP reactor conserves acquired stream cleanup rights. Error, close, malformed event ordering, deferred responses, stream completion and pipeline continuation are covered. |
+| `driver_actual_cleanup` / `driver_actual_graceful_output` in `DriverNativeProofs` | Conditional native transfer under the visible lean-uv ExecutionContract, AdapterContract and NativeContract. Actual cleanup invocations conserve acquired rights; TCP output is an ordered prefix of selected controller output, or the exact selected output after successful graceful close. This is not yet the independent response-serialization grammar proof. |
 | `parseHead_grammar_iff` in `HeadGrammarProofs` | Exact equivalence of the complete production head parser and independently specified request-line, all four target forms, complete ordered header semantics, framing and supported-feature policy. Includes every returned routing span, HTTP version, connection/HEAD/Expect flag and duplicate-field rejection. |
 | `parseField_grammar_iff` / `parseHeaders_grammar_iff` | Each grammatical field updates exactly the accumulated Content-Length, Transfer-Encoding, Host, Expect and Connection state; both directions cover the complete ordered field block and mandatory Host policy. |
 | `decodeBody_grammar_iff` / `decodeChunked_grammar_iff` in `BodyGrammarProofs` | The actual optimized decoder succeeds iff the input has an independently grammatical body prefix. Exact decoded payload, raw trailers, stopping cursor and untouched suffix are included. `BodyWire` is an inductive operational wire grammar; its byte productions use independent numeral, extension and trailer grammars, not calls to the body parser. |
@@ -52,10 +55,13 @@ The following obligations are not established by these theorems:
 
 * Application dispatch and the IO acknowledgment of actions. Pure head-plus-body
   feed composition, including all metadata and Expect buffering, is established.
-* End-to-end IO refinement and liveness, cancellation of application-owned
-  producers, and the C/libuv socket lifetime implementation. Stream control and
-  cleanup decisions are now proved and executed by both adapters; callback
-  delivery, IO.Ref behavior and native writes remain inside the trust boundary.
+* Independent grammar equivalence of complete response construction, and the
+  full cross-request dispatch/response invariant. The actual UV controller is now
+  pure and has complete cleanup conservation. Native read/write/finalizer
+  refinement is an explicit generic contract, with conditional transfer proofs.
+* Liveness and the external application's producer/cancellation semantics.
+  Native C/libuv socket lifetimes, callback delivery and IO.Ref execution are
+  explicit trusted assumptions, not claimed as C implementation proofs.
 
 These areas have independent generated and real-socket regressions, including
 all byte values in field values, independently generated IPv6 addresses, malformed
