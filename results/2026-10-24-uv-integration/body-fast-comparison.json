@@ -1,0 +1,140 @@
+{
+  "metric": "single-client loopback echo body MiB/s",
+  "server_cpu": 16,
+  "client_cpu": 24,
+  "limitation": "Python validation and echo transport are included; not an isolated parser benchmark",
+  "runs": [
+    {
+      "binary": "bin/lean-uv-http-example-before-body",
+      "sha256": "f9b1754bcfa359d00dd751b39b38c97f0a27c5c9a6a29a4370c50130b89786fa",
+      "framing": "fixed",
+      "repeat": 1,
+      "seconds": 0.37619703996460885,
+      "MiB_per_second": 531.6362936263805,
+      "requests": 200,
+      "body_bytes": 1048576,
+      "verified": true
+    },
+    {
+      "binary": "bin/lean-uv-http-example-before-body",
+      "sha256": "f9b1754bcfa359d00dd751b39b38c97f0a27c5c9a6a29a4370c50130b89786fa",
+      "framing": "chunked",
+      "repeat": 1,
+      "seconds": 0.3770970819750801,
+      "MiB_per_second": 530.367402878012,
+      "requests": 200,
+      "body_bytes": 1048576,
+      "verified": true
+    },
+    {
+      "binary": "bin/lean-uv-http-example",
+      "sha256": "b9a5ac98511fd4f9d6a6e7c8304c678c668cc31cbd1b8ad7cf188e384e966ddb",
+      "framing": "fixed",
+      "repeat": 1,
+      "seconds": 0.3736143569694832,
+      "MiB_per_second": 535.3113344526425,
+      "requests": 200,
+      "body_bytes": 1048576,
+      "verified": true
+    },
+    {
+      "binary": "bin/lean-uv-http-example",
+      "sha256": "b9a5ac98511fd4f9d6a6e7c8304c678c668cc31cbd1b8ad7cf188e384e966ddb",
+      "framing": "chunked",
+      "repeat": 1,
+      "seconds": 0.3732930739643052,
+      "MiB_per_second": 535.7720620852565,
+      "requests": 200,
+      "body_bytes": 1048576,
+      "verified": true
+    },
+    {
+      "binary": "bin/lean-uv-http-example",
+      "sha256": "b9a5ac98511fd4f9d6a6e7c8304c678c668cc31cbd1b8ad7cf188e384e966ddb",
+      "framing": "fixed",
+      "repeat": 2,
+      "seconds": 0.37421737099066377,
+      "MiB_per_second": 534.4487335543537,
+      "requests": 200,
+      "body_bytes": 1048576,
+      "verified": true
+    },
+    {
+      "binary": "bin/lean-uv-http-example",
+      "sha256": "b9a5ac98511fd4f9d6a6e7c8304c678c668cc31cbd1b8ad7cf188e384e966ddb",
+      "framing": "chunked",
+      "repeat": 2,
+      "seconds": 0.37420396402012557,
+      "MiB_per_second": 534.4678817706044,
+      "requests": 200,
+      "body_bytes": 1048576,
+      "verified": true
+    },
+    {
+      "binary": "bin/lean-uv-http-example-before-body",
+      "sha256": "f9b1754bcfa359d00dd751b39b38c97f0a27c5c9a6a29a4370c50130b89786fa",
+      "framing": "fixed",
+      "repeat": 2,
+      "seconds": 0.36898246698547155,
+      "MiB_per_second": 542.0311746353923,
+      "requests": 200,
+      "body_bytes": 1048576,
+      "verified": true
+    },
+    {
+      "binary": "bin/lean-uv-http-example-before-body",
+      "sha256": "f9b1754bcfa359d00dd751b39b38c97f0a27c5c9a6a29a4370c50130b89786fa",
+      "framing": "chunked",
+      "repeat": 2,
+      "seconds": 0.37166982505004853,
+      "MiB_per_second": 538.1120191101559,
+      "requests": 200,
+      "body_bytes": 1048576,
+      "verified": true
+    },
+    {
+      "binary": "bin/lean-uv-http-example-before-body",
+      "sha256": "f9b1754bcfa359d00dd751b39b38c97f0a27c5c9a6a29a4370c50130b89786fa",
+      "framing": "fixed",
+      "repeat": 3,
+      "seconds": 0.37258461804594845,
+      "MiB_per_second": 536.7908129136326,
+      "requests": 200,
+      "body_bytes": 1048576,
+      "verified": true
+    },
+    {
+      "binary": "bin/lean-uv-http-example-before-body",
+      "sha256": "f9b1754bcfa359d00dd751b39b38c97f0a27c5c9a6a29a4370c50130b89786fa",
+      "framing": "chunked",
+      "repeat": 3,
+      "seconds": 0.37379339907784015,
+      "MiB_per_second": 535.0549273834321,
+      "requests": 200,
+      "body_bytes": 1048576,
+      "verified": true
+    },
+    {
+      "binary": "bin/lean-uv-http-example",
+      "sha256": "b9a5ac98511fd4f9d6a6e7c8304c678c668cc31cbd1b8ad7cf188e384e966ddb",
+      "framing": "fixed",
+      "repeat": 3,
+      "seconds": 0.37440089404117316,
+      "MiB_per_second": 534.1867585871893,
+      "requests": 200,
+      "body_bytes": 1048576,
+      "verified": true
+    },
+    {
+      "binary": "bin/lean-uv-http-example",
+      "sha256": "b9a5ac98511fd4f9d6a6e7c8304c678c668cc31cbd1b8ad7cf188e384e966ddb",
+      "framing": "chunked",
+      "repeat": 3,
+      "seconds": 0.37693612091243267,
+      "MiB_per_second": 530.5938828994919,
+      "requests": 200,
+      "body_bytes": 1048576,
+      "verified": true
+    }
+  ]
+}

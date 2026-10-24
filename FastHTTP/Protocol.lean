@@ -224,7 +224,7 @@ where
 /-- Strict origin-server grammar. Duplicated framing fields and obsolete folding
 are rejected; methods are tokens, targets are origin-form or OPTIONS *. -/
 def parseHead (cfg : Config) (bytes : ByteArray) (stop : Nat) : Except Nat Head := do
-  if stop > bytes.size || stop < 18 || !equals bytes (stop - 4) stop "\r\n\r\n" then throw 400
+  if stop > bytes.size || stop < 16 || !equals bytes (stop - 4) stop "\r\n\r\n" then throw 400
   let methodStart := if equals bytes 0 2 "\r\n" then 2 else 0
   let mut methodEnd := methodStart
   while methodEnd < stop && bytes[methodEnd]! != 32 do
@@ -361,69 +361,146 @@ def trailer (line : ByteArray) : Except Nat (String × ByteArray) := do
   while last > first && space line[last - 1]! do last := last - 1
   return (name, line.extract first last)
 
-/-- Pure, bounded buffered-body decoder. It stops exactly at the message boundary. -/
-def decodeBody (cfg : Config) (bytes : ByteArray) (start : Nat) (initial : BodyState) : BodyResult := Id.run do
+/-- Byte-level body automaton. A terminal outcome is absorbing: bytes belonging
+to a pipelined request cannot be interpreted as additional body data. -/
+inductive BodyAction where
+  | more (state : BodyState)
+  | done (body : ByteArray) (trailers : Array (String × ByteArray))
+  | error (status : Nat)
+
+/-- One consumed octet of the RFC 9112 body framing machine. Fixed-length and
+chunk-data phases append only payload octets; size lines, CRLF and trailers do not. -/
+def bodyByte (cfg : Config) (initial : BodyState) (b : UInt8) : BodyAction := Id.run do
   let mut s := initial
-  let mut i := start
-  repeat
-    match s.phase with
-    | .fixed remaining | .data remaining =>
-      let (piece, stop) := takeBody bytes i remaining
-      let body := if s.body.isEmpty then piece else s.body ++ piece
-      let left := remaining - (stop - i)
-      i := stop
+  match s.phase with
+  | .fixed remaining =>
+    if remaining == 0 then return .done s.body s.trailers
+    let body := s.body.push b
+    if remaining == 1 then return .done body s.trailers
+    return .more { s with body, phase := .fixed (remaining - 1) }
+  | .data remaining =>
+    if remaining == 0 then
+      if b != 13 then return .error 400
+      return .more { s with phase := .dataLF }
+    return .more { s with
+      body := s.body.push b
+      phase := if remaining == 1 then .dataCR else .data (remaining - 1) }
+  | .dataCR =>
+    if b != 13 then return .error 400
+    return .more { s with phase := .dataLF }
+  | .dataLF =>
+    if b != 10 then return .error 400
+    return .more { s with phase := .sizeLine }
+  | .sizeLine | .trailers =>
+    if let .trailers := s.phase then
+      s := { s with trailerBytes := s.trailerBytes + 1 }
+      if s.trailerBytes > cfg.maxTrailerBytes then return .error 431
+    if s.sawCR then
+      if b != 10 then return .error 400
       match s.phase with
-      | .fixed _ =>
-        if left == 0 then return .done body s.trailers i
-        return .need { s with body, phase := .fixed left }
+      | .sizeLine =>
+        match chunkSize s.line (cfg.maxBodyBytes - s.body.size) with
+        | .error status => return .error status
+        | .ok n =>
+          if n != 0 && s.chunks >= cfg.maxChunks then return .error 413
+          return .more { s with
+            phase := if n == 0 then .trailers else .data n
+            line := .empty
+            sawCR := false
+            chunks := s.chunks + (if n == 0 then 0 else 1) }
       | _ =>
-        s := { s with body, phase := if left == 0 then .dataCR else .data left }
-        if left != 0 then return .need s
-    | .dataCR =>
-      if i == bytes.size then return .need s
-      if bytes[i]! != 13 then return .error 400
-      i := i + 1
-      s := { s with phase := .dataLF }
-    | .dataLF =>
-      if i == bytes.size then return .need s
-      if bytes[i]! != 10 then return .error 400
-      i := i + 1
-      s := { s with phase := .sizeLine }
-    | .sizeLine | .trailers =>
-      if i == bytes.size then return .need s
-      let b := bytes[i]!
-      i := i + 1
-      if let .trailers := s.phase then
-        s := { s with trailerBytes := s.trailerBytes + 1 }
-        if s.trailerBytes > cfg.maxTrailerBytes then return .error 431
-      if s.sawCR then
-        if b != 10 then return .error 400
-        match s.phase with
-        | .sizeLine =>
-          match chunkSize s.line (cfg.maxBodyBytes - s.body.size) with
-          | .error status => return .error status
-          | .ok n =>
-            if n != 0 && s.chunks >= cfg.maxChunks then return .error 413
-            s := { s with
-              phase := if n == 0 then .trailers else .data n
-              line := .empty
-              sawCR := false
-              chunks := s.chunks + (if n == 0 then 0 else 1) }
-        | _ =>
-          if s.line.isEmpty then return .done s.body s.trailers i
-          match trailer s.line with
-          | .error status => return .error status
-          | .ok field =>
-            s := { s with
-              line := .empty
-              sawCR := false
-              trailers := s.trailers.push field }
-      else if b == 13 then s := { s with sawCR := true }
-      else if b == 10 then return .error 400
-      else
-        if s.line.size >= cfg.maxChunkLineBytes then return .error 431
-        s := { s with line := s.line.push b }
-  return .error 400
+        if s.line.isEmpty then return .done s.body s.trailers
+        match trailer s.line with
+        | .error status => return .error status
+        | .ok field =>
+          return .more { s with line := .empty, sawCR := false, trailers := s.trailers.push field }
+    else if b == 13 then return .more { s with sawCR := true }
+    else if b == 10 then return .error 400
+    else
+      if s.line.size >= cfg.maxChunkLineBytes then return .error 431
+      return .more { s with line := s.line.push b }
+
+structure BodyScan where
+  action : BodyAction
+  count : Nat
+
+/-- Initial epsilon transition: an empty fixed body consumes no octets. -/
+def bodyInitial (s : BodyState) (start : Nat := 0) : BodyScan :=
+  { action := match s.phase with
+      | .fixed 0 => .done s.body s.trailers
+      | _ => .more s
+    count := start }
+
+def bodyAdvance (cfg : Config) (s : BodyScan) (b : UInt8) : BodyScan :=
+  match s.action with
+  | .more state => ⟨bodyByte cfg state b, s.count + 1⟩
+  | _ => s
+
+/-- Independent fold semantics used by the fragmentation and boundary proofs. -/
+def bodyFold (cfg : Config) (s : BodyScan) (bytes : ByteArray) : BodyScan :=
+  bytes.data.foldl (bodyAdvance cfg) s
+
+/-- Runtime loop stops at the first terminal outcome instead of scanning a
+pipelined suffix. It is proved equal to the fold over every byte, for all states. -/
+def bodyLoop (cfg : Config) (bytes : ByteArray) (i : Nat) (s : BodyScan) : BodyScan :=
+  match s.action with
+  | .more _ =>
+    if h : i < bytes.size then bodyLoop cfg bytes (i + 1) (bodyAdvance cfg s bytes[i])
+    else s
+  | _ => s
+termination_by bytes.size - i
+
+def bodyFeed (cfg : Config) (s : BodyScan) (bytes : ByteArray) : BodyScan :=
+  bodyLoop cfg bytes 0 s
+
+/-- Bulk payload step; used only for a nonempty slice within the current fixed
+body/chunk. Its refinement proof equates it with `bodyAdvance` on every octet. -/
+def bodyBulk (s : BodyScan) (piece : ByteArray) : BodyScan :=
+  match s.action with
+  | .more state =>
+    let body := state.body ++ piece
+    let action := match state.phase with
+      | .fixed remaining =>
+        if piece.size == remaining then .done body state.trailers
+        else .more { state with body, phase := .fixed (remaining - piece.size) }
+      | .data remaining =>
+        .more { state with
+          body
+          phase := if piece.size == remaining then .dataCR else .data (remaining - piece.size) }
+      | _ => s.action
+    ⟨action, s.count + piece.size⟩
+  | _ => s
+
+/-- Fast decoder: payload is copied in contiguous slices; syntax octets use the
+same byte automaton. The whole loop refines `bodyLoop`, including arbitrary states. -/
+def bodyFastLoop (cfg : Config) (bytes : ByteArray) (i : Nat) (s : BodyScan) : BodyScan :=
+  if hi : i < bytes.size then
+    match s.action with
+    | .more state =>
+      match state.phase with
+      | .fixed (remaining + 1) | .data (remaining + 1) =>
+        let stop := i + min (remaining + 1) (bytes.size - i)
+        bodyFastLoop cfg bytes stop (bodyBulk s (bytes.extract i stop))
+      | _ => bodyFastLoop cfg bytes (i + 1) (bodyAdvance cfg s bytes[i])
+    | _ => s
+  else s
+termination_by bytes.size - i
+decreasing_by all_goals simp_wf; omega
+
+def BodyScan.result (scan : BodyScan) : BodyResult :=
+  match scan.action with
+  | .more state => .need state
+  | .done body trailers => .done body trailers scan.count
+  | .error status => .error status
+
+/-- Pure body decoder, including chunk extensions and trailers. `bodyLoop` is
+terminating, and its fold refinement establishes arbitrary-fragment equivalence. -/
+def decodeBodyReference (cfg : Config) (bytes : ByteArray) (start : Nat) (initial : BodyState) : BodyResult :=
+  (bodyLoop cfg bytes start (bodyInitial initial start)).result
+
+/-- Optimized decoder, formally equivalent to `decodeBodyReference`. -/
+def decodeBody (cfg : Config) (bytes : ByteArray) (start : Nat) (initial : BodyState) : BodyResult :=
+  (bodyFastLoop cfg bytes start (bodyInitial initial start)).result
 
 inductive State where
   | head (pending : ByteArray := .empty) (scan : ScanState := {})

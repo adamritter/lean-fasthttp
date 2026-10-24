@@ -94,6 +94,11 @@ def main():
             s.sendall(b'POST /body HTTP/1.0\r\nContent-Length: 3\r\nExpect: 100-continue\r\n\r\nabc')
             assert f.readline().startswith(b'HTTP/1.0 200 ')
             assert f.read().endswith(b'\r\n\r\nabc')
+        with connect(PORT) as s, s.makefile('rb') as f:
+            s.sendall(b'X / HTTP/1.0\r\n\r\n')
+            assert f.readline() == b'HTTP/1.0 200 OK\r\n'
+            while f.readline() != b'\r\n': pass
+            assert f.read() == b'ready'
         reject(b'POST / HTTP/1.0\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\n')
     print(json.dumps({'result': 'PASS', 'host_valid': len(valid_hosts),
         'host_invalid': len(invalid_hosts), 'absolute_targets_and_authority': 'PASS',

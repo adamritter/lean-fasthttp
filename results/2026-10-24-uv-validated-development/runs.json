@@ -1,0 +1,25 @@
+[
+  {
+    "kind": "uv",
+    "workers_or_cpu_budget": 4,
+    "repeat": 1,
+    "command": [
+      "taskset",
+      "-c",
+      "16-19",
+      "/dev/shm/lean-fasthttp-20261024/bin/lean-uv-http",
+      "18176",
+      "4",
+      "16"
+    ],
+    "LEAN_NUM_THREADS": "1",
+    "os_threads": 12,
+    "elapsed_s": 5.0609724030364305,
+    "cpu_s": 20.07,
+    "requests_per_second": 487268.84,
+    "completed_requests": 2453708,
+    "raw": "Running 5s test @ http://127.0.0.1:18176/\n  8 threads and 256 connections\n  Thread Stats   Avg      Stdev     Max   +/- Stdev\n    Latency   517.98us  109.47us   3.65ms   80.16%\n    Req/Sec    61.65k     2.73k   76.70k    72.25%\n  Latency Distribution\n     50%  523.00us\n     75%  581.00us\n     90%  612.00us\n     99%    0.98ms\n  2453708 requests in 5.04s, 2.66GB read\nRequests/sec: 487268.84\nTransfer/sec:    541.84MB\nValidated responses: 2453708; invalid: 0; completed: 2453708",
+    "server_exit": 0,
+    "server_stats": "worker=0 accepted=129 reads=850738 sends=850738 bytes=991960508 queued=0 errors=0 peer_disconnects=112 elapsed_ns=7157227906\nworker=1 accepted=146 reads=862250 sends=862250 bytes=1005383500 queued=0 errors=0 peer_disconnects=117 elapsed_ns=7157214913\nworker=2 accepted=109 reads=831789 sends=831789 bytes=969865974 queued=0 errors=0 peer_disconnects=90 elapsed_ns=7157090208\nworker=3 accepted=132 reads=853733 sends=853733 bytes=995452678 queued=0 errors=0 peer_disconnects=114 elapsed_ns=7157202977\n"
+  }
+]

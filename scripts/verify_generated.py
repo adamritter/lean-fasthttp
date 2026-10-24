@@ -163,6 +163,14 @@ def main():
         wire, _, _ = request(target=target)
         add(fragments(wire, rng), [], error=status, label='absolute-uri-scheme')
 
+    # A one-octet extension method and headerless HTTP/1.0 form a valid
+    # 16-octet request. GET-only minimum-length assumptions must not reject it.
+    for method in "!#$%&'*+-.^_`|~0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz":
+        wire = method.encode() + b' / HTTP/1.0\r\n\r\n'
+        r = dict(method=method, target='/', authority='', body='', close=True, minor=0, trailers=[])
+        for split in range(len(wire)+1):
+            add([wire[:split], wire[split:]], [r], label='minimal-http10-method')
+
     payload = ''.join(json.dumps(case) + '\n' for case in inputs).encode()
     run = subprocess.run([str(args.probe)], input=payload, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
     assert run.returncode == 0, run.stderr.decode()

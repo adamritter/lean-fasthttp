@@ -1,0 +1,21 @@
+{
+  "result": "PASS",
+  "seed": 11850727131490367389,
+  "workers": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "server_cpus": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "connections": 160,
+  "checked_responses": 801,
+  "request_semantics": "fixed, chunked, deferred, HEAD, close, half-close, pipeline ordering",
+  "input_sha256": "e1f7917783cac64a40cad9d2d0877e6cef85953f4ede96c8cc1cd752e346262a",
+  "binary_sha256": "7ef91ef6a51ec64de681522f357a3bdfeb12b0cd43b1e2e5d1b06805f21d5a43"
+}

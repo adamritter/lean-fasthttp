@@ -1,8 +1,8 @@
 # lean-fasthttp
 
 Experimental callback HTTP/1.1 server in Lean 4.35.0, with a pure protocol state
-machine, built-in libuv networking, prepared responses, streaming output, and
-29 kernel-checked framing/response properties. **Not a fully verified or
+machine, built-in or per-worker lean-uv networking, prepared responses, streaming
+output, and 69 kernel-checked framing/response properties. **Not a fully verified or
 production-ready HTTP implementation.**
 
 ```sh
@@ -19,7 +19,32 @@ and benchmark executables are not checked in. `FASTHTTP_TEST_CPU` overrides the
 test server’s CPU affinity; the benchmark defaults to server CPU 0 and clients
 on CPUs 4–11.
 
-## Current checkpoint validation (2026-10-24)
+## Worker transport and verified body decoder (2026-10-24)
+
+`FastHTTP.UV.serve` runs the complete HTTP parser and existing handler API on
+four independent lean-uv workers in one process. The pinned dependency is tested
+on Lean 4.26 and 4.35, including its C FFI under ASan/UBSan. The FastHTTP package
+uses Lean 4.35. The implementation passes the same wire suites on both transports,
+and four-worker tests additionally verify dynamic bodies, deferred replies,
+pipelining, HEAD and half-close ordering.
+
+The body decoder now has a terminating byte-machine reference and a fast bulk
+implementation. Lean proves **the actual decoder's** arbitrary-fragment
+composition, exact fixed-body contents, cursor bounds, pipeline-suffix preservation,
+and equivalence of every bulk step and the complete loop to the reference.
+All 69 theorems are audited for axioms. [Detailed formal scope](FORMAL_SCOPE.md)
+distinguishes these guarantees from the still-unproved full RFC grammar and I/O
+interpreter; this is not a full formal proof of HTTP/1.1 conformance.
+
+A short development measurement with every timed response body checked reached
+487,269 completed requests/s with four I/O workers restricted to four GH200 CPUs.
+A separate three-repeat 1 MiB body regression restored fixed/chunked echo throughput
+to approximately 534–536 MiB/s after a byte-only implementation regressed to 52 MiB/s.
+The failed optimization and recovery are both retained under
+[development evidence](results/2026-10-24-uv-integration/). Final repeated
+checkpoint measurements are recorded separately from these development samples.
+
+## Earlier single-loop checkpoint validation (2026-10-24)
 
 [Verification manifest](results/2026-10-24-rfc/verification.json) for source
 [`078d75d`](https://github.com/adamritter/lean-fasthttp/commit/078d75d645e29e1e1ce0e4d9bf1ee84292c65148):
@@ -163,22 +188,24 @@ form and `authority` uses the URI authority, ignoring Host for absolute targets.
 `rawTrailers` and `headerBytes?` preserve non-UTF-8 field values. The text
 `trailers` view decodes UTF-8 where possible, otherwise maps octets to Latin-1. There is no transparent decompression or application caching logic.
 
-Lifecycle work also remains: no header/idle deadlines, active connection limit,
-server shutdown handle, TLS, or request-body streaming API. A promise that never
-resolves keeps that connection pending; peer disconnect does not cancel an
-application promise or pending stream producer. The release hook therefore
-cannot guarantee prompt cleanup while a producer is permanently pending.
-Callbacks and release hooks must return promptly. These are explicit remaining
-items, not properties established by the current tests or proofs.
+The original Std transport has no idle deadline, connection cap or stop handle.
+The lean-uv transport defaults to a 30-second read-idle timeout, a 4 MiB retained
+write budget and 65,536 connections per worker, and supports signal shutdown.
+It clears suspended continuations and releases active streams on native closure;
+an application-owned producer task is not automatically cancelled. Both transports
+require prompt callbacks and release hooks. A total header-completion deadline,
+TLS and request-body streaming remain outside this buffered origin-server API.
 
 ## What is actually proved
 
-`lake build FastHTTP.Proofs` checks 29 theorems without `sorry`, custom axioms,
-`unsafe`, or `native_decide`. They refer to the **functions used by this server**,
-not a separate idealized HTTP implementation. The proof terms are erased and
-are not executed per request. The [current axiom audit](results/2026-10-24-rfc/proof-audit.json)
-contains only the usual Lean axioms (`propext`, `Classical.choice`, `Quot.sound`),
-or no axioms; no `sorryAx` or custom verification assumption is present.
+`lake build FastHTTP.ScannerProofs FastHTTP.BodyFastProofs` checks 69 theorems
+without `sorry`, custom axioms, `unsafe` or `native_decide`. The optimized runtime
+scanner and decoder are proved equivalent to explicit references, not replaced
+by an unproved `implemented_by` implementation. Proof terms are erased and do
+not run per request. `scripts/verify_proofs.py` checks the complete theorem list
+and permits only the standard Lean axioms (`propext`, `Classical.choice`,
+`Quot.sound`), or none. See [formal scope](FORMAL_SCOPE.md) and the checked-in
+checkpoint audit for the exact statements and source hashes.
 
 | Executable primitive | Kernel-checked property |
 |---|---|
@@ -189,10 +216,13 @@ or no axioms; no `sorryAx` or custom verification assumption is present.
 | `takeCount` | Consumption is bounded by both remaining body and available bytes; remainder is conserved; fragmentation preserves counts |
 | `takeBody` | Cursor stays within the input; extracted length is exact; consumed bytes plus suffix reconstruct the original bytes from the cursor; a complete body stops exactly at its declared end |
 | `takeBody` | Fixed-body bytes consumed across two buffers equal the bytes consumed from their concatenation |
+| `bodyFastLoop` | Every bulk payload step and the complete terminating loop equal the byte reference, for arbitrary buffers, states and cursors |
+| `decodeBody` | Arbitrary-fragment composition preserves decoded body, trailers, rejection and the first boundary; fixed-length payload bytes are exact; appending any pipeline suffix cannot change a completed result |
+| `decodeBody` | Successful stop cursors stay within the supplied input; consumed wire prefix and untouched suffix reconstruct the input exactly |
 | `wireBody` / `responseLength` | HEAD/204/304 emit no body; 204 omits Content-Length; ordinary response declared lengths match emitted body size |
 
-**These do not prove the whole server correct.** In particular, header grammar acceptance, the entire chunked
-state machine, composition of `feed` across arbitrary inputs, decimal/hex wire
+**These do not prove the whole server correct.** In particular, header/URI grammar acceptance, lexical correctness of chunk sizes/extensions/trailers,
+composition of the complete `feed` across arbitrary inputs, decimal/hex wire
 formatting, stream ordering/cancellation/liveness, and the UV interpreter remain
 tested rather than fully verified. The byte-slicing theorems assume a valid input
 cursor; the driver establishing that precondition everywhere is not yet proved.

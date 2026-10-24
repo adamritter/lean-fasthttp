@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Paired same-host loopback measurements, no pipelining; stores every raw result.
-CPU groups must be disjoint. No HTTP response hook runs in the timed client; a
-separate body validation runs before every measurement.
+CPU groups must be disjoint. --validate-bodies checks every timed response with
+a Lua hook; independent socket validation also runs before and after each round.
 """
 import argparse
 import datetime
@@ -57,6 +57,7 @@ def cpu_time(pid):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--wrk", required=True)
+    ap.add_argument("--validate-bodies", action="store_true", help="validate every timed response with Lua")
     ap.add_argument("--seconds", type=int, default=10)
     ap.add_argument("--warmup", type=int, default=3)
     ap.add_argument("--repeats", type=int, default=3)
@@ -98,9 +99,14 @@ def main():
                 "uv_model": "N pinned native I/O workers, LEAN_NUM_THREADS=1 for unused Lean task pool",
                 "binary_sha256": {k: sha(p) for k, p in binaries.items()},
                 "source_sha256": {str(p.relative_to(ROOT)): sha(p) for p in ROOT.rglob("*")
-                                  if p.is_file() and p.suffix in (".lean", ".c", ".py", ".sh")
+                                  if p.is_file() and p.suffix in (".lean", ".c", ".py", ".sh", ".lua")
                                   and not any(x in p.parts for x in (".lake", ".git", "bin"))}}
     (args.output/"metadata.json").write_text(json.dumps(metadata, indent=2)+"\n")
+    def check_output(measured):
+        assert "Socket errors" not in measured and "Non-2xx" not in measured, measured
+        if args.validate_bodies:
+            match = re.search(r"Validated responses: (\d+); invalid: (\d+); completed: (\d+)", measured)
+            assert match and int(match[1]) > 0 and match[1] == match[3] and int(match[2]) == 0, measured
     results = []
     for repeat in range(args.repeats):
         order = configs[:]
@@ -127,8 +133,11 @@ def main():
                         time.sleep(.02)
                 client = ["taskset", "-c", args.client_cpus, args.wrk, f"-t{args.client_threads}",
                           f"-c{args.connections}", "--latency"]
+                if args.validate_bodies:
+                    client += ["-s", str(ROOT/"scripts/wrk_validate.lua")]
                 warm = output([*client, f"-d{args.warmup}s", f"http://127.0.0.1:{args.port}/"])
                 (args.output/f"{label}-warmup.txt").write_text(warm+"\n")
+                check_output(warm)
                 record["os_threads"] = len(list(Path(f"/proc/{proc.pid}/task").iterdir()))
                 cpu_before = cpu_time(proc.pid)
                 started = time.monotonic()
@@ -142,7 +151,7 @@ def main():
                               completed_requests=int(re.search(r"(\d+) requests in", measured)[1]),
                               raw=measured)
                 (args.output/f"{label}.txt").write_text(measured+"\n")
-                assert "Socket errors" not in measured and "Non-2xx" not in measured, measured
+                check_output(measured)
                 verify(args.port)
             finally:
                 proc.send_signal(signal.SIGTERM)

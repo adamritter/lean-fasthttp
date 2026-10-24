@@ -1,0 +1,20 @@
+[
+  {
+    "binary": "lean-uv-http-example-before-body",
+    "binary_sha256": "f9b1754bcfa359d00dd751b39b38c97f0a27c5c9a6a29a4370c50130b89786fa",
+    "seconds": 0.01948027196340263,
+    "MiB_per_second": 513.3398557672547,
+    "requests": 10,
+    "body_bytes": 1048576,
+    "verified": true
+  },
+  {
+    "binary": "lean-uv-http-example",
+    "binary_sha256": "1cb89ac64fb5b9d290a65f580bbd9dbc88a3a84cb796e208f346c72a4552d992",
+    "seconds": 0.19161641399841756,
+    "MiB_per_second": 52.18759599625209,
+    "requests": 10,
+    "body_bytes": 1048576,
+    "verified": true
+  }
+]

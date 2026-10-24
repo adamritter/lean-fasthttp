@@ -1,0 +1,12 @@
+[
+  {
+    "kind": "uv",
+    "workers_or_cpu_budget": 4,
+    "median_rps": 487268.84,
+    "min_rps": 487268.84,
+    "max_rps": 487268.84,
+    "runs": [
+      487268.84
+    ]
+  }
+]
