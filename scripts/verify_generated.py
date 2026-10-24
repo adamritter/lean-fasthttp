@@ -4,6 +4,7 @@ expected requests. No TCP coalescing can hide a fragmentation failure here."""
 import argparse
 import hashlib
 import json
+import ipaddress
 from pathlib import Path
 import random
 import subprocess
@@ -110,6 +111,44 @@ def main():
     for wire, status in invalid:
         add([wire], [], error=status, label='malformed')
         add([bytes([b]) for b in wire], [], error=status, label='malformed-fragments')
+
+    # Independent ipaddress generation exercises compressed and expanded IPv6,
+    # IPv4 tails, percent escapes, empty/large ports, and malformed authorities.
+    for i in range(500):
+        ip = ipaddress.IPv6Address(rng.getrandbits(128) if i % 2 else rng.getrandbits(48))
+        host = '[' + (ip.compressed if i % 3 else ip.exploded) + ']:' + str(rng.randrange(100000))
+        wire, r, _ = request()
+        wire = wire.replace(b'Host: localhost', b'Host: ' + host.encode())
+        r['authority'] = host
+        add(fragments(wire, rng), [r], label='independent-ipv6')
+        for bad in [host + ':1', host.replace('[', '[z', 1)]:
+            add([wire.replace(host.encode(), bad.encode())], [], error=400, label='invalid-ipv6')
+    for host in ['a%3ab:80', 'a%2Fb:', 'a!$&()*+,;=b:999999999999999999999999',
+            '[::ffff:192.0.2.1]', '[v1.a:b]', '', 'localhost:']:
+        wire, r, _ = request(); wire = wire.replace(b'Host: localhost', b'Host: ' + host.encode())
+        r['authority'] = host; add(fragments(wire, rng), [r], label='authority-boundaries')
+
+    # Exercise the entire octet alphabet for field values, including obs-text.
+    for b in range(256):
+        wire, r, _ = request()
+        wire = wire.replace(b'Host: localhost\r\n', b'Host: localhost\r\nX: ' + bytes([b]) + b'\r\n')
+        valid = b == 9 or (b >= 32 and b != 127)
+        add(fragments(wire, rng), [r] if valid else [], error=0 if valid else 400, label='all-field-value-octets')
+
+    # The configured count limits data chunks, not the mandatory terminal chunk.
+    prefix = b'POST /body HTTP/1.1\r\nHost: localhost\r\nTransfer-Encoding: chunked\r\n\r\n'
+    _, empty, _ = request(); empty['trailers'] = []
+    add([prefix + b'0\r\n\r\n'], [empty], limits=[16384,1024,1024,16384,0], label='zero-data-chunks')
+    one = {**empty, 'body': b'x'.hex()}
+    add([prefix + b'1\r\nx\r\n0\r\n\r\n'], [one], limits=[16384,1,1024,16384,1], label='exact-chunk-limit')
+    add([prefix + b'1\r\nx\r\n1\r\ny\r\n0\r\n\r\n'], [], error=413,
+        limits=[16384,1024,1024,16384,1], label='chunk-limit-exceeded')
+    for line in [b'1;flag ', b'1;key=x ', b'1;key="x" ', b'1 ; ', b'1;key="x\x7f"']:
+        add([prefix + line + b'\r\nx\r\n0\r\n\r\n'], [], error=400, label='invalid-chunk-extensions')
+    wire, r, _ = request(b'abc')
+    for i in range(len(wire) + 3):
+        leading = b'\r\n' + wire
+        add([leading[:i], leading[i:]], [r], label='leading-crlf-splits')
 
     payload = ''.join(json.dumps(case) + '\n' for case in inputs).encode()
     run = subprocess.run([str(args.probe)], input=payload, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)

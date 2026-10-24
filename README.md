@@ -200,7 +200,7 @@ formal proofs of those complete features.
 
 `python3 scripts/verify_generated.py` drives the actual pure parser through a
 compiled test-only probe with exact fragments (including empty and single-octet
-fragments). Seed 20261024 covers 2,395 cases from 1,000 generated binary-body
+fragments). Seed 20261024 covers 4,231 cases from 1,000 generated binary-body
 pipelines, every split of representative messages, malformed framing, version
 rules, connection closure, and exact limits. Expected messages are generated
 independently in Python. These are component regressions, not a whole-protocol

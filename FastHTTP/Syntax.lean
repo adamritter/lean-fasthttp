@@ -112,9 +112,15 @@ def validAuthority (bytes : ByteArray) (start stop : Nat) (connect := false) : B
     if i == stop || !validIPLiteral bytes (start + 1) i then return false
     i := i + 1
   else
-    while i < stop && bytes[i]! != 58 do i := i + 1
+    while i < stop && bytes[i]! != 58 do
+      let b := bytes[i]!
+      if b == 37 then
+        if i + 2 >= stop || !hexDigit bytes[i + 1]! || !hexDigit bytes[i + 2]! then return false
+        i := i + 3
+      else
+        if !(unreserved b || subDelimiter b) then return false
+        i := i + 1
     if connect && i == start then return false
-    if !uriComponent bytes start i (fun b => unreserved b || subDelimiter b) then return false
   if i == stop then return !connect
   if bytes[i]! != 58 then return false
   i := i + 1
