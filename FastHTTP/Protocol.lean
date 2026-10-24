@@ -1,4 +1,5 @@
 import FastHTTP.Syntax
+import FastHTTP.Numeric
 
 namespace FastHTTP
 
@@ -136,17 +137,6 @@ termination_by bytes.size - i
 
 def scanFeedFast (limit : Nat) (s : ScanState) (bytes : ByteArray) : ScanState :=
   scanLoop limit bytes 0 s
-
-/-- Bounded decimal parsing: avoid unbounded Nat growth from hostile headers. -/
-def decimal (bytes : ByteArray) (start stop limit : Nat) : Option Nat := Id.run do
-  if start == stop then return none
-  let mut n := 0
-  for i in [start:stop] do
-    let b := bytes[i]!
-    if b < 48 || b > 57 then return none
-    n := n * 10 + b.toNat - 48
-    if n > limit then return none
-  return some n
 
 structure Head where
   request : Request

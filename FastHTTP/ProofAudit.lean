@@ -1,3 +1,5 @@
+import FastHTTP.NumericProofs
+import FastHTTP.SyntaxProofs
 import FastHTTP.ScannerProofs
 import FastHTTP.BodyFastProofs
 
@@ -70,3 +72,15 @@ import FastHTTP.BodyFastProofs
 #print axioms FastHTTP.Protocol.scanFeedFast_reference
 #print axioms FastHTTP.Protocol.classify_cr_iff
 #print axioms FastHTTP.Protocol.classify_lf_iff
+
+#print axioms FastHTTP.Protocol.decimalValue_mono
+#print axioms FastHTTP.Protocol.decimalStep_iff
+#print axioms FastHTTP.Protocol.decimalFold_none
+#print axioms FastHTTP.Protocol.decimalFold_iff
+#print axioms FastHTTP.Protocol.decimalLoop_eq_fold
+#print axioms FastHTTP.Protocol.decimal_iff
+#print axioms FastHTTP.Protocol.hexDigit_iff
+#print axioms FastHTTP.Protocol.pathOctet_iff
+#print axioms FastHTTP.Protocol.uriLoop_iff
+#print axioms FastHTTP.Protocol.uriComponent_iff
+#print axioms FastHTTP.Protocol.validPathQuery_iff

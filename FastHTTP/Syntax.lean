@@ -38,18 +38,20 @@ def subDelimiter (b : UInt8) : Bool :=
   b == 33 || b == 36 || b == 38 || b == 39 || b == 40 || b == 41 ||
   b == 42 || b == 43 || b == 44 || b == 59 || b == 61
 
-/-- Validate a bounded URI component, preserving percent-encoded octets verbatim. -/
-def uriComponent (bytes : ByteArray) (start stop : Nat) (allowed : UInt8 → Bool) : Bool := Id.run do
-  if start > stop || stop > bytes.size then return false
-  let mut i := start
-  while i < stop do
+/-- Terminating, allocation-free traversal of URI atoms. -/
+def uriLoop (bytes : ByteArray) (stop : Nat) (allowed : UInt8 → Bool) (i : Nat) : Bool :=
+  if i < stop then
     if bytes[i]! == 37 then
-      if i + 2 >= stop || !hexDigit bytes[i + 1]! || !hexDigit bytes[i + 2]! then return false
-      i := i + 3
-    else
-      if !allowed bytes[i]! then return false
-      i := i + 1
-  return true
+      if i + 2 < stop && hexDigit bytes[i + 1]! && hexDigit bytes[i + 2]! then
+        uriLoop bytes stop allowed (i + 3)
+      else false
+    else allowed bytes[i]! && uriLoop bytes stop allowed (i + 1)
+  else true
+termination_by stop - i
+
+/-- Validate a bounded URI component, preserving percent-encoded octets verbatim. -/
+def uriComponent (bytes : ByteArray) (start stop : Nat) (allowed : UInt8 → Bool) : Bool :=
+  start ≤ stop && stop ≤ bytes.size && uriLoop bytes stop allowed start
 
 def validPathQuery (bytes : ByteArray) (start stop : Nat) : Bool :=
   uriComponent bytes start stop fun b =>

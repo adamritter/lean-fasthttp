@@ -2,7 +2,7 @@
 
 Experimental callback HTTP/1.1 server in Lean 4.35.0, with a pure protocol state
 machine, built-in or per-worker lean-uv networking, prepared responses, streaming
-output, and 69 kernel-checked framing/response properties. **Not a fully verified or
+output, and 80 kernel-checked framing, numeric and URI properties. **Not a fully verified or
 production-ready HTTP implementation.**
 
 ```sh
@@ -32,7 +32,7 @@ The body decoder now has a terminating byte-machine reference and a fast bulk
 implementation. Lean proves **the actual decoder's** arbitrary-fragment
 composition, exact fixed-body contents, cursor bounds, pipeline-suffix preservation,
 and equivalence of every bulk step and the complete loop to the reference.
-All 69 theorems are audited for axioms. [Detailed formal scope](FORMAL_SCOPE.md)
+All 80 theorems are audited for axioms. [Detailed formal scope](FORMAL_SCOPE.md)
 distinguishes these guarantees from the still-unproved full RFC grammar and I/O
 interpreter; this is not a full formal proof of HTTP/1.1 conformance.
 
@@ -223,7 +223,7 @@ TLS and request-body streaming remain outside this buffered origin-server API.
 
 ## What is actually proved
 
-`lake build FastHTTP.ScannerProofs FastHTTP.BodyFastProofs` checks 69 theorems
+`lake build FastHTTP.ProofAudit` checks 80 theorems
 without `sorry`, custom axioms, `unsafe` or `native_decide`. The optimized runtime
 scanner and decoder are proved equivalent to explicit references, not replaced
 by an unproved `implemented_by` implementation. Proof terms are erased and do

@@ -171,6 +171,27 @@ def main():
         for split in range(len(wire)+1):
             add([wire[:split], wire[split:]], [r], label='minimal-http10-method')
 
+    # Independent lexical regressions: all possible percent-escape octets,
+    # and decimal values with leading zeros around independently chosen limits.
+    for byte in range(256):
+        target = b'/a%' + bytes([byte]) + b'0'
+        wire, expected_request, _ = request()
+        wire = wire.replace(b'/body', target)
+        valid = byte in b'0123456789abcdefABCDEF'
+        if valid: expected_request['target'] = target.decode('ascii')
+        add(fragments(wire, rng), [expected_request] if valid else [],
+            error=0 if valid else 400, label='percent-escape-octets')
+    for _ in range(256):
+        n = rng.randrange(257)
+        limit = rng.randrange(257)
+        body = rng.randbytes(n)
+        wire, r, _ = request(body)
+        wire = wire.replace(b'Content-Length: ' + str(n).encode(),
+            b'Content-Length: ' + b'0' * rng.randrange(1,33) + str(n).encode())
+        add(fragments(wire, rng), [r] if n <= limit else [],
+            error=0 if n <= limit else 413, limits=[16384,limit,1024,16384,65536],
+            label='bounded-decimal-leading-zeros')
+
     payload = ''.join(json.dumps(case) + '\n' for case in inputs).encode()
     run = subprocess.run([str(args.probe)], input=payload, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
     assert run.returncode == 0, run.stderr.decode()
