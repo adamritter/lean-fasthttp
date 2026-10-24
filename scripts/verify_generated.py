@@ -212,6 +212,21 @@ def main():
         add([wire[:split], wire[split:]], [], error=431,
             limits=[8,1048576,1024,16384,65536], label='limit-error-fragmentation')
 
+    tokens = b"!#$%&'*+-.^_`|~0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    for byte in range(256):
+        wire, r, _ = request()
+        method = b'X' + bytes([byte])
+        wire = wire.replace(b'POST ', method + b' ', 1)
+        valid = byte in tokens
+        if valid: r['method'] = method.decode('ascii')
+        add(fragments(wire,rng), [r] if valid else [], error=0 if valid else 400,
+            label='all-method-octets')
+        wire, r, _ = request()
+        wire = wire.replace(b'Host: localhost\r\n', b'Host: localhost\r\nX' + bytes([byte]) + b': z\r\n')
+        valid = byte in tokens or byte == 58
+        add(fragments(wire,rng), [r] if valid else [], error=0 if valid else 400,
+            label='all-field-name-octets')
+
     payload = ''.join(json.dumps(case) + '\n' for case in inputs).encode()
     run = subprocess.run([str(args.probe)], input=payload, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
     assert run.returncode == 0, run.stderr.decode()

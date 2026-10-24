@@ -2,7 +2,7 @@
 
 Experimental callback HTTP/1.1 server in Lean 4.35.0, with a pure protocol state
 machine, built-in or per-worker lean-uv networking, prepared responses, streaming
-output, and 101 kernel-checked feed, framing, numeric and URI properties. **Not a fully verified or
+output, and 115 kernel-checked feed, framing, header, numeric and URI properties. **Not a fully verified or
 production-ready HTTP implementation.**
 
 ```sh
@@ -36,7 +36,7 @@ The full `Protocol.feed` interface now also has a composition theorem for any
 finite list of fragments. Equality includes the entire Request, its exact raw
 header prefix, all metadata, body, trailers, Expect continuation and pipeline
 remainder. The proof exposed and fixed fragment-dependent raw-buffer retention
-and limit-error classification. All 101 theorems are audited for axioms. [Detailed formal scope](FORMAL_SCOPE.md)
+and limit-error classification. All 115 theorems are audited for axioms. [Detailed formal scope](FORMAL_SCOPE.md)
 distinguishes these guarantees from the still-unproved full RFC grammar and I/O
 interpreter; this is not a full formal proof of HTTP/1.1 conformance.
 
@@ -227,7 +227,7 @@ TLS and request-body streaming remain outside this buffered origin-server API.
 
 ## What is actually proved
 
-`lake build FastHTTP.ProofAudit` checks 101 theorems
+`lake build FastHTTP.ProofAudit` checks 115 theorems
 without `sorry`, custom axioms, `unsafe` or `native_decide`. The optimized runtime
 scanner and decoder are proved equivalent to explicit references, not replaced
 by an unproved `implemented_by` implementation. Proof terms are erased and do

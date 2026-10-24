@@ -1,5 +1,6 @@
 import FastHTTP.Syntax
 import FastHTTP.Numeric
+import FastHTTP.Lexical
 
 namespace FastHTTP
 
@@ -191,58 +192,37 @@ private def parseField (cfg : Config) (bytes : ByteArray) (i stop minor : Nat)
   return { state with line := i + 2, colon := i + 2 }
 
 /-- Tail recursion avoids constructing nested mutable-variable tuples per byte. -/
-private def parseHeaders (cfg : Config) (bytes : ByteArray) (headersStart stop minor : Nat) :
+def parseHeaders (cfg : Config) (bytes : ByteArray) (headersStart stop minor : Nat) :
     Except Nat HeaderState := loop headersStart { line := headersStart, colon := headersStart }
 where
   loop (i : Nat) (state : HeaderState) : Except Nat HeaderState :=
     if i < stop - 2 then
-      let b := bytes[i]!
-      if b == 13 then
-        match parseField cfg bytes i stop minor state with
-        | .error code => .error code
-        | .ok state => loop (i + 1) state
-      else if b == 10 then
-        if i + 1 != state.line then .error 400 else loop (i + 1) state
-      else if state.colon == state.line then
-        if b == 58 then
-          if i == state.line then .error 400 else loop (i + 1) { state with colon := i }
-        else if !token b then .error 400 else loop (i + 1) state
-      else if (b < 32 && b != 9) || b == 127 then .error 400
-      else loop (i + 1) state
-    else if state.line != stop - 2 || (minor != 0 && !state.host) then .error 400 else .ok state
+      match parseFieldLine bytes i stop with
+      | none => .error 400
+      | some field =>
+        -- The checked progress condition keeps the recursive interpreter total.
+        if field.next ≤ i then .error 400
+        else match parseField cfg bytes field.valueEnd stop minor
+            { state with line := i, colon := field.colon } with
+          | .error code => .error code
+          | .ok state => loop field.next state
+    else if i != stop - 2 || (minor != 0 && !state.host) then .error 400 else .ok state
   termination_by stop - 2 - i
 
 /-- Strict origin-server grammar. Duplicated framing fields and obsolete folding
 are rejected; methods are tokens, targets are origin-form or OPTIONS *. -/
 def parseHead (cfg : Config) (bytes : ByteArray) (stop : Nat) : Except Nat Head := do
-  if stop > bytes.size || stop < 16 || !equals bytes (stop - 4) stop "\r\n\r\n" then throw 400
+  if stop > bytes.size || stop < 16 || bytes[stop - 4]! != 13 || bytes[stop - 3]! != 10 ||
+      bytes[stop - 2]! != 13 || bytes[stop - 1]! != 10 then throw 400
   let methodStart := if equals bytes 0 2 "\r\n" then 2 else 0
-  let mut methodEnd := methodStart
-  while methodEnd < stop && bytes[methodEnd]! != 32 do
-    if !token bytes[methodEnd]! then throw 400
-    methodEnd := methodEnd + 1
-  if methodEnd == methodStart then throw 400
-  let targetStart := methodEnd + 1
-  let mut targetEnd := targetStart
-  while targetEnd < stop && bytes[targetEnd]! != 32 do
-    let b := bytes[targetEnd]!
-    if b < 33 || b > 126 || b == 35 then throw 400
-    -- Percent escapes must contain exactly two hex digits (checked below).
-    targetEnd := targetEnd + 1
-  if targetEnd == targetStart then throw 400
-  if targetEnd - targetStart > cfg.maxTargetBytes then throw 414
-  if targetEnd + 11 > stop ||
-      !equals bytes (targetEnd + 1) (targetEnd + 6) "HTTP/" ||
-      bytes[targetEnd + 7]! != 46 || bytes[targetEnd + 9]! != 13 || bytes[targetEnd + 10]! != 10 then
-    throw 400
-  let major := bytes[targetEnd + 6]!
-  let minor := bytes[targetEnd + 8]!
-  if major < 48 || major > 57 || minor < 48 || minor > 57 then throw 400
-  if major != 49 then throw 505
-  let minor := minor.toNat - 48
+  let line ← parseRequestLine bytes methodStart stop cfg.maxTargetBytes
+  let methodEnd := line.methodEnd
+  let targetStart := line.targetStart
+  let targetEnd := line.targetEnd
+  let minor := line.minor
   let target ← parseTarget bytes targetStart targetEnd
     (equals bytes methodStart methodEnd "OPTIONS") (equals bytes methodStart methodEnd "CONNECT")
-  let headersStart := targetEnd + 11
+  let headersStart := line.headersStart
   let fields ← parseHeaders cfg bytes headersStart stop minor
   if fields.transferSeen && !fields.chunked then throw 400
   let framing ← chooseFraming fields.length fields.chunked

@@ -1,3 +1,4 @@
+import FastHTTP.HeaderProofs
 import FastHTTP.FeedProofs
 import FastHTTP.NumericProofs
 import FastHTTP.SyntaxProofs
@@ -107,3 +108,18 @@ import FastHTTP.BodyFastProofs
 #print axioms FastHTTP.Protocol.headStep_bound
 #print axioms FastHTTP.Protocol.feed_bound
 #print axioms FastHTTP.Protocol.feed_body_no_continue
+
+#print axioms FastHTTP.Protocol.token_iff
+#print axioms FastHTTP.Protocol.fieldOctet_iff
+#print axioms FastHTTP.Protocol.spanEnd_spec
+#print axioms FastHTTP.Protocol.spanEnd_complete
+#print axioms FastHTTP.Protocol.parseFieldLine_sound
+#print axioms FastHTTP.Protocol.parseFieldLine_complete
+#print axioms FastHTTP.Protocol.parseFieldLine_iff
+#print axioms FastHTTP.Protocol.targetOctet_iff
+#print axioms FastHTTP.Protocol.parseRequestLine_sound
+#print axioms FastHTTP.Protocol.parseRequestLine_complete
+#print axioms FastHTTP.Protocol.parseRequestLine_iff
+#print axioms FastHTTP.Protocol.parseHeaders_loop_sound
+#print axioms FastHTTP.Protocol.parseHeaders_sound
+#print axioms FastHTTP.Protocol.parseHead_envelope
