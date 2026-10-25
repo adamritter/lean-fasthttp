@@ -98,7 +98,44 @@ private def batchChecks : IO Unit := do
   | .pure (.error _) => pure ()
   | _ => throw (IO.userError "batch ignored cancellation")
 
+private def notificationChecks : IO Unit := do
+  for early in [false, true] do
+    for _ in [:100] do
+      let (pending, resolve) ← FastHTTP.Pending.create
+      let notified ← IO.Promise.new
+      if early then resolve (.error (IO.userError "completion"))
+      pending.onReady (notified.resolve ())
+      if !early then resolve (.error (IO.userError "completion"))
+      let _ ← IO.wait notified.result?
+      require (← pending.poll).isSome "notification lost completion"
+  for early in [false, true] do
+    for _ in [:100] do
+      let producer ← IO.Promise.new
+      if early then producer.resolve ()
+      let ready ← FastHTTP.ReadySignal.ofTask producer.result?
+      let selected ← IO.asTask do
+        let action : Std.Async.Async Bool := Std.Async.Selectable.one #[
+          .case ready (fun _ => pure true),
+          .case (← (Std.Async.Selector.sleep (.ofNat 2000)).block) (fun _ => pure false)]
+        action.block
+      if !early then producer.resolve ()
+      require (← IO.ofExcept (← IO.wait selected)) "task completion notification lost"
+  -- Repeated timer selections unregister old waiters; completion must survive.
+  let producer ← IO.Promise.new
+  let ready ← FastHTTP.ReadySignal.ofTask producer.result?
+  for _ in [:50] do
+    let tick ← (Std.Async.Selector.sleep (.ofNat 1)).block
+    let action : Std.Async.Async Bool := Std.Async.Selectable.one #[
+      .case ready (fun _ => pure true), .case tick (fun _ => pure false)]
+    require (!(← action.block)) "unfinished producer reported ready"
+  producer.resolve ()
+  let deadline ← (Std.Async.Selector.sleep (.ofNat 2000)).block
+  let action : Std.Async.Async Bool := Std.Async.Selectable.one #[
+    .case ready (fun _ => pure true), .case deadline (fun _ => pure false)]
+  require (← action.block) "timer unregister lost producer completion"
+
 def main : IO Unit := do
+  notificationChecks
   batchChecks
   encoderChecks
   for _ in [:100] do
@@ -122,4 +159,4 @@ def main : IO Unit := do
     require (match ({ event := some value } : FastHTTP.SSE.Event).encode with | .error _ => true | _ => false) "SSE event injection"
   let empty ← IO.ofExcept (({ data := "" } : FastHTTP.SSE.Event).encode.mapError IO.userError)
   require (empty == "data: \n\n".toUTF8) "empty SSE data"
-  IO.println "PASS: 500 pending lifecycle cases, concurrent stream release, SSE field validation, bounded ready-only batching, 9330 SSE encoder cases"
+  IO.println "PASS: 400 completion registrations and 50 heartbeat selections, 500 pending lifecycle cases, concurrent stream release, SSE field validation, bounded ready-only batching, 9330 SSE encoder cases"

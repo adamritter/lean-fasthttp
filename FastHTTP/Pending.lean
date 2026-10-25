@@ -39,11 +39,13 @@ def PendingState.close (state : PendingState α) : PendingState α × Option α 
 structure Pending where
   poll : IO (Option (Except IO.Error Completion))
   cancel : IO Unit
+  onReady : IO Unit → IO Unit
 
 /-- Cancellation is cooperative. `cancelWork` must return promptly; it may
 signal a cancellation token, but must not wait for the producer to finish. -/
 def Pending.create (cancelWork : IO Unit := pure ()) :
     IO (Pending × (Except IO.Error Completion → IO Unit)) := do
+  let ready ← IO.Promise.new
   let state ← Std.Mutex.new (PendingState.waiting : PendingState (Except IO.Error Completion))
   let dispose := fun value => do
     if let .ok response := value then
@@ -57,6 +59,7 @@ def Pending.create (cancelWork : IO Unit := pure ()) :
       let (next, value, notify) := (← get).close
       set next
       return (value, notify)
+    ready.resolve ()
     if notify then
       try cancelWork finally
         if let some value := value then dispose value
@@ -65,7 +68,10 @@ def Pending.create (cancelWork : IO Unit := pure ()) :
       let (next, discard) := (← get).resolve value
       set next
       return discard
+    ready.resolve ()
     if let some value := discard then dispose value
-  return (⟨poll, cancel⟩, resolve)
+  let onReady : IO Unit → IO Unit := fun notify => BaseIO.chainTask ready.result? fun _ => do
+    discard notify.toBaseIO
+  return (⟨poll, cancel, onReady⟩, resolve)
 
 end FastHTTP

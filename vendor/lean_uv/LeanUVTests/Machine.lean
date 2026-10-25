@@ -24,7 +24,7 @@ def reactor (mode : String) : Machine State Reply Work := {
     if state.closed then (state, .idle)
     else match event with
       | .data bytes =>
-        (state, .perform (if mode == "fuel" then .acquire 10000 bytes
+        (state, .perform (if mode == "fuel" then .acquire 1000000 bytes
           else if mode == "finalize" || mode == "finalize-control" then .acquire 254 bytes else .begin bytes))
       | .result (.waiting deadline bytes) => (state, .perform (.poll deadline bytes))
       | .result (.bytes bytes) =>
@@ -61,10 +61,18 @@ def main (args : List String) : IO Unit := do
           if (← acquired.get) == 255 then
             IO.println "yield-ready"
             (← IO.getStdout).flush
-            if mode == "finalize" || mode == "finalize-control" then IO.sleep 100
+            if mode == "fuel" || mode == "finalize" || mode == "finalize-control" then IO.sleep 100
           return some (.acquired remaining bytes)
         | .release owned =>
           IO.println s!"released {worker} owned {owned} acquired {← acquired.get}"
-          return some .released) config.maxQueuedBytes
+          return some .released) config.maxQueuedBytes (fun work notify => do
+          match work with
+          | .poll deadline _ =>
+            let now ← IO.monoMsNow
+            let _ ← IO.asTask (prio := .dedicated) do
+              IO.sleep (deadline - now).toUInt32
+              notify
+            pure ()
+          | _ => throw (IO.userError "unexpected waiting work"))
   for i in [:stats.size] do
     IO.println s!"worker {i} accepted {stats[i]!.accepted} errors {stats[i]!.errors}"

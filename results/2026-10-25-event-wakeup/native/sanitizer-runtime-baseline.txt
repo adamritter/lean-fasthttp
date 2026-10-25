@@ -1,0 +1,276 @@
+873104707
+
+=================================================================
+==1876764==ERROR: LeakSanitizer: detected memory leaks
+
+Direct leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0xf589673776d0 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0xb4f993882868 in __gmp_default_allocate (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x732868) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #2 0xb4f99386474c in __gmpz_init_set (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x71474c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #3 0xb4f993795c18 in lean_nat_pow (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x645c18) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #4 0xb4f99379b178 in lean_obj_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #5 0xb4f993603da8 in runtime_initialize_Init_Data_SInt_Basic (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b3da8) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #6 0xb4f993603ed8 in initialize_Init_Data_SInt_Basic (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b3ed8) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #7 0xb4f993609d78 in initialize_Init_Data_SInt_Lemmas (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b9d78) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #8 0xb4f99360cf90 in initialize_Init_Grind_Homo_UInt8 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4bcf90) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #9 0xb4f9934567cc in initialize_Init_Grind_Homo (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x3067cc) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #10 0xb4f99331c888 in initialize_Init_Grind (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x1cc888) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #11 0xb4f99360ff64 in initialize_Init_Data_Char_Ordinal (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4bff64) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #12 0xb4f993456c90 in initialize_Init_Data_Char (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x306c90) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #13 0xb4f99335b1dc in initialize_Init_Data (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x20b1dc) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #14 0xb4f99323199c in initialize_Init (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xe199c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #15 0xb4f993211178 in initialize_lean__uv_LeanUVTests_SanitizerBaseline (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #16 0xb4f993211300 in main (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1300) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #17 0xf589669984c0 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #18 0xf58966998594 in __libc_start_main_impl ../csu/libc-start.c:360
+    #19 0xb4f993210bec in _start (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc0bec) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+
+Direct leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0xf589673776d0 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0xb4f993882868 in __gmp_default_allocate (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x732868) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #2 0xb4f99386474c in __gmpz_init_set (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x71474c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #3 0xb4f993795c18 in lean_nat_pow (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x645c18) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #4 0xb4f99379b178 in lean_obj_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #5 0xb4f993257680 in runtime_initialize_Init_Prelude (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x107680) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #6 0xb4f993257718 in initialize_Init_Prelude (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x107718) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #7 0xb4f9932317e4 in initialize_Init (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xe17e4) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #8 0xb4f993211178 in initialize_lean__uv_LeanUVTests_SanitizerBaseline (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #9 0xb4f993211300 in main (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1300) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #10 0xf589669984c0 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #11 0xf58966998594 in __libc_start_main_impl ../csu/libc-start.c:360
+    #12 0xb4f993210bec in _start (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc0bec) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+
+Direct leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0xf589673776d0 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0xb4f993882868 in __gmp_default_allocate (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x732868) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #2 0xb4f99386474c in __gmpz_init_set (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x71474c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #3 0xb4f993795c18 in lean_nat_pow (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x645c18) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #4 0xb4f99379b178 in lean_obj_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #5 0xb4f993213e30 in l_Nat_reprFast (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc3e30) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #6 0xb4f993211234 in run_main (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1234) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #7 0xb4f993790208 in std::__1::__function::__func<lean_run_main::$_0, void ()>::operator()[abi:nqe230100]() (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x640208) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #8 0xb4f993790b4c in lean::lthread::imp::_main(void*) (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x640b4c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #9 0xf589672ef3d0 in asan_thread_start ../../../../src/libsanitizer/asan/asan_interceptors.cpp:234
+    #10 0xf589669f5958 in start_thread nptl/pthread_create.c:447
+    #11 0xf58966a5ba48 in thread_start ../sysdeps/unix/sysv/linux/aarch64/clone3.S:76
+
+Direct leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0xf589673776d0 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0xb4f993882868 in __gmp_default_allocate (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x732868) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #2 0xb4f99386474c in __gmpz_init_set (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x71474c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #3 0xb4f993794000 in lean_cstr_to_nat (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x644000) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #4 0xb4f99379b178 in lean_obj_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #5 0xb4f993603d38 in runtime_initialize_Init_Data_SInt_Basic (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b3d38) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #6 0xb4f993603ed8 in initialize_Init_Data_SInt_Basic (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b3ed8) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #7 0xb4f993609d78 in initialize_Init_Data_SInt_Lemmas (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b9d78) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #8 0xb4f99360cf90 in initialize_Init_Grind_Homo_UInt8 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4bcf90) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #9 0xb4f9934567cc in initialize_Init_Grind_Homo (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x3067cc) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #10 0xb4f99331c888 in initialize_Init_Grind (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x1cc888) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #11 0xb4f99360ff64 in initialize_Init_Data_Char_Ordinal (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4bff64) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #12 0xb4f993456c90 in initialize_Init_Data_Char (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x306c90) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #13 0xb4f99335b1dc in initialize_Init_Data (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x20b1dc) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #14 0xb4f99323199c in initialize_Init (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xe199c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #15 0xb4f993211178 in initialize_lean__uv_LeanUVTests_SanitizerBaseline (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #16 0xb4f993211300 in main (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1300) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #17 0xf589669984c0 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #18 0xf58966998594 in __libc_start_main_impl ../csu/libc-start.c:360
+    #19 0xb4f993210bec in _start (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc0bec) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+
+Direct leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0xf589673776d0 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0xb4f993882868 in __gmp_default_allocate (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x732868) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #2 0xb4f99386474c in __gmpz_init_set (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x71474c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #3 0xb4f993794000 in lean_cstr_to_nat (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x644000) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #4 0xb4f99379b178 in lean_obj_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #5 0xb4f993257664 in runtime_initialize_Init_Prelude (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x107664) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #6 0xb4f993257718 in initialize_Init_Prelude (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x107718) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #7 0xb4f9932317e4 in initialize_Init (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xe17e4) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #8 0xb4f993211178 in initialize_lean__uv_LeanUVTests_SanitizerBaseline (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #9 0xb4f993211300 in main (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1300) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #10 0xf589669984c0 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #11 0xf58966998594 in __libc_start_main_impl ../csu/libc-start.c:360
+    #12 0xb4f993210bec in _start (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc0bec) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+
+Direct leak of 8 byte(s) in 1 object(s) allocated from:
+    #0 0xf589673776d0 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0xb4f993882868 in __gmp_default_allocate (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x732868) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #2 0xb4f99386474c in __gmpz_init_set (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x71474c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #3 0xb4f99379697c in lean_int_big_sub (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64697c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #4 0xb4f99379b178 in lean_obj_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #5 0xb4f993602764 in _init_l_ISize_maxValue___closed__5 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b2764) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #6 0xb4f99379b578 in lean_usize_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b578) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #7 0xb4f993603dc4 in runtime_initialize_Init_Data_SInt_Basic (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b3dc4) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #8 0xb4f993603ed8 in initialize_Init_Data_SInt_Basic (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b3ed8) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #9 0xb4f993609d78 in initialize_Init_Data_SInt_Lemmas (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b9d78) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #10 0xb4f99360cf90 in initialize_Init_Grind_Homo_UInt8 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4bcf90) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #11 0xb4f9934567cc in initialize_Init_Grind_Homo (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x3067cc) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #12 0xb4f99331c888 in initialize_Init_Grind (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x1cc888) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #13 0xb4f99360ff64 in initialize_Init_Data_Char_Ordinal (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4bff64) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #14 0xb4f993456c90 in initialize_Init_Data_Char (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x306c90) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #15 0xb4f99335b1dc in initialize_Init_Data (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x20b1dc) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #16 0xb4f99323199c in initialize_Init (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xe199c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #17 0xb4f993211178 in initialize_lean__uv_LeanUVTests_SanitizerBaseline (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #18 0xb4f993211300 in main (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1300) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #19 0xf589669984c0 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #20 0xf58966998594 in __libc_start_main_impl ../csu/libc-start.c:360
+    #21 0xb4f993210bec in _start (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc0bec) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+
+Direct leak of 8 byte(s) in 1 object(s) allocated from:
+    #0 0xf589673776d0 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0xb4f993882868 in __gmp_default_allocate (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x732868) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #2 0xb4f99386474c in __gmpz_init_set (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x71474c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #3 0xb4f99379697c in lean_int_big_sub (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64697c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #4 0xb4f99379b178 in lean_obj_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #5 0xb4f9936c7918 in _init_l___private_Init_Data_Range_Polymorphic_SInt_0__ISize_maxValueSealed___closed__1 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x577918) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #6 0xb4f99379b578 in lean_usize_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b578) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #7 0xb4f9936c73c4 in runtime_initialize_Init_Data_Range_Polymorphic_SInt (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x5773c4) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #8 0xb4f9936c76d8 in initialize_Init_Data_Range_Polymorphic_SInt (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x5776d8) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #9 0xb4f9934b2704 in initialize_Init_Data_Range_Polymorphic (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x362704) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #10 0xb4f99335b7a4 in initialize_Init_Data (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x20b7a4) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #11 0xb4f99323199c in initialize_Init (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xe199c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #12 0xb4f993211178 in initialize_lean__uv_LeanUVTests_SanitizerBaseline (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #13 0xb4f993211300 in main (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1300) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #14 0xf589669984c0 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #15 0xf58966998594 in __libc_start_main_impl ../csu/libc-start.c:360
+    #16 0xb4f993210bec in _start (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc0bec) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+
+Direct leak of 8 byte(s) in 1 object(s) allocated from:
+    #0 0xf589673776d0 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0xb4f993882868 in __gmp_default_allocate (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x732868) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #2 0xb4f99386474c in __gmpz_init_set (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x71474c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #3 0xb4f993795c18 in lean_nat_pow (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x645c18) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #4 0xb4f993391d64 in l_Int_pow (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x241d64) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #5 0xb4f99379b178 in lean_obj_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #6 0xb4f9936041e4 in _init_l_ISize_maxValue___closed__4 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b41e4) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #7 0xb4f99379b178 in lean_obj_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #8 0xb4f993602764 in _init_l_ISize_maxValue___closed__5 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b2764) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #9 0xb4f99379b578 in lean_usize_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b578) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #10 0xb4f993603dc4 in runtime_initialize_Init_Data_SInt_Basic (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b3dc4) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #11 0xb4f993603ed8 in initialize_Init_Data_SInt_Basic (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b3ed8) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #12 0xb4f993609d78 in initialize_Init_Data_SInt_Lemmas (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b9d78) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #13 0xb4f99360cf90 in initialize_Init_Grind_Homo_UInt8 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4bcf90) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #14 0xb4f9934567cc in initialize_Init_Grind_Homo (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x3067cc) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #15 0xb4f99331c888 in initialize_Init_Grind (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x1cc888) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #16 0xb4f99360ff64 in initialize_Init_Data_Char_Ordinal (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4bff64) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #17 0xb4f993456c90 in initialize_Init_Data_Char (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x306c90) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #18 0xb4f99335b1dc in initialize_Init_Data (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x20b1dc) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #19 0xb4f99323199c in initialize_Init (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xe199c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #20 0xb4f993211178 in initialize_lean__uv_LeanUVTests_SanitizerBaseline (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #21 0xb4f993211300 in main (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1300) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #22 0xf589669984c0 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #23 0xf58966998594 in __libc_start_main_impl ../csu/libc-start.c:360
+    #24 0xb4f993210bec in _start (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc0bec) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+
+Direct leak of 8 byte(s) in 1 object(s) allocated from:
+    #0 0xf589673776d0 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0xb4f993882868 in __gmp_default_allocate (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x732868) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #2 0xb4f99386474c in __gmpz_init_set (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x71474c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #3 0xb4f9937964d8 in lean_int_big_neg (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x6464d8) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #4 0xb4f99379b178 in lean_obj_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #5 0xb4f9936c606c in _init_l___private_Init_Data_Range_Polymorphic_SInt_0__ISize_minValueSealed___closed__3 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x57606c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #6 0xb4f99379b578 in lean_usize_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b578) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #7 0xb4f9936c73a8 in runtime_initialize_Init_Data_Range_Polymorphic_SInt (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x5773a8) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #8 0xb4f9936c76d8 in initialize_Init_Data_Range_Polymorphic_SInt (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x5776d8) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #9 0xb4f9934b2704 in initialize_Init_Data_Range_Polymorphic (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x362704) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #10 0xb4f99335b7a4 in initialize_Init_Data (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x20b7a4) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #11 0xb4f99323199c in initialize_Init (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xe199c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #12 0xb4f993211178 in initialize_lean__uv_LeanUVTests_SanitizerBaseline (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #13 0xb4f993211300 in main (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1300) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #14 0xf589669984c0 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #15 0xf58966998594 in __libc_start_main_impl ../csu/libc-start.c:360
+    #16 0xb4f993210bec in _start (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc0bec) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+
+Direct leak of 8 byte(s) in 1 object(s) allocated from:
+    #0 0xf589673776d0 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0xb4f993882868 in __gmp_default_allocate (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x732868) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #2 0xb4f99386474c in __gmpz_init_set (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x71474c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #3 0xb4f993795c18 in lean_nat_pow (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x645c18) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #4 0xb4f993391d64 in l_Int_pow (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x241d64) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #5 0xb4f99379b178 in lean_obj_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #6 0xb4f9936c78c4 in _init_l___private_Init_Data_Range_Polymorphic_SInt_0__ISize_minValueSealed___closed__2 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x5778c4) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #7 0xb4f99379b178 in lean_obj_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #8 0xb4f9936c606c in _init_l___private_Init_Data_Range_Polymorphic_SInt_0__ISize_minValueSealed___closed__3 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x57606c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #9 0xb4f99379b578 in lean_usize_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b578) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #10 0xb4f9936c73a8 in runtime_initialize_Init_Data_Range_Polymorphic_SInt (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x5773a8) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #11 0xb4f9936c76d8 in initialize_Init_Data_Range_Polymorphic_SInt (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x5776d8) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #12 0xb4f9934b2704 in initialize_Init_Data_Range_Polymorphic (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x362704) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #13 0xb4f99335b7a4 in initialize_Init_Data (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x20b7a4) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #14 0xb4f99323199c in initialize_Init (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xe199c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #15 0xb4f993211178 in initialize_lean__uv_LeanUVTests_SanitizerBaseline (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #16 0xb4f993211300 in main (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1300) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #17 0xf589669984c0 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #18 0xf58966998594 in __libc_start_main_impl ../csu/libc-start.c:360
+    #19 0xb4f993210bec in _start (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc0bec) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+
+Direct leak of 8 byte(s) in 1 object(s) allocated from:
+    #0 0xf589673776d0 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0xb4f993882868 in __gmp_default_allocate (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x732868) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #2 0xb4f99386474c in __gmpz_init_set (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x71474c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #3 0xb4f993794000 in lean_cstr_to_nat (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x644000) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #4 0xb4f99379b178 in lean_obj_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #5 0xb4f9936c7814 in _init_l___private_Init_Data_Range_Polymorphic_SInt_0__Int64_minValueSealed___closed__1 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x577814) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #6 0xb4f99379b4ac in lean_uint64_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b4ac) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #7 0xb4f9936c5364 in _init_l___private_Init_Data_Range_Polymorphic_SInt_0__Int64_minValueSealed___closed__2 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x575364) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #8 0xb4f99379b4ac in lean_uint64_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b4ac) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #9 0xb4f9936c7338 in runtime_initialize_Init_Data_Range_Polymorphic_SInt (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x577338) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #10 0xb4f9936c76d8 in initialize_Init_Data_Range_Polymorphic_SInt (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x5776d8) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #11 0xb4f9934b2704 in initialize_Init_Data_Range_Polymorphic (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x362704) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #12 0xb4f99335b7a4 in initialize_Init_Data (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x20b7a4) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #13 0xb4f99323199c in initialize_Init (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xe199c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #14 0xb4f993211178 in initialize_lean__uv_LeanUVTests_SanitizerBaseline (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #15 0xb4f993211300 in main (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1300) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #16 0xf589669984c0 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #17 0xf58966998594 in __libc_start_main_impl ../csu/libc-start.c:360
+    #18 0xb4f993210bec in _start (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc0bec) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+
+Direct leak of 8 byte(s) in 1 object(s) allocated from:
+    #0 0xf589673776d0 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0xb4f993882868 in __gmp_default_allocate (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x732868) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #2 0xb4f99386474c in __gmpz_init_set (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x71474c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #3 0xb4f9937964d8 in lean_int_big_neg (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x6464d8) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #4 0xb4f99379b178 in lean_obj_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #5 0xb4f9936026ac in _init_l_ISize_minValue___closed__1 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b26ac) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #6 0xb4f99379b578 in lean_usize_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b578) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #7 0xb4f993603de0 in runtime_initialize_Init_Data_SInt_Basic (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b3de0) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #8 0xb4f993603ed8 in initialize_Init_Data_SInt_Basic (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b3ed8) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #9 0xb4f993609d78 in initialize_Init_Data_SInt_Lemmas (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b9d78) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #10 0xb4f99360cf90 in initialize_Init_Grind_Homo_UInt8 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4bcf90) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #11 0xb4f9934567cc in initialize_Init_Grind_Homo (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x3067cc) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #12 0xb4f99331c888 in initialize_Init_Grind (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x1cc888) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #13 0xb4f99360ff64 in initialize_Init_Data_Char_Ordinal (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4bff64) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #14 0xb4f993456c90 in initialize_Init_Data_Char (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x306c90) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #15 0xb4f99335b1dc in initialize_Init_Data (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x20b1dc) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #16 0xb4f99323199c in initialize_Init (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xe199c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #17 0xb4f993211178 in initialize_lean__uv_LeanUVTests_SanitizerBaseline (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #18 0xb4f993211300 in main (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1300) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #19 0xf589669984c0 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #20 0xf58966998594 in __libc_start_main_impl ../csu/libc-start.c:360
+    #21 0xb4f993210bec in _start (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc0bec) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+
+Direct leak of 8 byte(s) in 1 object(s) allocated from:
+    #0 0xf589673776d0 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0xb4f993882868 in __gmp_default_allocate (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x732868) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #2 0xb4f99386474c in __gmpz_init_set (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x71474c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #3 0xb4f993794000 in lean_cstr_to_nat (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x644000) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #4 0xb4f99379b178 in lean_obj_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #5 0xb4f993603fb8 in _init_l_Int64_minValue___closed__1 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b3fb8) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #6 0xb4f99379b4ac in lean_uint64_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b4ac) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #7 0xb4f993600698 in _init_l_Int64_minValue___closed__2 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b0698) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #8 0xb4f99379b4ac in lean_uint64_once_cold (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x64b4ac) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #9 0xb4f993603d70 in runtime_initialize_Init_Data_SInt_Basic (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b3d70) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #10 0xb4f993603ed8 in initialize_Init_Data_SInt_Basic (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b3ed8) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #11 0xb4f993609d78 in initialize_Init_Data_SInt_Lemmas (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4b9d78) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #12 0xb4f99360cf90 in initialize_Init_Grind_Homo_UInt8 (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4bcf90) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #13 0xb4f9934567cc in initialize_Init_Grind_Homo (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x3067cc) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #14 0xb4f99331c888 in initialize_Init_Grind (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x1cc888) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #15 0xb4f99360ff64 in initialize_Init_Data_Char_Ordinal (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x4bff64) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #16 0xb4f993456c90 in initialize_Init_Data_Char (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x306c90) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #17 0xb4f99335b1dc in initialize_Init_Data (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0x20b1dc) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #18 0xb4f99323199c in initialize_Init (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xe199c) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #19 0xb4f993211178 in initialize_lean__uv_LeanUVTests_SanitizerBaseline (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1178) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #20 0xb4f993211300 in main (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc1300) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+    #21 0xf589669984c0 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #22 0xf58966998594 in __libc_start_main_impl ../csu/libc-start.c:360
+    #23 0xb4f993210bec in _start (/tmp/lean-http-publication/lean-fasthttp/vendor/lean_uv/bin/sanitized/baseline+0xc0bec) (BuildId: e165c858eba8e23b5aacaceb6808c2075d07f982)
+
+SUMMARY: AddressSanitizer: 144 byte(s) leaked in 13 allocation(s).

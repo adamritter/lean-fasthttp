@@ -42,6 +42,7 @@ def main (args : List String) : IO Unit := do
             let _ ← IO.asTask (prio := .dedicated) do
               IO.sleep 20
               promise.resolve (.ok bytes)
+              socket.notify
           else if mode == "gather" then
             let middle := bytes.size / 2
             socket.sendv #[.empty, bytes.extract 0 middle, .empty, bytes.extract middle bytes.size, .empty]

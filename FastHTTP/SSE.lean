@@ -1,4 +1,5 @@
 import FastHTTP.AsyncStream
+import FastHTTP.ReadySignal
 
 namespace FastHTTP.SSE
 open Std.Async
@@ -38,7 +39,7 @@ structure Source where
 never start a second pull or drop a pending event. The producer receives the
 stream's cancellation context; no task is forcefully terminated. -/
 def Source.bytes (source : Source) (heartbeatMs : Nat := 15000) : IO AsyncStream.Source := do
-  let pending ← IO.mkRef (none : Option (Task (Except IO.Error (Option Event))))
+  let pending ← IO.mkRef (none : Option (Task (Except IO.Error (Option Event)) × Selector Unit))
   let last ← IO.mkRef (← IO.monoMsNow)
   let emit := fun event => do
     last.set (← IO.monoMsNow)
@@ -46,7 +47,9 @@ def Source.bytes (source : Source) (heartbeatMs : Nat := 15000) : IO AsyncStream
     | none => pure none
     | some event => return some (← IO.ofExcept (event.encode.mapError IO.userError))
   let bytes : AsyncStream.Source := {
-    close := source.close
+    close := do
+      pending.set none
+      source.close
     next := fun context => do
       if ← context.isCancelled then throw (IO.userError "SSE cancelled")
       if (← pending.get).isNone then
@@ -54,19 +57,24 @@ def Source.bytes (source : Source) (heartbeatMs : Nat := 15000) : IO AsyncStream
           liftM (m := BaseIO) (source.next context).toRawBaseIO
         match attempt with
         | .pure result => return ← emit (← IO.ofExcept result)
-        | .ofTask task => pending.set (some task)
-      let some task ← pending.get | throw (IO.userError "missing SSE producer")
-      repeat
-        if ← context.isCancelled then throw (IO.userError "SSE cancelled")
-        if ← IO.hasFinished task then
-          pending.set none
-          return ← emit (← IO.ofExcept task.get)
-        let now ← IO.monoMsNow
-        if heartbeatMs > 0 && now - (← last.get) ≥ heartbeatMs then
-          last.set now
-          return some ": keep-alive\n\n".toUTF8
-        Std.Async.sleep 10
-      return none }
+        | .ofTask task =>
+          if ← IO.hasFinished task then return ← emit (← IO.ofExcept task.get)
+          pending.set (some (task, ← ReadySignal.ofTask task))
+      let some (task, ready) ← pending.get | throw (IO.userError "missing SSE producer")
+      let mut choices : Array (Selectable Bool) := #[
+        .case ready (fun _ => pure true),
+        .case context.doneSelector (fun _ => throw (IO.userError "SSE cancelled"))]
+      if heartbeatMs > 0 then
+        let remaining := heartbeatMs - ((← IO.monoMsNow) - (← last.get))
+        choices := choices.push (.case (← Selector.sleep (.ofNat remaining)) (fun _ => pure false))
+      let completed ← Selectable.one choices
+      if ← context.isCancelled then throw (IO.userError "SSE cancelled")
+      if completed then
+        pending.set none
+        return ← emit (← IO.ofExcept task.get)
+      else
+        last.set (← IO.monoMsNow)
+        return some ": keep-alive\n\n".toUTF8 }
   bytes.batchReady
 
 end FastHTTP.SSE

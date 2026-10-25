@@ -133,6 +133,8 @@ private structure Connection (State Reply Work : Type) where
   socket : Socket
   machine : Machine State Reply Work
   effect : Work → IO (Option Reply)
+  arm : Work → IO Unit → IO Unit
+  armed : IO.Ref Bool
   state : IO.Ref State
   pending : IO.Ref (Option (IO Unit))
   closed : IO.Ref Bool
@@ -163,6 +165,7 @@ mutual
       (fuel : Nat) : IO Unit := do
     if fuel == 0 then
       suspend c (dispatch c event 256)
+      c.socket.notify
       return
     let (state, command) := c.machine.step (← c.state.get) event
     c.state.set state
@@ -173,10 +176,17 @@ mutual
     -- the pure machine. A result may own an application resource.
     if fuel == 0 then
       suspend c (invoke c work 256)
+      c.socket.notify
       return
     match ← c.effect work with
-    | none => suspend c (invoke c work 256)
-    | some reply => dispatch c (.result reply) fuel
+    | none =>
+      suspend c (invoke c work 256)
+      if !(← c.armed.get) then
+        c.armed.set true
+        c.arm work c.socket.notify
+    | some reply =>
+      c.armed.set false
+      dispatch c (.result reply) fuel
 
   private partial def execute (c : Connection State Reply Work) (command : MachineCommand Work)
       (fuel : Nat) : IO Unit := do
@@ -209,15 +219,20 @@ mutual
 end
 
 /-- Install a pure per-socket machine on the native owner thread. A work handler
-returns `none` only while the same job needs polling; once it returns `some`, the
+returns `none` while the same job is unfinished; `arm` must subscribe to its
+completion and invoke the thread-safe notification, including for completion
+before registration. A subscription is installed once per job; stale wakeups
+only recheck that job. Once the effect returns `some`, the
 result is delivered exactly once. One-shot work must remember its own initiation
 or return its promise as a reply and use a distinct polling job. `finalize` is
 reserved for prompt one-shot work returning `some`; it never yields before the
 work or between its completion and adoption of its reply. -/
 def callbacks (socket : Socket) (machine : Machine State Reply Work)
-    (effect : Work → IO (Option Reply)) (maxQueuedBytes : UInt64) : IO Callbacks := do
+    (effect : Work → IO (Option Reply)) (maxQueuedBytes : UInt64)
+    (arm : Work → IO Unit → IO Unit) : IO Callbacks := do
   let c : Connection State Reply Work := {
-    socket, machine, effect
+    socket, machine, effect, arm
+    armed := ← IO.mkRef false
     state := ← IO.mkRef machine.initial
     pending := ← IO.mkRef none
     closed := ← IO.mkRef false

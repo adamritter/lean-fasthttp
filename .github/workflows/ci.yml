@@ -20,3 +20,9 @@ jobs:
       - run: FASTHTTP_BACKEND=uv python3 scripts/verify_fast_protocol.py
       - run: FASTHTTP_BACKEND=uv python3 scripts/verify_rfc.py
       - run: python3 scripts/verify_uv.py
+      - run: lake build uv_wakeup_test uv_machine_test
+        working-directory: vendor/lean_uv
+      - run: python3 scripts/test_wakeup.py && python3 scripts/test_machine.py
+        working-directory: vendor/lean_uv
+      - run: python3 scripts/sanitize.py
+        working-directory: vendor/lean_uv

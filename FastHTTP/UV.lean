@@ -35,6 +35,15 @@ private def effect (handler : Handler) (dates : DateCache) : Driver.Work → IO 
     try action catch _ => pure ()
     return some .released
 
+/-- Register completion after parking the reactor continuation. Task callbacks
+only notify the socket; all protocol state and socket I/O stay on the owner. -/
+private def arm (work : Driver.Work) (notify : IO Unit) : IO Unit := do
+  match work with
+  | .response promise => BaseIO.chainTask promise.result? (fun _ => do discard notify.toBaseIO)
+  | .chunk promise => BaseIO.chainTask promise.result? (fun _ => do discard notify.toBaseIO)
+  | .pending pending => pending.onReady notify
+  | _ => throw (IO.userError "non-waiting work requested a completion subscription")
+
 /-- Handler state and date caches are created on their owning worker. The generic
 reactor provides serial callbacks, bounded writes and backpressure. Its explicit
 ExecutionContract is the bridge used by the connection-controller proofs. -/
@@ -44,6 +53,6 @@ def serve (transport : LeanUV.TCP.Config) (makeHandler : UInt32 → IO Handler)
     let handler ← makeHandler worker
     let dates ← DateCache.create
     return fun socket =>
-      LeanUV.TCP.Machine.callbacks socket (Driver.machine config) (effect handler dates) transport.maxQueuedBytes
+      LeanUV.TCP.Machine.callbacks socket (Driver.machine config) (effect handler dates) transport.maxQueuedBytes arm
 
 end FastHTTP.UV

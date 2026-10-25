@@ -31,7 +31,7 @@ def local_modules(module):
 
 
 def main():
-    run(["lake", "build", "uv_http", "uv_test", "uv_machine_test", "sanitizer_baseline"])
+    run(["lake", "build", "uv_http", "uv_test", "uv_machine_test", "uv_wakeup_test", "sanitizer_baseline"])
     prefix = Path(subprocess.check_output(["lean", "--print-prefix"], cwd=ROOT, text=True).strip())
     output = ROOT / "bin/sanitized"
     output.mkdir(parents=True, exist_ok=True)
@@ -42,6 +42,7 @@ def main():
         "uv_http": "LeanUVBench/Main",
         "uv_test": "LeanUVTests/Server",
         "uv_machine_test": "LeanUVTests/Machine",
+        "uv_wakeup_test": "LeanUVTests/Wakeup",
         "baseline": "LeanUVTests/SanitizerBaseline",
     }.items():
         modules = local_modules(root_module)
@@ -67,6 +68,9 @@ def main():
     run(["python3", "scripts/test.py", "--bin-dir", output, "--output", "results/sanitizer.json"], env=env)
     run(["python3", "scripts/test_machine.py", "--binary", output/"uv_machine_test",
          "--output", "results/sanitizer-machine.json"], env=env)
+
+    run(["python3", "scripts/test_wakeup.py", "--binary", output/"uv_wakeup_test",
+         "--output", "results/sanitizer-wakeup.json"], env=env)
 
 
 if __name__ == "__main__":

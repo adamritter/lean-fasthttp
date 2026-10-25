@@ -1,3 +1,4 @@
+import FastHTTP.ReadySignalProofs
 import FastHTTP.SSEProofs
 import FastHTTP.BatchProofs
 import FastHTTP.ActionProofs
@@ -441,3 +442,14 @@ import FastHTTP.WireProofs
 #print axioms FastHTTP.AsyncStream.ReadyBatch.coalesce_pair
 
 #print axioms FastHTTP.SSE.single_line_data_wire
+
+#print axioms FastHTTP.ReadySignal.finish_before_register
+#print axioms FastHTTP.ReadySignal.register_before_finish
+#print axioms FastHTTP.ReadySignal.registration_delivery
+#print axioms FastHTTP.ReadySignal.finish_is_ready
+#print axioms FastHTTP.ReadySignal.finish_releases_waiter
+#print axioms FastHTTP.ReadySignal.repeated_finish_no_notification
+#print axioms FastHTTP.ReadySignal.unregister_preserves_ready
+#print axioms FastHTTP.ReadySignal.unregister_releases_waiter
+#print axioms FastHTTP.ReadySignal.finish_unregister_register
+#print axioms FastHTTP.ReadySignal.unregister_finish_register

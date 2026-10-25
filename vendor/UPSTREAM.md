@@ -7,10 +7,13 @@ is introduced. The workspace's separate `lean-uv/` checkout is untouched.
 
 [lean_uv-streaming.patch](lean_uv-streaming.patch) records the differences:
 
-- While a connection is waiting for a producer/handler or queued writes,
-  check `SO_ERROR` before its wake callback. A paused read must not hide a
-  peer reset indefinitely. This check does not consume request bytes and does
-  not interpret TCP FIN as cancellation; write-half closure remains supported.
+- Replace 10 ms completion polling with a deduplicated `uv_async_t` queue and
+  thread-safe `Socket.notify`. Refcounted wake hubs outlive retained sockets.
+- Require one-shot completion subscription in `Machine.callbacks`; fuel yields
+  explicitly notify. Adapt the native fixtures and add late-notification stress.
+- Watch ERR/HUP via a separate epoll descriptor while a connection is waiting.
+  Paused reads cannot hide peer resets. No request bytes are consumed, and TCP
+  write-half closure remains supported.
 - Successful socket writes update idle activity. An active SSE heartbeat or
   download must not be closed by an idle timer based only on incoming bytes.
 - Use the enclosing project's Lean 4.35 toolchain for standalone dependency

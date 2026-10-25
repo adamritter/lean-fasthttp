@@ -1,0 +1,44 @@
+{
+  "passed": true,
+  "seed": 7068648821651796980,
+  "connections": 144,
+  "binary_sha256": "6ba98e4013e6c9e70feddff5da09d8fc31846a3651da0a3d91085998bd401110",
+  "runs": [
+    {
+      "repetition": 0,
+      "received_callbacks": 8986,
+      "stdout": "PASS notifications=192024 delivered=8994 closed=25 late_producers=24\n",
+      "stderr": ""
+    },
+    {
+      "repetition": 1,
+      "received_callbacks": 9016,
+      "stdout": "PASS notifications=192024 delivered=9026 closed=25 late_producers=24\n",
+      "stderr": ""
+    },
+    {
+      "repetition": 2,
+      "received_callbacks": 9028,
+      "stdout": "PASS notifications=192024 delivered=9039 closed=25 late_producers=24\n",
+      "stderr": ""
+    },
+    {
+      "repetition": 3,
+      "received_callbacks": 9057,
+      "stdout": "PASS notifications=192024 delivered=9068 closed=25 late_producers=24\n",
+      "stderr": ""
+    },
+    {
+      "repetition": 4,
+      "received_callbacks": 9017,
+      "stdout": "PASS notifications=192024 delivered=9026 closed=25 late_producers=24\n",
+      "stderr": ""
+    },
+    {
+      "repetition": 5,
+      "received_callbacks": 9016,
+      "stdout": "PASS notifications=192024 delivered=9025 closed=25 late_producers=24\n",
+      "stderr": ""
+    }
+  ]
+}

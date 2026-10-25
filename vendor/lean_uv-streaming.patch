@@ -1,35 +1,407 @@
+diff --git a/LeanUV/Machine.lean b/LeanUV/Machine.lean
+--- a/LeanUV/Machine.lean
++++ b/LeanUV/Machine.lean
+@@ -133,6 +133,8 @@
+   socket : Socket
+   machine : Machine State Reply Work
+   effect : Work → IO (Option Reply)
++  arm : Work → IO Unit → IO Unit
++  armed : IO.Ref Bool
+   state : IO.Ref State
+   pending : IO.Ref (Option (IO Unit))
+   closed : IO.Ref Bool
+@@ -163,6 +165,7 @@
+       (fuel : Nat) : IO Unit := do
+     if fuel == 0 then
+       suspend c (dispatch c event 256)
++      c.socket.notify
+       return
+     let (state, command) := c.machine.step (← c.state.get) event
+     c.state.set state
+@@ -173,10 +176,17 @@
+     -- the pure machine. A result may own an application resource.
+     if fuel == 0 then
+       suspend c (invoke c work 256)
++      c.socket.notify
+       return
+     match ← c.effect work with
+-    | none => suspend c (invoke c work 256)
+-    | some reply => dispatch c (.result reply) fuel
++    | none =>
++      suspend c (invoke c work 256)
++      if !(← c.armed.get) then
++        c.armed.set true
++        c.arm work c.socket.notify
++    | some reply =>
++      c.armed.set false
++      dispatch c (.result reply) fuel
+ 
+   private partial def execute (c : Connection State Reply Work) (command : MachineCommand Work)
+       (fuel : Nat) : IO Unit := do
+@@ -209,15 +219,20 @@
+ end
+ 
+ /-- Install a pure per-socket machine on the native owner thread. A work handler
+-returns `none` only while the same job needs polling; once it returns `some`, the
++returns `none` while the same job is unfinished; `arm` must subscribe to its
++completion and invoke the thread-safe notification, including for completion
++before registration. A subscription is installed once per job; stale wakeups
++only recheck that job. Once the effect returns `some`, the
+ result is delivered exactly once. One-shot work must remember its own initiation
+ or return its promise as a reply and use a distinct polling job. `finalize` is
+ reserved for prompt one-shot work returning `some`; it never yields before the
+ work or between its completion and adoption of its reply. -/
+ def callbacks (socket : Socket) (machine : Machine State Reply Work)
+-    (effect : Work → IO (Option Reply)) (maxQueuedBytes : UInt64) : IO Callbacks := do
++    (effect : Work → IO (Option Reply)) (maxQueuedBytes : UInt64)
++    (arm : Work → IO Unit → IO Unit) : IO Callbacks := do
+   let c : Connection State Reply Work := {
+-    socket, machine, effect
++    socket, machine, effect, arm
++    armed := ← IO.mkRef false
+     state := ← IO.mkRef machine.initial
+     pending := ← IO.mkRef none
+     closed := ← IO.mkRef false
+diff --git a/LeanUV/TCP.lean b/LeanUV/TCP.lean
+--- a/LeanUV/TCP.lean
++++ b/LeanUV/TCP.lean
+@@ -25,10 +25,14 @@
+ The sum of buffer sizes is subject to the same retained-write limit as `send`. -/
+ @[extern "leanuv_sendv"] opaque sendv (socket : @& Socket) (buffers : Array ByteArray) : IO Unit
+ 
+-/-- Enable/disable `onWake` on the owning worker. Enabled callbacks run about every
+-10 ms and after the write queue drains. Use this to poll a promise without socket
+-operations from a foreign thread. Disable when no continuation is pending. -/
++/-- Arm/disarm owner-thread continuation delivery and paused-socket error
++notification. This does not schedule periodic polling. -/
+ @[extern "leanuv_set_wakeup"] opaque setWakeup (socket : @& Socket) (enabled : Bool) : IO Unit
++
++/-- Thread-safe, coalescing notification. Delivery occurs on the owning loop.
++Safe after connection/server shutdown: late notifications become no-ops. The
++socket and its notification hub remain alive while any caller retains them. -/
++@[extern "leanuv_notify"] opaque notify (socket : @& Socket) : BaseIO Unit
+ 
+ /-- Abort the connection, cancelling pending writes. Idempotent on the owner thread. -/
+ @[extern "leanuv_close"] opaque close (socket : @& Socket) : IO Unit
+@@ -45,7 +49,7 @@
+ /-- Bytes in buffers retained by outstanding writes (a conservative memory bound). -/
+ @[extern "leanuv_queued_bytes"] opaque queuedBytes (socket : @& Socket) : IO UInt64
+ 
+-/-- Request shutdown of all workers. The control timer reacts within about 10 ms.
++/-- Request shutdown of all workers. All workers are explicitly awakened.
+ Active connections, including draining ones, are aborted. For a graceful single
+ connection close, use `shutdown` without stopping the server. -/
+ @[extern "leanuv_stop"] opaque stopServer (socket : @& Socket) : IO Unit
+diff --git a/LeanUVTests/Machine.lean b/LeanUVTests/Machine.lean
+--- a/LeanUVTests/Machine.lean
++++ b/LeanUVTests/Machine.lean
+@@ -24,7 +24,7 @@
+     if state.closed then (state, .idle)
+     else match event with
+       | .data bytes =>
+-        (state, .perform (if mode == "fuel" then .acquire 10000 bytes
++        (state, .perform (if mode == "fuel" then .acquire 1000000 bytes
+           else if mode == "finalize" || mode == "finalize-control" then .acquire 254 bytes else .begin bytes))
+       | .result (.waiting deadline bytes) => (state, .perform (.poll deadline bytes))
+       | .result (.bytes bytes) =>
+@@ -61,10 +61,18 @@
+           if (← acquired.get) == 255 then
+             IO.println "yield-ready"
+             (← IO.getStdout).flush
+-            if mode == "finalize" || mode == "finalize-control" then IO.sleep 100
++            if mode == "fuel" || mode == "finalize" || mode == "finalize-control" then IO.sleep 100
+           return some (.acquired remaining bytes)
+         | .release owned =>
+           IO.println s!"released {worker} owned {owned} acquired {← acquired.get}"
+-          return some .released) config.maxQueuedBytes
++          return some .released) config.maxQueuedBytes (fun work notify => do
++          match work with
++          | .poll deadline _ =>
++            let now ← IO.monoMsNow
++            let _ ← IO.asTask (prio := .dedicated) do
++              IO.sleep (deadline - now).toUInt32
++              notify
++            pure ()
++          | _ => throw (IO.userError "unexpected waiting work"))
+   for i in [:stats.size] do
+     IO.println s!"worker {i} accepted {stats[i]!.accepted} errors {stats[i]!.errors}"
+diff --git a/LeanUVTests/Server.lean b/LeanUVTests/Server.lean
+--- a/LeanUVTests/Server.lean
++++ b/LeanUVTests/Server.lean
+@@ -42,6 +42,7 @@
+             let _ ← IO.asTask (prio := .dedicated) do
+               IO.sleep 20
+               promise.resolve (.ok bytes)
++              socket.notify
+           else if mode == "gather" then
+             let middle := bytes.size / 2
+             socket.sendv #[.empty, bytes.extract 0 middle, .empty, bytes.extract middle bytes.size, .empty]
+diff --git a/LeanUVTests/Wakeup.lean b/LeanUVTests/Wakeup.lean
+new file mode 100644
+--- /dev/null
++++ b/LeanUVTests/Wakeup.lean
+@@ -0,0 +1,37 @@
++import LeanUV
++import Std.Sync.Mutex
++open LeanUV.TCP
++
++def main (args : List String) : IO Unit := do
++  let port := ((args[0]?.getD "18399").toNat?.getD 18399).toUInt16
++  let tasks ← Std.Mutex.new (#[] : Array (Task (Except IO.Error Unit)))
++  let counts ← Std.Mutex.new (0, 0)
++  let stats ← serve { port, threads := 4, runForMs := 600, idleTimeoutMs := 0 } fun _ =>
++    pure fun socket => do
++      let started ← IO.mkRef false
++      let resetClient ← IO.mkRef false
++      pure {
++        onData := fun bytes => do
++          if ← started.get then return
++          started.set true
++          resetClient.set (bytes == "reset".toUTF8)
++          socket.pause
++          socket.notify -- before arming; owner cannot dispatch until callback returns
++          socket.setWakeup true
++          let task ← IO.asTask (prio := .dedicated) do
++            for _ in [:1000] do
++              for _ in [:8] do socket.notify
++              IO.sleep 1
++          tasks.atomically do modify (·.push task)
++        onWake := do
++          counts.atomically do modify fun (w, c) => (w + 1, c)
++          if !(← resetClient.get) then socket.send "wake\n".toUTF8
++        onClose := counts.atomically do modify fun (w, c) => (w, c + 1) }
++  -- Producers retain sockets after workers and uv handles are destroyed.
++  let late ← tasks.atomically get
++  for task in late do IO.ofExcept (← IO.wait task)
++  let (wakes, closed) ← counts.atomically get
++  unless wakes > 0 && closed ≥ late.size && late.size > 0 do
++    throw (IO.userError s!"invalid counts: {wakes}, {closed}, {late.size}")
++  unless stats.all (·.errors == 0) do throw (IO.userError "worker errors")
++  IO.println s!"PASS notifications={late.size * 8001} delivered={wakes} closed={closed} late_producers={late.size}"
+diff --git a/README.md b/README.md
+--- a/README.md
++++ b/README.md
+@@ -221,11 +221,11 @@
+ MIT licensed. The initial supported surface is intentionally small; performance
+ results describe the included workload and hardware, not a portable minimum rate.
+ 
+-Gather writes and worker continuations (0.2): `onWake` runs approximately every
+-10 ms while explicitly enabled, and when the output queue drains. Disable it when
+-the continuation finishes. This supports polling promises completed elsewhere
+-while all socket access remains on the owning worker. No wakeups occur after
+-closure. The fast path does not scan connections when no wakeup is enabled.
++Worker continuations: `onWake` runs after an explicit thread-safe
++`Socket.notify` or output-queue drain, while `setWakeup true` is armed.
++Task completion must explicitly notify; no timer polls unfinished promises.
++Socket operations other than `notify` retain their owner-thread requirement.
++Late notifications safely no-op after closure and server shutdown.
+ Both send APIs enforce the same queue budget and preserve write order.
+ 
+ The example/test module names are prefixed `LeanUVBench` and `LeanUVTests`, so a
+diff --git a/lakefile.lean b/lakefile.lean
+--- a/lakefile.lean
++++ b/lakefile.lean
+@@ -35,3 +35,6 @@
+ 
+ lean_exe uv_machine_test where
+   root := `LeanUVTests.Machine
++
++lean_exe uv_wakeup_test where
++  root := `LeanUVTests.Wakeup
 diff --git a/lean-toolchain b/lean-toolchain
-index e59446d..a6aff06 100644
 --- a/lean-toolchain
 +++ b/lean-toolchain
 @@ -1 +1 @@
 -leanprover/lean4:v4.26.0
 +leanprover/lean4:v4.35.0
 diff --git a/native/uv.c b/native/uv.c
-index 7ce0098..c637b0f 100644
 --- a/native/uv.c
 +++ b/native/uv.c
-@@ -159,6 +159,19 @@ static int start_read(connection *c) {
+@@ -11,6 +11,7 @@
+ #include <string.h>
+ #include <unistd.h>
+ #include <sys/socket.h>
++#include <sys/epoll.h>
  
- static void wake_connection(connection *c) {
-     if (!c->closing && !c->draining && c->wakeup && c->callbacks) {
-+        /* Reads are paused during pending application work. Detect socket
-+           errors without consuming pipeline bytes or treating a TCP FIN as
-+           cancellation: a half-closed client may still read our response. */
-+        uv_os_fd_t fd;
-+        int socket_error = 0;
-+        socklen_t error_size = sizeof(socket_error);
-+        if (uv_fileno((uv_handle_t *)&c->tcp, &fd) == 0 &&
-+                getsockopt(fd, SOL_SOCKET, SO_ERROR, &socket_error, &error_size) == 0 &&
-+                socket_error != 0) {
-+            transport_error(c, uv_translate_sys_error(socket_error));
-+            close_connection(c);
-+            return;
+ #ifndef __linux__
+ #error "lean-uv currently requires Linux (SO_REUSEPORT and CPU affinity)"
+@@ -22,6 +23,7 @@
+ 
+ typedef struct worker worker;
+ typedef struct connection connection;
++typedef struct wake_hub wake_hub;
+ typedef struct {
+     const char *host;
+     uint16_t port;
+@@ -44,7 +46,10 @@
+     uv_timer_t timer;
+     uv_signal_t sigint, sigterm;
+     lean_object *on_connect;
+-    uint32_t id, active, waking;
++    uint32_t id, active;
++    wake_hub *wake;
++    uv_poll_t errors_ready;
++    int errors_fd;
+     int loop_ready;
+     uint64_t started, last_sweep;
+     uint64_t accepted, reads, received, sends, sent, queued, errors, disconnects, elapsed;
+@@ -54,6 +59,9 @@
+     uv_tcp_t tcp;
+     uv_shutdown_t shutdown;
+     worker *worker;
++    wake_hub *hub;
++    connection *wake_next;
++    int wake_queued, error_watched;
+     uv_thread_t owner;
+     atomic_uint refs;
+     atomic_bool closed;
+@@ -62,6 +70,17 @@
+     int closing, draining, paused, pressure, wakeup;
+ };
+ 
++/* Lives independently of the worker allocation: late task completions may
++   retain sockets after uv_run returns. Every connection retains this hub. */
++struct wake_hub {
++    uv_async_t async;
++    uv_mutex_t mutex;
++    atomic_uint refs;
++    worker *worker;
++    connection *head, *tail;
++    int active;
++};
++
+ typedef struct {
+     uv_write_t req;
+     lean_object *bytes;
+@@ -74,14 +93,114 @@
+ static void close_connection(connection *c);
+ static void alloc_read(uv_handle_t *, size_t, uv_buf_t *);
+ static void on_read(uv_stream_t *, ssize_t, const uv_buf_t *);
++static void close_walk(uv_handle_t *, void *);
++static void wake_connection(connection *);
+ 
+ static lean_object *ok(void) { return lean_io_result_mk_ok(lean_box(0)); }
+ static lean_object *error(int code) {
+     return lean_io_result_mk_error(lean_decode_uv_error(code, NULL));
+ }
++static void release_hub(wake_hub *hub) {
++    if (atomic_fetch_sub_explicit(&hub->refs, 1, memory_order_acq_rel) == 1) {
++        uv_mutex_destroy(&hub->mutex);
++        free(hub);
++    }
++}
+ static void release_connection(connection *c) {
+-    if (atomic_fetch_sub_explicit(&c->refs, 1, memory_order_acq_rel) == 1) free(c);
+-}
++    if (atomic_fetch_sub_explicit(&c->refs, 1, memory_order_acq_rel) == 1) {
++        release_hub(c->hub);
++        free(c);
++    }
++}
++
++/* The mutex orders queue publication, uv_async_send and handle shutdown. No
++   producer touches the loop, worker or callbacks. Deduplication bounds queued
++   references to one per connection. Notifications can safely arrive before arm. */
++static void notify_connection(connection *c) {
++    wake_hub *hub = c->hub;
++    uv_mutex_lock(&hub->mutex);
++    if (hub->active && !atomic_load_explicit(&c->closed, memory_order_acquire)) {
++        if (!c->wake_queued) {
++            atomic_fetch_add_explicit(&c->refs, 1, memory_order_relaxed);
++            c->wake_queued = 1;
++            c->wake_next = NULL;
++            if (hub->tail) hub->tail->wake_next = c;
++            else hub->head = c;
++            hub->tail = c;
 +        }
-         lean_object *action = lean_ctor_get(c->callbacks, 2);
-         lean_inc(action);
-         callback_result(c, lean_apply_1(action, lean_box(0)));
-@@ -179,6 +192,7 @@ static void on_written(uv_write_t *req, int status) {
++        uv_async_send(&hub->async);
++    }
++    uv_mutex_unlock(&hub->mutex);
++}
++
++static connection *pop_ready(wake_hub *hub) {
++    uv_mutex_lock(&hub->mutex);
++    connection *c = hub->head;
++    if (c) {
++        hub->head = c->wake_next;
++        if (!hub->head) hub->tail = NULL;
++        c->wake_next = NULL;
++        c->wake_queued = 0;
++    }
++    uv_mutex_unlock(&hub->mutex);
++    return c;
++}
++
++static void stop_hub(wake_hub *hub) {
++    uv_mutex_lock(&hub->mutex);
++    hub->active = 0;
++    uv_mutex_unlock(&hub->mutex);
++    connection *c;
++    while ((c = pop_ready(hub))) release_connection(c);
++}
++
++static void on_ready(uv_async_t *async) {
++    wake_hub *hub = async->data;
++    worker *w = hub->worker;
++    if (atomic_load(&w->server->stop)) {
++        uv_walk(&w->loop, close_walk, w);
++        return;
++    }
++    /* A busy producer cannot monopolize a worker. More work schedules another
++       callback; libuv may coalesce sends, but the explicit queue retains work. */
++    for (unsigned i = 0; i < 1024; ++i) {
++        connection *c = pop_ready(hub);
++        if (!c) return;
++        wake_connection(c);
++        release_connection(c);
++    }
++    uv_mutex_lock(&hub->mutex);
++    if (hub->active && hub->head) uv_async_send(&hub->async);
++    uv_mutex_unlock(&hub->mutex);
++}
++
++static void stop_server(server *s) {
++    atomic_store(&s->stop, true);
++    for (uint32_t i = 0; i < s->count; ++i) {
++        wake_hub *hub = s->workers[i].wake;
++        if (!hub) continue;
++        uv_mutex_lock(&hub->mutex);
++        if (hub->active) uv_async_send(&hub->async);
++        uv_mutex_unlock(&hub->mutex);
++    }
++}
++
++/* Separate epoll watches only ERR/HUP, never application data or RDHUP. It
++   detects resets while reads are paused without consuming pipeline bytes or
++   interpreting a client's write-half-close as request cancellation. */
++static int watch_error(connection *c, int enabled) {
++    if (c->error_watched == enabled) return 0;
++    uv_os_fd_t fd;
++    int rc = uv_fileno((uv_handle_t *)&c->tcp, &fd);
++    if (rc < 0) return rc;
++    struct epoll_event event = { .events = EPOLLERR | EPOLLHUP | EPOLLET, .data.ptr = c };
++    if (epoll_ctl(c->worker->errors_fd, enabled ? EPOLL_CTL_ADD : EPOLL_CTL_DEL,
++                  fd, enabled ? &event : NULL) < 0 && errno != ENOENT)
++        return uv_translate_sys_error(errno);
++    c->error_watched = enabled;
++    return 0;
++}
++
+ static void socket_finalize(void *p) { release_connection(p); }
+ static void socket_foreach(void *p, b_lean_obj_arg f) { (void)p; (void)f; }
+ static void init_class(void) {
+@@ -131,7 +250,9 @@
+ static void close_connection(connection *c) {
+     if (!c->closing) {
+         c->closing = 1;
+-        if (c->wakeup) { c->wakeup = 0; c->worker->waking--; }
++        atomic_store_explicit(&c->closed, true, memory_order_release);
++        c->wakeup = 0;
++        if (c->error_watched) (void)watch_error(c, 0);
+         uv_read_stop((uv_stream_t *)&c->tcp);
+         uv_close((uv_handle_t *)&c->tcp, on_closed);
+     }
+@@ -179,6 +300,7 @@
          int rc = start_read(c);
          if (rc < 0) { c->worker->errors++; close_connection(c); }
      }
@@ -37,7 +409,7 @@ index 7ce0098..c637b0f 100644
      if (status == 0 && c->retained == 0) wake_connection(c);
  }
  
-@@ -198,6 +212,7 @@ static lean_object *send_buffers(b_lean_obj_arg socket, lean_object *owner,
+@@ -198,6 +320,7 @@
      size_t offset = 0;
      if (!c->tcp.write_queue_size) {
          rc = uv_try_write((uv_stream_t *)&c->tcp, buffers, count);
@@ -45,3 +417,260 @@ index 7ce0098..c637b0f 100644
          if (rc == (int64_t)len) {
              c->worker->sends++;
              c->worker->sent += len;
+@@ -265,9 +388,15 @@
+     int rc = get_connection(socket, &c);
+     if (rc < 0) return error(rc);
+     if (c->closing || c->draining) return error(UV_EPIPE);
+-    if (enabled && !c->wakeup) { c->wakeup = 1; c->worker->waking++; }
+-    if (!enabled && c->wakeup) { c->wakeup = 0; c->worker->waking--; }
++    rc = watch_error(c, enabled);
++    if (rc < 0) return error(rc);
++    c->wakeup = enabled;
+     return ok();
++}
++
++LEAN_EXPORT lean_obj_res leanuv_notify(b_lean_obj_arg socket) {
++    notify_connection(lean_get_external_data(socket));
++    return lean_box(0);
+ }
+ 
+ LEAN_EXPORT lean_obj_res leanuv_close(b_lean_obj_arg socket) {
+@@ -312,7 +441,7 @@
+     connection *c = NULL;
+     int rc = get_connection(socket, &c);
+     if (rc < 0) return error(rc);
+-    atomic_store(&c->worker->server->stop, true);
++    stop_server(c->worker->server);
+     return ok();
+ }
+ 
+@@ -348,13 +477,15 @@
+     worker *w = listener->data;
+     if (status < 0) { w->errors++; return; }
+     connection *c = calloc(1, sizeof(*c));
+-    if (!c) { w->errors++; atomic_store(&w->server->stop, true); return; }
++    if (!c) { w->errors++; stop_server(w->server); return; }
+     c->worker = w;
++    c->hub = w->wake;
++    atomic_fetch_add_explicit(&c->hub->refs, 1, memory_order_relaxed);
+     c->owner = uv_thread_self();
+     atomic_init(&c->refs, 1);  /* native handle reference */
+     atomic_init(&c->closed, false);
+     int rc = uv_tcp_init(&w->loop, &c->tcp);
+-    if (rc < 0) { free(c); w->errors++; return; }
++    if (rc < 0) { release_connection(c); w->errors++; return; }
+     w->active++;
+     c->tcp.data = c;
+     rc = uv_accept(listener, (uv_stream_t *)&c->tcp);
+@@ -378,7 +509,35 @@
+     worker *w = arg;
+     if (uv_is_closing(h)) return;
+     if (h->type == UV_TCP && h != (uv_handle_t *)&w->listener) close_connection(h->data);
+-    else uv_close(h, NULL);
++    else {
++        if (w->wake && h == (uv_handle_t *)&w->wake->async) stop_hub(w->wake);
++        uv_close(h, NULL);
++    }
++}
++
++static void on_errors(uv_poll_t *poll, int status, int events) {
++    (void)events;
++    worker *w = poll->data;
++    if (status < 0) { w->errors++; stop_server(w->server); return; }
++    struct epoll_event ready[64];
++    int count = epoll_wait(w->errors_fd, ready, 64, 0);
++    if (count < 0) {
++        if (errno != EINTR) { w->errors++; stop_server(w->server); }
++        return;
++    }
++    for (int i = 0; i < count; ++i) {
++        connection *c = ready[i].data.ptr;
++        /* uv_close callbacks run after this batch, so native handle references
++           keep every entry alive even if another callback closes a connection. */
++        if (c->closing || !c->error_watched) continue;
++        uv_os_fd_t fd;
++        int socket_error = 0;
++        socklen_t size = sizeof(socket_error);
++        if (uv_fileno((uv_handle_t *)&c->tcp, &fd) == 0)
++            (void)getsockopt(fd, SOL_SOCKET, SO_ERROR, &socket_error, &size);
++        transport_error(c, socket_error ? uv_translate_sys_error(socket_error) : UV_ECONNRESET);
++        close_connection(c);
++    }
+ }
+ 
+ static void idle_walk(uv_handle_t *h, void *arg) {
+@@ -388,28 +547,28 @@
+     if (uv_now(&w->loop) - c->last_active >= w->server->idle_ms) close_connection(c);
+ }
+ 
+-static void wake_walk(uv_handle_t *h, void *arg) {
+-    worker *w = arg;
+-    if (h->type == UV_TCP && h != (uv_handle_t *)&w->listener && !uv_is_closing(h))
+-        wake_connection(h->data);
+-}
+-
+ static void on_tick(uv_timer_t *timer) {
+     worker *w = timer->data;
+     if (w->server->run_ms && (uv_hrtime() - w->started) / 1000000 >= w->server->run_ms)
+-        atomic_store(&w->server->stop, true);
++        stop_server(w->server);
+     if (atomic_load(&w->server->stop)) { uv_walk(&w->loop, close_walk, w); return; }
+-    if (w->waking) uv_walk(&w->loop, wake_walk, w);
+     uint64_t now = uv_now(&w->loop);
+     if (w->server->idle_ms && now - w->last_sweep >= 1000) {
+         w->last_sweep = now;
+         uv_walk(&w->loop, idle_walk, w);
+     }
++    uint64_t delay = 1000;
++    if (w->server->run_ms) {
++        uint64_t elapsed = (uv_hrtime() - w->started) / 1000000;
++        uint64_t remaining = elapsed < w->server->run_ms ? w->server->run_ms - elapsed : 1;
++        if (remaining < delay) delay = remaining;
++    }
++    uv_timer_start(&w->timer, on_tick, delay, 0);
+ }
+ static void on_signal(uv_signal_t *signal, int number) {
+     (void)number;
+     worker *w = signal->data;
+-    atomic_store(&w->server->stop, true);
++    stop_server(w->server);
+ }
+ 
+ static int setup_worker(worker *w) {
+@@ -426,6 +585,25 @@
+     int rc = uv_loop_init(&w->loop);
+     if (rc < 0) return rc;
+     w->loop_ready = 1;
++    w->errors_fd = -1;
++    wake_hub *hub = calloc(1, sizeof(*hub));
++    if (!hub) return UV_ENOMEM;
++    rc = uv_mutex_init(&hub->mutex);
++    if (rc < 0) { free(hub); return rc; }
++    atomic_init(&hub->refs, 1);
++    hub->worker = w;
++    rc = uv_async_init(&w->loop, &hub->async, on_ready);
++    if (rc < 0) { release_hub(hub); return rc; }
++    hub->async.data = hub;
++    hub->active = 1;
++    w->wake = hub;
++    w->errors_fd = epoll_create1(EPOLL_CLOEXEC);
++    if (w->errors_fd < 0) return uv_translate_sys_error(errno);
++    rc = uv_poll_init(&w->loop, &w->errors_ready, w->errors_fd);
++    if (rc < 0) return rc;
++    w->errors_ready.data = w;
++    rc = uv_poll_start(&w->errors_ready, UV_READABLE, on_errors);
++    if (rc < 0) return rc;
+     rc = uv_tcp_init(&w->loop, &w->listener);
+     if (rc < 0) return rc;
+     w->listener.data = w;
+@@ -452,7 +630,7 @@
+     rc = uv_timer_init(&w->loop, &w->timer);
+     if (rc < 0) return rc;
+     w->timer.data = w;
+-    rc = uv_timer_start(&w->timer, on_tick, 10, 10);
++    rc = uv_timer_start(&w->timer, on_tick, s->run_ms && s->run_ms < 1000 ? s->run_ms : 1000, 0);
+     if (rc < 0) return rc;
+     if (w->id == 0) {
+         rc = uv_signal_init(&w->loop, &w->sigint);
+@@ -500,6 +678,7 @@
+             uv_mutex_unlock(&s->mutex);
+         }
+     }
++    if (w->loop_ready && w->errors_fd >= 0) close(w->errors_fd);
+     w->elapsed = uv_hrtime() - w->started;
+     if (w->on_connect) lean_dec(w->on_connect);
+     lean_finalize_thread();
+@@ -564,6 +743,8 @@
+         lean_ctor_set_uint64(stat, 64, w->elapsed);
+         stats = lean_array_push(stats, stat);
+     }
++    for (unsigned i = 0; i < created; i++)
++        if (s.workers[i].wake) release_hub(s.workers[i].wake);
+     free(s.workers);
+     uv_cond_destroy(&s.cond);
+     uv_mutex_destroy(&s.mutex);
+diff --git a/scripts/sanitize.py b/scripts/sanitize.py
+--- a/scripts/sanitize.py
++++ b/scripts/sanitize.py
+@@ -31,7 +31,7 @@
+ 
+ 
+ def main():
+-    run(["lake", "build", "uv_http", "uv_test", "uv_machine_test", "sanitizer_baseline"])
++    run(["lake", "build", "uv_http", "uv_test", "uv_machine_test", "uv_wakeup_test", "sanitizer_baseline"])
+     prefix = Path(subprocess.check_output(["lean", "--print-prefix"], cwd=ROOT, text=True).strip())
+     output = ROOT / "bin/sanitized"
+     output.mkdir(parents=True, exist_ok=True)
+@@ -42,6 +42,7 @@
+         "uv_http": "LeanUVBench/Main",
+         "uv_test": "LeanUVTests/Server",
+         "uv_machine_test": "LeanUVTests/Machine",
++        "uv_wakeup_test": "LeanUVTests/Wakeup",
+         "baseline": "LeanUVTests/SanitizerBaseline",
+     }.items():
+         modules = local_modules(root_module)
+@@ -68,6 +69,9 @@
+     run(["python3", "scripts/test_machine.py", "--binary", output/"uv_machine_test",
+          "--output", "results/sanitizer-machine.json"], env=env)
+ 
++    run(["python3", "scripts/test_wakeup.py", "--binary", output/"uv_wakeup_test",
++         "--output", "results/sanitizer-wakeup.json"], env=env)
++
+ 
+ if __name__ == "__main__":
+     main()
+diff --git a/scripts/test_machine.py b/scripts/test_machine.py
+--- a/scripts/test_machine.py
++++ b/scripts/test_machine.py
+@@ -110,7 +110,7 @@
+     assert sum(errors)==0, (mode,errors)
+     if mode in ('fuel','finalize','finalize-control'):
+         client.close()
+-        if mode=='fuel': assert 255 <= max(resources) < 10001, ('suspension was not exercised',resources)
++        if mode=='fuel': assert 255 <= max(resources) < 1000001, ('suspension was not exercised',resources)
+         if mode=='finalize': assert max(resources)==255, ('finalizer boundary not exercised',resources)
+     rows.append({'mode':mode,'connections':sum(accepted),'bytes_verified':sum(sizes),
+         'resources_released':sum(resources),'accepted_by_worker':accepted,'release_calls_by_worker':released,'errors':errors})
+diff --git a/scripts/test_wakeup.py b/scripts/test_wakeup.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/test_wakeup.py
+@@ -0,0 +1,38 @@
++#!/usr/bin/env python3
++"""Event delivery, notification floods, reset/FIN and post-shutdown sends."""
++import argparse, concurrent.futures, hashlib, json, os, pathlib, secrets, socket, struct, subprocess, time
++ROOT=pathlib.Path(__file__).resolve().parents[1]
++p=argparse.ArgumentParser();p.add_argument('--binary',type=pathlib.Path,default=ROOT/'.lake/build/bin/uv_wakeup_test');p.add_argument('--output',type=pathlib.Path,default=ROOT/'results/wakeup.json');a=p.parse_args()
++seed=secrets.randbits(64);rows=[]
++for rep in range(6):
++ with socket.socket() as reserve:
++  reserve.bind(('127.0.0.1',0));port=reserve.getsockname()[1]
++ proc=subprocess.Popen([str(a.binary),str(port)],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,env={**os.environ,'LEAN_NUM_THREADS':'1'})
++ try:
++  for _ in range(200):
++   try:
++    with socket.create_connection(('127.0.0.1',port),.02):break
++   except OSError:
++    assert proc.poll() is None,proc.communicate();time.sleep(.005)
++  def client(i):
++   with socket.create_connection(('127.0.0.1',port),2) as s:
++    s.settimeout(4);s.sendall(b'reset' if i%3==0 else str(seed+i).encode())
++    if i%3==0:
++     s.setsockopt(socket.SOL_SOCKET,socket.SO_LINGER,struct.pack('ii',1,0));return 0
++    if i%3==1:s.shutdown(socket.SHUT_WR)
++    data=b''
++    while True:
++     chunk=s.recv(65536)
++     if not chunk:break
++     data+=chunk
++    assert data and data.replace(b'wake\n',b'')==b'',(i,data[:100])
++    return len(data)//5
++  with concurrent.futures.ThreadPoolExecutor(max_workers=24) as pool:counts=list(pool.map(client,range(24)))
++  stdout,stderr=proc.communicate(timeout=10)
++  assert proc.returncode==0 and 'PASS notifications=' in stdout,(stdout,stderr)
++  rows.append({'repetition':rep,'received_callbacks':sum(counts),'stdout':stdout,'stderr':stderr})
++ finally:
++  if proc.poll() is None:proc.kill();proc.wait()
++a.output.parent.mkdir(parents=True,exist_ok=True)
++a.output.write_text(json.dumps({'passed':True,'seed':seed,'connections':144,'binary_sha256':hashlib.sha256(a.binary.read_bytes()).hexdigest(),'runs':rows},indent=2)+'\n')
++print('PASS: 144 connections; flood, half-close, reset and late post-shutdown notifications')

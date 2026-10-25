@@ -110,7 +110,7 @@ for mode in (['finalize-control'] if args.negative_control else ['echo', 'delay'
     assert sum(errors)==0, (mode,errors)
     if mode in ('fuel','finalize','finalize-control'):
         client.close()
-        if mode=='fuel': assert 255 <= max(resources) < 10001, ('suspension was not exercised',resources)
+        if mode=='fuel': assert 255 <= max(resources) < 1000001, ('suspension was not exercised',resources)
         if mode=='finalize': assert max(resources)==255, ('finalizer boundary not exercised',resources)
     rows.append({'mode':mode,'connections':sum(accepted),'bytes_verified':sum(sizes),
         'resources_released':sum(resources),'accepted_by_worker':accepted,'release_calls_by_worker':released,'errors':errors})

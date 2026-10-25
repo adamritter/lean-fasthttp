@@ -221,11 +221,11 @@ Upstream references: [libuv loop/thread design](https://docs.libuv.org/en/v1.x/d
 MIT licensed. The initial supported surface is intentionally small; performance
 results describe the included workload and hardware, not a portable minimum rate.
 
-Gather writes and worker continuations (0.2): `onWake` runs approximately every
-10 ms while explicitly enabled, and when the output queue drains. Disable it when
-the continuation finishes. This supports polling promises completed elsewhere
-while all socket access remains on the owning worker. No wakeups occur after
-closure. The fast path does not scan connections when no wakeup is enabled.
+Worker continuations: `onWake` runs after an explicit thread-safe
+`Socket.notify` or output-queue drain, while `setWakeup true` is armed.
+Task completion must explicitly notify; no timer polls unfinished promises.
+Socket operations other than `notify` retain their owner-thread requirement.
+Late notifications safely no-op after closure and server shutdown.
 Both send APIs enforce the same queue budget and preserve write order.
 
 The example/test module names are prefixed `LeanUVBench` and `LeanUVTests`, so a

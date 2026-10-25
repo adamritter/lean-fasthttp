@@ -25,10 +25,14 @@ effect. The explicit native assumptions are in `LeanUV.Contract`. -/
 The sum of buffer sizes is subject to the same retained-write limit as `send`. -/
 @[extern "leanuv_sendv"] opaque sendv (socket : @& Socket) (buffers : Array ByteArray) : IO Unit
 
-/-- Enable/disable `onWake` on the owning worker. Enabled callbacks run about every
-10 ms and after the write queue drains. Use this to poll a promise without socket
-operations from a foreign thread. Disable when no continuation is pending. -/
+/-- Arm/disarm owner-thread continuation delivery and paused-socket error
+notification. This does not schedule periodic polling. -/
 @[extern "leanuv_set_wakeup"] opaque setWakeup (socket : @& Socket) (enabled : Bool) : IO Unit
+
+/-- Thread-safe, coalescing notification. Delivery occurs on the owning loop.
+Safe after connection/server shutdown: late notifications become no-ops. The
+socket and its notification hub remain alive while any caller retains them. -/
+@[extern "leanuv_notify"] opaque notify (socket : @& Socket) : BaseIO Unit
 
 /-- Abort the connection, cancelling pending writes. Idempotent on the owner thread. -/
 @[extern "leanuv_close"] opaque close (socket : @& Socket) : IO Unit
@@ -45,7 +49,7 @@ operations from a foreign thread. Disable when no continuation is pending. -/
 /-- Bytes in buffers retained by outstanding writes (a conservative memory bound). -/
 @[extern "leanuv_queued_bytes"] opaque queuedBytes (socket : @& Socket) : IO UInt64
 
-/-- Request shutdown of all workers. The control timer reacts within about 10 ms.
+/-- Request shutdown of all workers. All workers are explicitly awakened.
 Active connections, including draining ones, are aborted. For a graceful single
 connection close, use `shutdown` without stopping the server. -/
 @[extern "leanuv_stop"] opaque stopServer (socket : @& Socket) : IO Unit

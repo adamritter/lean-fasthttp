@@ -1,0 +1,1946 @@
+{
+  "result": "PASS",
+  "theorems": 394,
+  "certificate_factories": [
+    "FastHTTP.DateHeader.create",
+    "FastHTTP.Response.create",
+    "FastHTTP.StreamResponse.create",
+    "FastHTTP.checkedResponseFields"
+  ],
+  "axioms": {
+    "FastHTTP.pending_stop_cancels": [
+      "propext"
+    ],
+    "FastHTTP.pending_stream_adopted": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.pending_close_idempotent": [],
+    "FastHTTP.pending_take_once": [
+      "propext"
+    ],
+    "FastHTTP.pending_late_result": [
+      "propext"
+    ],
+    "FastHTTP.pending_cancel_before_resolve": [
+      "propext"
+    ],
+    "FastHTTP.pending_resolve_before_cancel": [
+      "propext"
+    ],
+    "FastHTTP.pending_taken_not_cancelled": [
+      "propext"
+    ],
+    "FastHTTP.sse_bad_event_rejected": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.checkedResponseFields": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Response.create": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.StreamResponse.create": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.DateHeader.create": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.regNameOctet_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.futureOctet_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decimalOctet_iff": [
+      "propext"
+    ],
+    "FastHTTP.Protocol.spanEnd_eq_stop_iff": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validIPvFuture_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validIPLiteral_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validPort_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.regName_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.uriGrammar_octets": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.regName_no_delimiters": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validAuthority_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validAuthority_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validAuthority_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.payload_push_fold": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyList_fixed_partial": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyList_data_payload": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.payload_toByteArray": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyBulk_fixed": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyBulk_data": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyLoop_split": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyBulk_refines": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyFastLoop_eq_bodyLoop": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decodeBody_eq_reference": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decodeBody_fragmentation": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decodeBody_done_bounds": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decodeBody_partition": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decodeBody_fixed_exact": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decodeBody_pipeline_suffix": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.hex_is_token": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.chunkSize_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.chunkSize_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.pair_witness": [],
+    "FastHTTP.Protocol.bodyByte_grammar": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyWire_fold": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyList_live_wire": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyList_wire": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyScan_done_iff": [
+      "propext"
+    ],
+    "FastHTTP.Protocol.decodeBody_grammar_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decodeChunked_grammar_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyByte_budget": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyInitial_budget": [
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyAdvance_budget": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyList_budget": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decodeBody_budget": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyAdvance_terminal": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyList_terminal": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyLoop_eq_fold": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyFeed_eq_fold": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyFeed_append": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyFeed_fragments": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyFeed_terminal": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyFeed_pipeline_suffix": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyAdvance_count_bounds": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyList_count_bounds": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyLoop_count_bounds": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decodeBodyReference_done_bounds": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decodeBodyReference_partition": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyByte_live": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyInitial_live": [
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyAdvance_shift": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyList_shift": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyFeed_shift": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyList_more": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyInitial_more_live": [
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyFeed_more_count": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyScan_result_shift": [
+      "propext"
+    ],
+    "FastHTTP.Protocol.decodeBodyReference_fragmentation": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyList_fixed_exact": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyFeed_fixed_exact": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.space_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.spanEnd_whitespace": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.spanEnd_token": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.chunkExtension_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.chunkExtensions_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.token_not_space": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.space_not_token": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.chunkExtensions_lead": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.chunkExtension_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.chunkExtensions_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.chunkExtensions_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.chunkSize_grammar": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.dateNumber_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validDateHeader_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.request_wire_suffix": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.input_initial": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.input_reject": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.input_accept": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.input_resume": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.input_stream_command": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.input_stream_event": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.input_stop": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_step_input": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_replay_input": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.input_shift_partition": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.input_event_window": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.input_shift_window": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.read_octets_cons": [
+      "propext"
+    ],
+    "FastHTTP.Protocol.input_trace_origin": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_native_input_trace": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_native_input_origin": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_finalizer_weight": [
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_actual_cleanup": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_actual_cleanup_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_actual_output_prefix": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_actual_graceful_output": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.output_reject": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.output_accept": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.output_resume": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.output_stop": [
+      "propext"
+    ],
+    "FastHTTP.Protocol.output_stream_command": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.output_stream_head_safe": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.output_stream_written_enabled": [
+      "propext"
+    ],
+    "FastHTTP.Protocol.output_stream_result_enabled": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.output_stream_step": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.output_stream_event": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_step_output": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_replay_output": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_output_prefixes": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_native_output_order": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.stream_resume_gate": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.reject_ne_handler": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.stop_ne_handler": [
+      "propext"
+    ],
+    "FastHTTP.Protocol.stream_command_handler": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.stream_event_handler": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_handler_gate": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.active_reply_busy": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.reject_reply_rank": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_reply_descent": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_eventual_reply": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_reject_empty": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_accept_empty": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_resume_empty": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_stream_resource": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_stop_resource": [
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_step_resource": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_replay_resource": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_native_resource": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_native_cleanup_at_most_acquired": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_native_cleanup_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_initial_request_invariant": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_reject_valid": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_accept_valid": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_resume_valid": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_streamCommand_valid": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_streamEvent_valid": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_stop_valid": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_step_request_valid": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_replay_requests_valid": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_native_requests_valid": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.request_wire_deterministic": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.request_wire_body_bound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.complete_request_dispatch": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.received_request_dispatch": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.http11_end_to_end": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.append_unless_empty": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.extract_prefix_append": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.extract_suffix_append": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decodeBody_extract": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyStep_extract": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyStep_append": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyStep_append_start": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.scanByte_bounds": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.scanList_bounds": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.scanFeedFast_bounds": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.headStep_append": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.feed_head_fragmentation": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.feed_body_fragmentation": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.feed_fragmentation": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.initial_state_bound": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.feed_initial_fragmentation": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.feed_fragments": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyStep_bound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.headStep_bound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.feed_bound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.feed_body_no_continue": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.listSpace_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.connectionToken_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.connectionToken_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.connectionToken_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.connectionList_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.connectionList_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.connectionOptions_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.transferParameter_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.transferParameter_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.transferParameter_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.transferParameter_bounds": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.transferParameters_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.transferParameters_bounds": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.transferParameters_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.transferParameters_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.transferCoding_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.transferCoding_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.transferCoding_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.transferCoding_bounds": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.transferList_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.transferList_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.transferCodings_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseHeaders_meaning_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseHeaders_meaning_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseHeaders_grammar_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.chooseFraming_grammar_iff": [
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseHead_grammar_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseField_budget": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseHeaders_loop_budget": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseHeaders_budget": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.chooseFraming_budget": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseHead_budget": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseHeaders_loop_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseHeaders_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseHead_envelope": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.canonicalTrimmed_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.canonicalTrimmed_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.extract_octets": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decimal_success_span": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.headerField_trim": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseField_grammar_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.hexadecimalValue_mono": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.hexadecimalStep_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.hexadecimalFold_none": [],
+    "FastHTTP.Protocol.hexadecimalFold_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.hexadecimalLoop_eq_fold": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.hexadecimal_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.chunkSize_numeral": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.chunkSize_bound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validDecOctet_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validDecOctet_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validDecOctet_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validIPv4_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validH16_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.ipv6Parts_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.ipv6Parts_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.ipv6Parts_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.ipv6Groups_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validIPv6_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decOctet_value_bound": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.utf8IPv6_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.invalid_utf8_ipv6_rejected": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.token_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.fieldOctet_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.spanEnd_spec": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.spanEnd_complete": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseFieldLine_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseFieldLine_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseFieldLine_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.targetOctet_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseRequestLine_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseRequestLine_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseRequestLine_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyStep_protocolBudget": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.headStep_protocolBudget": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.feed_protocolBudget": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.feed_request_body_bound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.bodyStep_grammar_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.acknowledge_bodyStep": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.acknowledge_continue_body": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.headStep_grammar_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.feed_request_grammar_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.feed_fragmented_grammar_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.headStep_no_head_continue": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.feed_continuation_bound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.acknowledge_append": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.feed_acknowledged_fragmentation": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.feed_acknowledged_fragments": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.feed_live_fragments_grammar_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.acknowledge_bound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.acknowledge_idempotent": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.acknowledge_initial_idempotent": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.feed_empty_need": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decimalValue_mono": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decimalStep_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decimalFold_none": [],
+    "FastHTTP.Protocol.decimalFold_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decimalLoop_eq_fold": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decimal_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.scanFeed_append": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.scanFeed_fragments": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.scanByte_stopped": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.scanFeed_stopped": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.scanByte_absorbed": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.scanList_absorbed": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.scanLoop_eq_fold": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.scanFeedFast_eq_scanFeed": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.scanFeedFast_append": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.conflicting_framing_rejected": [],
+    "FastHTTP.Protocol.fixed_framing_exact": [],
+    "FastHTTP.Protocol.takeCount_bounds": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.takeCount_conservation": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.takeCount_fragmentation": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.takeBody_bounds": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.takeBody_size": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.takeBody_partition": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.takeBody_complete": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.takeBody_bytes_fragmentation": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.head_has_no_body": [
+      "propext"
+    ],
+    "FastHTTP.Protocol.no_content_has_no_body": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.not_modified_has_no_body": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.no_content_omits_length": [],
+    "FastHTTP.Protocol.response_length_exact": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.quoteText_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.quotedTail_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.quotedTail_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.quotedTail_bounds": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.quotedEnd_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.status_wire_encoding": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.prepared_buffers_grammar": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.streaming_buffers_grammar": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.encoded_chunk_grammar": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.driver_prepared_buffers_grammar": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validOutputName_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.outputValueOctet_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validFieldValue_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validOutputReason_iff": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.outputNameIs_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.outputFieldAllowed_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.scanByte_history": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.scanList_reference": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.scanFeedFast_reference": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.classify_cr_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.classify_lf_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.streamStep_resource": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.streamStep_done": [
+      "propext"
+    ],
+    "FastHTTP.Protocol.streamStep_pull_after_write": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.streamStep_write_from_producer": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.streamStep_head": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.streamStep_legacy_chunk": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.streamStep_legacy_eof": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.streamStep_modern_eof": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.streamTrace_resource": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.streamTrace_release_once": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.streamTrace_cleanup_complete": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.streamCommands_head": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.hexDigit_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.pathOctet_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.uriLoop_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.uriComponent_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.validPathQuery_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.equals_loop_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.equals_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.delimited_iff": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.alphaOctet_iff": [
+      "propext"
+    ],
+    "FastHTTP.Protocol.schemeOctet_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.pathGrammar_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.uriFuture_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseHierarchicalTarget_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseAbsoluteTarget_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.parseTarget_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.trimEnd_spec": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.trimSpan_spec": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.trimEnd_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.trimSpan_exact": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.trailer_sound": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.trailer_complete": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.trailer_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.hexValue_iff": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.digitChar_hex": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.digitChar_decimal": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.numeral_single_byte": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.numeral_alphabet": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.numeral_roundtrip": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decimal_wire_encoding": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.decimal_wire_roundtrip": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.encodeChunk_wire": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.outputStringAll_iff": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Protocol.outputStringAll_eq_all": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Action.pure_ready": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Action.io_ready": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Action.context_scoped": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Action.scoped_bind": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.Action.ready_bind": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.AsyncStream.ReadyBatch.append_data": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.AsyncStream.ReadyBatch.append_size": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.AsyncStream.ReadyBatch.payload_prefix": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.AsyncStream.ReadyBatch.payload_partition": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.AsyncStream.ReadyBatch.coalesce_pair": [
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.SSE.single_line_data_wire": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "FastHTTP.ReadySignal.finish_before_register": [
+      "propext"
+    ],
+    "FastHTTP.ReadySignal.register_before_finish": [
+      "propext"
+    ],
+    "FastHTTP.ReadySignal.registration_delivery": [
+      "propext"
+    ],
+    "FastHTTP.ReadySignal.finish_is_ready": [],
+    "FastHTTP.ReadySignal.finish_releases_waiter": [],
+    "FastHTTP.ReadySignal.repeated_finish_no_notification": [],
+    "FastHTTP.ReadySignal.unregister_preserves_ready": [],
+    "FastHTTP.ReadySignal.unregister_releases_waiter": [],
+    "FastHTTP.ReadySignal.finish_unregister_register": [
+      "propext"
+    ],
+    "FastHTTP.ReadySignal.unregister_finish_register": [
+      "propext"
+    ]
+  },
+  "top_level_safety_theorem": "FastHTTP.Protocol.http11_end_to_end",
+  "liveness_theorem": "FastHTTP.Protocol.driver_eventual_reply",
+  "explicit_native_hypotheses": [
+    "Machine.ExecutionContract",
+    "Machine.AdapterContract",
+    "Contract.NativeContract",
+    "Machine.CompletionContract"
+  ],
+  "explicit_progress_hypotheses": [
+    "Machine.ResponsiveContract",
+    "FastHTTP.Protocol.FiniteProducerBudget"
+  ],
+  "native_implementation_proved": false,
+  "http_correctness_assumed": false,
+  "source_sha256": {
+    "FastHTTP.lean": "9e2d3597ff75896a387c4ce8709efc448ac63e19999cb8ad6512272c0e8d6a9a",
+    "FastHTTP/Action.lean": "90c52dd265fc8fb14922024383cd47138dacee33fb2cb0911aba8683fdcfe405",
+    "FastHTTP/ActionProofs.lean": "b296bd0b9aa9485f0f98e72fcd92116fe21daadba590d8ff06976c733ac834ba",
+    "FastHTTP/AsyncStream.lean": "5106456dbdb3ee8a1179b38d13bbabb92d3e0c2b157eae5fe18861d9bf36f5d8",
+    "FastHTTP/Authority.lean": "92b2611440eec511baa1f1788101a8fb42e2b6f31844d41de9dac0fc3b350d0f",
+    "FastHTTP/AuthorityProofs.lean": "4a1a3f855f220fbb35299a74d34d6df488b08c78688e9e6df4b434770bf709f7",
+    "FastHTTP/Batch.lean": "9820c2c22df59c5b71e34b5c8d87da9b1a865451f68acbe9c8feddd69ebab0b3",
+    "FastHTTP/BatchProofs.lean": "e7e4488bbfdfbb7abd0c171a0dd9929cf15fc48d62eb9cfc5bea415af37b3726",
+    "FastHTTP/BodyFastProofs.lean": "b3fbce8a4a7bcbeef7bbf9f0812a803cfb4fd3f4caa390f1f94f8635fe56c912",
+    "FastHTTP/BodyGrammarProofs.lean": "cef9e7552b75a210f5fa3bd2f5da9b242d7487c767c36781326bc4902b3eb8b4",
+    "FastHTTP/BodyLimitProofs.lean": "bcfbf9a42f71851bf819074a375d2a87ea72c21be61fc91b2ab16b14201854c9",
+    "FastHTTP/BodyProofs.lean": "82c0a661d6df14efd1438e71bd218033e01edfda03c6e7236d7e5e32b2535fab",
+    "FastHTTP/ChunkGrammarProofs.lean": "7a741989a0d541749b2ee380be1ee8db835a4a7d7e1285cc3d8684f591cac2ee",
+    "FastHTTP/Chunks.lean": "513f3171cc1a2012aa15dbd65c498bc6d7febcaa8d3e7e297f2c37b777a9d7b9",
+    "FastHTTP/Date.lean": "00906a935f6dac75670a6e3910da23c13bd69662898d27c6169f50969822562f",
+    "FastHTTP/DateHeader.lean": "1431b9119f464eb0abd66ad089cd26219584b4c75b4784b09149745e5ef41005",
+    "FastHTTP/DateSyntax.lean": "992a621ad04e9093cecc71c524e29adf439f235b78ec3fb0b6f5b582c2cb8cf0",
+    "FastHTTP/DateSyntaxProofs.lean": "95554a461becade84e50b197c4ecc9b9377dd63dfa5be437b322be899da0fd6e",
+    "FastHTTP/Driver.lean": "102ba189ea8591d8264fef5c581b95ee81f4a703d4748864d4710e05fa421299",
+    "FastHTTP/DriverInputProofs.lean": "c9dbf9c3f465242fe7512f972a21d59a293eeae6293d5347336c0b6abd35e64f",
+    "FastHTTP/DriverNativeProofs.lean": "df99492b2002577828182c2762a93408f887ea044507924ae3c3250e6469d244",
+    "FastHTTP/DriverOutputProofs.lean": "8db93538d614d368dda2b2258ebe41bcbdf009f8f325bb1104d2356b0d5ae9f8",
+    "FastHTTP/DriverProgressProofs.lean": "a7e3b4e6112bd26eed11db115add1e2b9ee3c7f7e78887eeba0232db298f92aa",
+    "FastHTTP/DriverProofs.lean": "8311ac3e8c027c6229b7acbf819d38e850f5b3c520e0845fcbad3a6c596f52df",
+    "FastHTTP/DriverRequestProofs.lean": "1753d2d739666d9079be45066317293a10cff0afa7139975cebd3606598f653e",
+    "FastHTTP/EndToEndProofs.lean": "bfeb7c27a87914707cffb78e298bcaf1de77e675292fde979f1a8465e5f3d224",
+    "FastHTTP/FeedProofs.lean": "43736b8165c00d47da4976e38bfe90a7b41b0225733fb40f61a871afc4137ee4",
+    "FastHTTP/Fields.lean": "83cd0f9231d06d264945b4df04555e7d614392d86e48e337ade079141a3fec18",
+    "FastHTTP/FieldsProofs.lean": "2acafc675d8d39a11ba895f197863bc11354282526791b1c948e1886ab22118c",
+    "FastHTTP/H1.lean": "b4cb7324045efebc891a93eea4a555182157c43d8dc6488f852c496016feb8c6",
+    "FastHTTP/HeadGrammarProofs.lean": "7f9c594561bdd219f4c77364fa3d9ffa89c741fba8882606b1440398bf4a98e4",
+    "FastHTTP/HeaderLimitProofs.lean": "28e3609d1cbdd3f28b437668c48919085916a3fce5ac61ac0a38dcd6854f89c9",
+    "FastHTTP/HeaderProofs.lean": "b633716af5a9a82298f9cbafceae57625e67b96a3a378ccb227a2dc3928dfebd",
+    "FastHTTP/HeaderSemanticsProofs.lean": "f0b0548e7f86af29ccdca34b53fe58ea46ce26c2aa8f49934b3cc9d4884eb2ab",
+    "FastHTTP/HexProofs.lean": "cce36ce963fe08807a62423dc14c5e7476a7ed25e5b352770536c40b950df3ec",
+    "FastHTTP/IPv6Proofs.lean": "f8757dde05a51a8d2c1c03f6cba3ae34dac0311bf033ac86c450f1470fa873ff",
+    "FastHTTP/Lexical.lean": "4ef5f52e07b971377dce4f75c3ee232d05706e432ca8a2ea796abe75d969cea0",
+    "FastHTTP/LexicalProofs.lean": "c98f9d4e5dde45b654040c4b030fec8d8967b959694a8a4fe4e396f5baa31cd5",
+    "FastHTTP/LimitsProofs.lean": "22cbd659a0065ebd4433becc240cf10e1fa8e910c51abb404f0fd09077728549",
+    "FastHTTP/MessageGrammarProofs.lean": "9f1b00f9efea51ad886c10d84cf04a8e41e8ed65002e51197ed7b7a77cc692cb",
+    "FastHTTP/Numeric.lean": "993626ffbe843b7607ab0f6e042d1ee10e26f30d4580d8c9cd64abedb9ffc833",
+    "FastHTTP/NumericProofs.lean": "4fcab962a6ad73b97b8ebbea119c273cf733e5992a088caba79c637243f805f1",
+    "FastHTTP/Pending.lean": "4dc86313fbe1d1dea94d129716d98b7ab1cbf373a078830812a0bfffd7b0b49a",
+    "FastHTTP/PendingProofs.lean": "029ac2d51312a199dbfdbbfe864bd947a94a0d470438a5787f344d0dabf92996",
+    "FastHTTP/ProofAudit.lean": "d699c213c0839c41b00ee9ca42961a186115122da9638601747e09a04cd7fc1b",
+    "FastHTTP/Proofs.lean": "b901e7f969517e4da5c7ce06fa1ced33d2d16b4b713410db1ab323d9265de6ef",
+    "FastHTTP/Protocol.lean": "8571ff2d747afffa65dbf518361d781ebc53dcaafe3411f827378daa094457b7",
+    "FastHTTP/QuotedProofs.lean": "59fbca409197cd377f450e78bff72c493966974098dfde8db5f091461f7894b4",
+    "FastHTTP/ReadySignal.lean": "faa628a306ed599ea62c16f0cd3e1efeb09c3607fc8af73ca2b2b708288cbcd1",
+    "FastHTTP/ReadySignalProofs.lean": "29b234ae3626002eadf726a5fee1b487c8349981aae3d91a5265498ba74902e0",
+    "FastHTTP/Response.lean": "836c05b5beb731ab9aa38c5a2b5fbd735a8f57ba9db526f035e399b005c973e4",
+    "FastHTTP/ResponseChecked.lean": "b1d3f10be6413d6791e814dc5ccbcaf564427c2bc1b46f971cc228a3003d766f",
+    "FastHTTP/ResponseModel.lean": "23ffa41b71dcac9d2f8e872734dc25cbad519c51865177b24aba8d8fb51e39fb",
+    "FastHTTP/ResponseProofs.lean": "8d4327619a35167890502c428efef16f85be00345b815cd3230772d427e65fb3",
+    "FastHTTP/ResponseSyntax.lean": "fc5187bc546d4b1d5a789b17b9f76a4922880cfded78d3381ff3325ce4ad85d0",
+    "FastHTTP/ResponseSyntaxProofs.lean": "5ec593fffbfd3d581774011e8182e1d0e4963a7cc557ca0db25934639a8da814",
+    "FastHTTP/SSE.lean": "447714a35e5187d6643483e74b5c1f9c7f152e18bf191d6a075ecf1f1e0ea158",
+    "FastHTTP/SSEProofs.lean": "8caadc569547b5ad36572c92608a6e2638539aec6c98e2558bc294ae950053a0",
+    "FastHTTP/ScannerProofs.lean": "6c3d35a1c489837bc4fec11185c5bc1b6d456bc97ed6bf2641ebdb922e8769c5",
+    "FastHTTP/Stream.lean": "a432d1964f040f05955aa648d2df3c70d08e60867ff76cf3691ad901284e003e",
+    "FastHTTP/StreamMachine.lean": "791ddbe8a8c74e87ff3b4e85a9b3df535f093bde79e090c02217fe5cb86afdd2",
+    "FastHTTP/StreamMachineProofs.lean": "100ed916794e8b8cdbc42000f24da7a7692032b5d934f36a28eb66177c202155",
+    "FastHTTP/StreamingProofs.lean": "a53b421f903c175c594f69f3ce9c77efd16e137135c6455ac5e78d8ba2069ac2",
+    "FastHTTP/Syntax.lean": "834cab7eb5ceec3d85ebbbdea36f0439981a952a26f6f13e48b176afc7ce9390",
+    "FastHTTP/SyntaxProofs.lean": "33d5d2ba6971d2bb0d36a8611965a013dd9fc06726f6b08645fe56d4db438f6c",
+    "FastHTTP/TargetProofs.lean": "1c56a48c84614eeb61cdd5372689b14081ec01a45a4f42d9938400f590281047",
+    "FastHTTP/TrailerProofs.lean": "8988773fede687680a03bf0f5b093dded1d707797ead5ed92dd985e7fd051400",
+    "FastHTTP/UV.lean": "fd9c77ebafe1077e6e129a8898792c14db8cef281c86048d4bd6e4337fe81c9e",
+    "FastHTTP/WireProofs.lean": "a730978457481e8b2a00a66f537c9ec72a96e1d2cf5da5c238ad87b7fb51273f"
+  },
+  "lean": "Lean (version 4.35.0, aarch64-unknown-linux-gnu, commit eb6cafb7290e8bd5f2937522d8d804f58f02bafc, Release)"
+}
