@@ -2,22 +2,30 @@ import FastHTTP.TargetProofs
 
 namespace FastHTTP
 
+/-- Scan UTF-8 bytes directly without allocating a ByteArray or boxed Array. -/
+@[specialize] def outputStringAll (text : String) (p : UInt8 → Bool) (i : Nat := 0) : Bool :=
+  if h : i < text.utf8ByteSize then p (text.getUTF8Byte ⟨i⟩ h) && outputStringAll text p (i + 1) else true
+termination_by text.utf8ByteSize - i
+
 /-- Wire field-value octets, including obs-text but excluding CR/LF, controls and DEL. -/
 def validFieldValue (text : String) : Bool :=
-  text.toUTF8.data.all fun b => (b >= 32 && b != 127) || b == 9
+  outputStringAll text fun b => (b >= 32 && b != 127) || b == 9
 
 namespace Protocol
 
 def validOutputName (name : String) : Bool :=
-  name.utf8ByteSize > 0 && name.toUTF8.data.all token
+  name.utf8ByteSize > 0 && outputStringAll name token
 
 def validOutputReason (reason : String) : Bool :=
-  reason.utf8ByteSize > 0 && reason.toUTF8.data.all fun b => b >= 32 && b < 127
+  reason.utf8ByteSize > 0 && outputStringAll reason fun b => b >= 32 && b < 127
 
 def outputNameIs (name target : String) : Bool := equals name.toUTF8 0 name.utf8ByteSize target true
 
 def outputFieldAllowed (managed seen : List String) (name : String) : Bool :=
-  !(managed.any (outputNameIs name)) && (outputNameIs name "set-cookie" || !(seen.any (outputNameIs name)))
+  -- Convert once per field, rather than once per managed/previous field.
+  let bytes := name.toUTF8
+  let matchesName := fun target => equals bytes 0 name.utf8ByteSize target true
+  !(managed.any matchesName) && (matchesName "set-cookie" || !(seen.any matchesName))
 
 def OutputNameGrammar (name : String) : Prop :=
   0 < name.utf8ByteSize ∧ ∀ b ∈ name.toUTF8.data.toList, TokenOctet b

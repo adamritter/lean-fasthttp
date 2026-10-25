@@ -1,0 +1,42 @@
+name: build-and-test
+on:
+  push:
+  pull_request:
+
+jobs:
+  linux:
+    strategy:
+      matrix:
+        lean: [v4.26.0, v4.35.0]
+    env:
+      ELAN_TOOLCHAIN: leanprover/lean4:${{ matrix.lean }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libuv1-dev build-essential
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Build
+        run: bash scripts/build.sh
+      - name: Audit native-contract proof dependencies
+        run: python3 scripts/verify_contract.py
+      - name: Pure reactor socket regressions
+        run: python3 scripts/test_machine.py
+      - name: Socket regressions
+        run: python3 scripts/test.py
+      - name: FFI memory and undefined-behavior checks
+        run: python3 scripts/sanitize.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-${{ matrix.lean }}
+          path: |
+            results/validation.json
+            results/sanitizer.json
+            results/sanitizer-machine.json
+            results/machine-validation.json
+            results/sanitizer-runtime-baseline.txt

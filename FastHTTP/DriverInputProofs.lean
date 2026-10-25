@@ -62,7 +62,7 @@ def InputState (cfg : Config) (wire : ByteArray) : Driver.State → Prop
   | .reading parser => StateBound parser ∧ acknowledge cfg (feed cfg .head wire) = .need parser
   | .continuing parser => StateBound parser ∧
       acknowledge cfg (feed cfg parser .empty) = acknowledge cfg (feed cfg .head wire)
-  | .handling request rest => RequestWire cfg wire request rest
+  | .handling request rest | .waiting request rest _ => RequestWire cfg wire request rest
   | .preparing purpose _ | .sending purpose => InputPurpose cfg wire purpose
   | .streamDate stream | .streaming stream => RequestWire cfg wire stream.request stream.rest
   | .releasing next command => InputState cfg wire next ∧ InputCommand cfg wire command
@@ -168,6 +168,7 @@ theorem driver_step_input (cfg : Config) (wire : ByteArray) (state : Driver.Stat
     · exact ⟨wire, .stay _, input_stop cfg _ _ .abort trivial⟩
     · exact input_stream_event cfg wire _ .written valid
     · exact ⟨wire, .stay _, input_stop cfg _ _ .abort trivial⟩
+    · exact ⟨wire, .stay _, input_stop cfg _ _ .abort trivial⟩
     · exact ⟨wire, .stay _, trivial, trivial⟩
   | result result =>
     cases state <;> cases result <;> simp only [Driver.step, eventInput]
@@ -182,6 +183,10 @@ theorem driver_step_input (cfg : Config) (wire : ByteArray) (state : Driver.Stat
       cases reply <;> exact ⟨wire, .stay _, valid, trivial⟩
     case streaming.chunk stream bytes =>
       cases bytes <;> exact input_stream_event cfg wire stream _ valid
+    case waiting.completed request rest pending completion =>
+      cases completion <;> exact ⟨wire, .stay _, valid, trivial⟩
+    case waiting.failed request rest pending =>
+      exact ⟨wire, .stay _, input_reject cfg wire 500, trivial⟩
 
 /-- A protocol specification over observations and commands, independent of the
 controller implementation. Successive windows only grow by observed reads or

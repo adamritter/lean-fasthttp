@@ -1,9 +1,34 @@
 # lean-fasthttp
 
+## Action handlers, streaming, SSE and cancellation
+
+`FastHTTP.Action` adds inline IO/async completion and lazy cancellation scope
+acquisition without a LeanIO dependency. Ready buffered results need no context
+allocation or cancellation mutex operation; actual suspension, streams and
+explicit context access acquire runtime state. This does not claim zero total
+async overhead. See [Action](FastHTTP/Action.lean) and its
+[proofs](FastHTTP/ActionProofs.lean).
+
+Cancellable pending completions, streaming sources and SSE use the existing
+response grammar and ownership model. Late streaming completions are released
+when the request has already been cancelled. Native FFI and scheduler behavior
+remain tested assumptions, not fully verified code. The vendored LeanUV copy
+includes disconnect detection during suspended reads and write activity idle
+accounting; see [vendor provenance](vendor/UPSTREAM.md).
+
+The optional [LeanIO integration](https://github.com/adamritter/leanio-fasthttp)
+provides direct IO and unified Action handlers, the real LeanIO route trie and
+extractors, middleware, and buffered/streaming/SSE responses. It retains the
+measured source checkpoints and validation logs. Its historical single-core
+1-KiB GET medians were 86.6k/s Native, 89.6k/s Action and 93.2k/s direct IO
+(5 x 10 seconds; overlapping ranges). These are routed dynamic-response
+applications, distinct from the simpler prepared-response benchmarks below.
+
+
 HTTP/1.1 in Lean 4.35.0, with prepared responses, asynchronous streaming and
 independent lean-uv workers. The UV server has a **complete conditional proof of
 its documented origin-server wire/framing model**: `http11_end_to_end` and
-`driver_eventual_reply`. The audit checks **362 kernel theorems and four
+`driver_eventual_reply`. The audit checks **378 kernel theorems and four
 certificate factories**, with no `sorry`, custom axioms or `native_decide`.
 
 [Exact model, statements and assumptions](FORMAL_SCOPE.md) ·
@@ -24,7 +49,7 @@ python3 scripts/verify_uv.py
 bin/lean-uv-http 18098 4
 ```
 
-`FastHTTP` uses Lean 4.35. The pinned
+`FastHTTP` uses Lean 4.35. The vendored dependency starts from the pinned
 [lean-uv](https://github.com/adamritter/lean-uv/commit/1d116e2a8c368ca932efbf6a16a6c8ef1e548596)
 works on Lean 4.26 and 4.35, with both-version contract audits and native
 ASan/UBSan regressions. Build artifacts are generated locally; every test and
@@ -129,7 +154,7 @@ are not provided by this buffered API.
 The final source [`db97763`](https://github.com/adamritter/lean-fasthttp/commit/db977633ade3d3a55cbffc55130c0c150fc48f7c)
 passes 29,984 exact-fragment cases with a fresh seed, both transports' wire suites,
 and 993 fresh four-worker integration responses. The kernel audit checks
-362 theorems and the four certificate factories.
+378 theorems and the four certificate factories.
 
 On GH200, **413,594 completed requests/s** is the median of three
 15-second runs with four I/O workers and the whole server pinned to four CPUs.

@@ -12,6 +12,8 @@ jobs:
       - run: scripts/build.sh
       - run: python3 scripts/verify_artifacts.py
       - run: python3 scripts/verify_proofs.py
+      - run: lake build pending_checks
+      - run: .lake/build/bin/pending_checks
       - run: python3 scripts/verify_fast_protocol.py
       - run: python3 scripts/verify_rfc.py
       - run: python3 scripts/verify_generated.py

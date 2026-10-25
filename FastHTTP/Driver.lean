@@ -13,14 +13,17 @@ abbrev ChunkPromise := IO.Promise (Except IO.Error (Option ByteArray))
 inductive Work where
   | handle (request : Request)
   | response (promise : ResponsePromise)
+  | pending (response : Pending)
   | produce (next : IO ChunkPromise)
   | chunk (promise : ChunkPromise)
   | date
   | release (action : IO Unit)
+  | cancel (action : IO Unit)
 
 inductive Result where
   | handled (reply : Reply)
   | response (response : Response)
+  | completed (response : Completion)
   | producer (promise : ChunkPromise)
   | chunk (bytes : Option ByteArray)
   | date (header : DateHeader)
@@ -49,6 +52,7 @@ inductive State where
   | streamDate (stream : Streaming)
   | streaming (stream : Streaming)
   | releasing (next : State) (command : Command)
+  | waiting (request : Request) (rest : ByteArray) (pending : Pending)
   | closed
 
 /-- Error responses use the same validated public constructor as application
@@ -103,6 +107,7 @@ def streamEvent (cfg : Config) (stream : Streaming) (event : Protocol.StreamEven
 another request. Any adopted stream is cleaned up before the terminal command. -/
 def stop (state : State) (command : Command) : State × Command :=
   match state with
+  | .waiting _ _ pending => (.releasing .closed command, .finalize (.cancel pending.cancel))
   | .streamDate stream | .streaming stream =>
     if stream.control.ownsResource then
       (.releasing .closed command, .finalize (.release stream.response.release))
@@ -122,6 +127,14 @@ def step (cfg : Config) (state : State) (event : Event) : State × Command :=
       | .ready response => (.preparing (.response request rest) response, .perform .date)
       | .deferred promise => (.handling request rest, .perform (.response promise))
       | .streaming response => (.streamDate ⟨request, rest, response, {}⟩, .perform .date)
+      | .pending pending => (.waiting request rest pending, .perform (.pending pending))
+    | .waiting request rest _, .result (.completed (.ready response)) =>
+      (.preparing (.response request rest) response, .perform .date)
+    | .waiting request rest _, .result (.completed (.streaming response)) =>
+      (.streamDate ⟨request, rest, response, {}⟩, .perform .date)
+    | .waiting _ _ pending, .result .failed =>
+      let next := reject 500
+      (.releasing next.1 next.2, .finalize (.cancel pending.cancel))
     | .handling request rest, .result (.response response) =>
       (.preparing (.response request rest) response, .perform .date)
     | .handling _ _, .result .failed => reject 500
@@ -147,9 +160,10 @@ It makes no assumption about HTTP parsing, wire serialization or stream control.
 def EffectShape : Work → Result → Prop
   | .handle _, .handled _ | .handle _, .failed => True
   | .response _, .response _ | .response _, .failed => True
+  | .pending _, .completed _ | .pending _, .failed => True
   | .produce _, .producer _ | .produce _, .failed => True
   | .chunk _, .chunk _ | .chunk _, .failed => True
-  | .date, .date _ | .release _, .released => True
+  | .date, .date _ | .release _, .released | .cancel _, .released => True
   | _, _ => False
 
 end Driver

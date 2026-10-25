@@ -39,6 +39,7 @@ completion and write acknowledgment; fixed administrative phases strictly descen
 def ReplyRank (budget : Nat) (state : Driver.State) (command : Driver.Command) : Nat :=
   match state with
   | .handling _ _ => 4 * budget + (match command with | .perform (.response _) => 7 | _ => 8)
+  | .waiting _ _ _ => 4 * budget + 7
   | .preparing _ _ => 2
   | .sending _ => 1
   | .streamDate _ => 4 * budget + 6
@@ -55,6 +56,7 @@ theorem active_reply_busy (state : Driver.State) (command : Driver.Command)
   cases state with
   | reading _ | continuing _ | closed => contradiction
   | handling request rest => rcases valid with rfl | ⟨promise, rfl⟩ <;> trivial
+  | waiting request rest pending => subst command; trivial
   | preparing purpose response => subst command; trivial
   | sending purpose => obtain ⟨buffers, rfl, _⟩ := valid; trivial
   | streamDate stream => rw [valid.1]; trivial
@@ -64,7 +66,7 @@ theorem active_reply_busy (state : Driver.State) (command : Driver.Command)
     · rcases valid.2 with rfl | ⟨promise, rfl⟩ <;> trivial
     · obtain ⟨_, payload, _, rfl, _⟩ := valid; trivial
     · obtain ⟨_, _, rfl⟩ := valid; trivial
-  | releasing next pending => obtain ⟨⟨action, rfl⟩, _⟩ := valid; trivial
+  | releasing next pending => rcases valid with ⟨⟨action, rfl | rfl⟩, _⟩ <;> trivial
 
 theorem reject_reply_rank (status budget : Nat) (notClosed : (Driver.reject status).1 ≠ .closed) :
     ActiveReply (Driver.reject status).1 ∧ ReplyRank budget (Driver.reject status).1 (Driver.reject status).2 = 2 := by
@@ -92,10 +94,11 @@ theorem driver_reply_descent (cfg : Config) (state : Driver.State) (prior : Driv
     cases state with
     | reading _ | continuing _ | closed => contradiction
     | handling request rest => rcases valid with rfl | ⟨promise, rfl⟩ <;> contradiction
+    | waiting request rest pending => subst prior; contradiction
     | preparing purpose response => subst prior; contradiction
     | sending purpose => exact False.elim (unfinished (Or.inr trivial))
     | streamDate stream => rw [valid.1] at allowed; contradiction
-    | releasing next pending => obtain ⟨⟨action, rfl⟩, _⟩ := valid; contradiction
+    | releasing next pending => rcases valid with ⟨⟨action, rfl | rfl⟩, _⟩ <;> contradiction
     | streaming stream =>
       have enabled := output_stream_written_enabled stream prior valid allowed
       have notExit := (not_or.mp unfinished).2
@@ -132,6 +135,15 @@ theorem driver_reply_descent (cfg : Config) (state : Driver.State) (prior : Driv
           change ReplyRank after (Driver.reject 500).1 (Driver.reject 500).2 < 4 * before + 7
           rw [next.2]
           omega
+    | waiting request rest pending =>
+      subst prior
+      cases result <;> simp only [LeanUV.TCP.Machine.effectMatches, Driver.EffectShape] at effect
+      all_goals try contradiction
+      case completed completion =>
+        cases completion <;> simp [Driver.step, ActiveReply, ReplyRank] <;> omega
+      case failed =>
+        simp only [Driver.step, ActiveReply, ReplyRank, true_and]
+        split <;> omega
     | preparing purpose response =>
       change prior = .perform .date at valid
       subst prior
@@ -142,12 +154,13 @@ theorem driver_reply_descent (cfg : Config) (state : Driver.State) (prior : Driv
       cases result <;> simp_all [LeanUV.TCP.Machine.effectMatches, Driver.EffectShape, Driver.step, ActiveReply, ReplyRank]
       omega
     | releasing next pending =>
-      obtain ⟨⟨action, rfl⟩, nextValid⟩ := valid
-      cases result <;> simp only [LeanUV.TCP.Machine.effectMatches, Driver.EffectShape] at effect
+      rcases valid with ⟨⟨action, rfl | rfl⟩, nextValid⟩ <;>
+        cases result <;> simp only [LeanUV.TCP.Machine.effectMatches, Driver.EffectShape] at effect
       all_goals try contradiction
-      have ending : EndContinuation next = true := by
-        simpa using (not_or.mp unfinished).2
-      cases next <;> simp_all [EndContinuation, Driver.step, ActiveReply, ReplyRank]
+      all_goals
+        have ending : EndContinuation next = true := by
+          simpa using (not_or.mp unfinished).2
+        cases next <;> simp_all [EndContinuation, Driver.step, ActiveReply, ReplyRank]
     | streaming stream =>
       have phase := output_stream_result_enabled stream prior result valid allowed
       simp only [OutputPair, StreamOutput, phase] at valid

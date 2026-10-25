@@ -25,6 +25,7 @@ def DriverWellFormed : Driver.State → Prop
 late/mismatched result cannot create a new cleanup right. -/
 def driverAcquired : Driver.State → Driver.Event → Nat
   | .handling _ _, .result (.handled (.streaming _)) => 1
+  | .waiting _ _ _, .result (.completed (.streaming _)) => 1
   | _, _ => 0
 
 def DriverEmpty (pair : Driver.State × Driver.Command) : Prop :=
@@ -103,6 +104,7 @@ theorem driver_step_resource (cfg : Config) (state : Driver.State) (event : Driv
     · exact driver_stop_resource _ .abort rfl
     · exact driver_stream_resource cfg _ .written
     · exact driver_stop_resource _ .abort rfl
+    · exact driver_stop_resource _ .abort rfl
     · simp [DriverWellFormed, driverOwned, driverReleaseUnits]
   | result result =>
     cases state <;> cases result <;> simp only [Driver.step, driverAcquired, Nat.add_zero]
@@ -121,6 +123,11 @@ theorem driver_step_resource (cfg : Config) (state : Driver.State) (event : Driv
       cases bytes <;> exact driver_stream_resource cfg stream _
     case releasing.released next command =>
       simpa [cleanupUnits] using wf.2.1
+    case waiting.completed request rest pending completion =>
+      cases completion <;> simp [Driver.step, driverAcquired, DriverWellFormed,
+        driverOwned, driverReleaseUnits, cleanupUnits]
+    case waiting.failed =>
+      exact driver_reject_empty 500
 
 def driverAcquiredTrace (cfg : Config) (state : Driver.State) : List Driver.Event → Nat
   | [] => 0

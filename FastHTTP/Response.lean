@@ -22,17 +22,18 @@ def Response.create (body : ByteArray) (status : Nat := 200) (reason := "OK")
           | none => ""
           | some n => s!"Content-Length: {n}\r\n"
         let headerStart := s!"{status} {reason}\r\n{length}Content-Type: {contentType}\r\n{fields.val}Connection: "
-        let keep := ("HTTP/1.1 " ++ headerStart ++ "keep-alive\r\n").toUTF8
-        let close := ("HTTP/1.1 " ++ headerStart ++ "close\r\n").toUTF8
+        let headerPrefix := ("HTTP/1.1 " ++ headerStart).toUTF8
+        let keep := headerPrefix ++ "keep-alive\r\n".toUTF8
+        let close := headerPrefix ++ "close\r\n".toUTF8
         let legacy := ("HTTP/1.0 " ++ headerStart ++ "close\r\n").toUTF8
         return ⟨keep, close, legacy, Protocol.wireBody status false body, by
           refine ⟨status, reason, contentType, fields.val, body, headers.toList, hs.1, hs.2,
             (Protocol.validOutputReason_iff reason).mp hr, hc.1,
             (Protocol.validFieldValue_iff contentType).mp hc.2, fields.property, ?_, ?_, ?_, ?_⟩
           · by_cases emptyLength : status = 204 <;>
-              simp [keep, headerStart, length, Protocol.responseLength, Protocol.PreparedHeadWire, emptyLength, toString, String.append_assoc]
+              simp [keep, headerPrefix, headerStart, length, Protocol.responseLength, Protocol.PreparedHeadWire, emptyLength, toString, String.append_assoc, String.toByteArray_append, ByteArray.append_assoc] <;> decide
           · by_cases emptyLength : status = 204 <;>
-              simp [close, headerStart, length, Protocol.responseLength, Protocol.PreparedHeadWire, emptyLength, toString, String.append_assoc]
+              simp [close, headerPrefix, headerStart, length, Protocol.responseLength, Protocol.PreparedHeadWire, emptyLength, toString, String.append_assoc, String.toByteArray_append, ByteArray.append_assoc] <;> decide
           · by_cases emptyLength : status = 204 <;>
               simp [legacy, headerStart, length, Protocol.responseLength, Protocol.PreparedHeadWire, emptyLength, toString, String.append_assoc]
           · by_cases h204 : status = 204 <;> by_cases h205 : status = 205 <;> by_cases h304 : status = 304 <;>

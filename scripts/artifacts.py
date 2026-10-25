@@ -24,7 +24,8 @@ def sha(path):
 
 def source_hashes():
     sources = {}
-    roots = [(ROOT, ''), (ROOT / '.lake/packages/lean_uv', 'lean_uv/')]
+    # The patched dependency is vendored under ROOT and traversed with it.
+    roots = [(ROOT, '')]
     for root, prefix in roots:
         for directory, dirs, files in os.walk(root):
             dirs[:] = [d for d in dirs if d not in ('.git', '.lake', 'bin', 'results', '__pycache__')]

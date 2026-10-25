@@ -21,9 +21,9 @@ def main():
         manifest = root / 'bin/build-manifest.json'
         (root / 'bin').mkdir()
         (root / '.lake/build/bin').mkdir(parents=True)
-        (root / '.lake/packages/lean_uv').mkdir(parents=True)
+        (root / 'vendor/lean_uv').mkdir(parents=True)
         source = root / 'Example.lean'
-        dependency = root / '.lake/packages/lean_uv/Example.lean'
+        dependency = root / 'vendor/lean_uv/Example.lean'
         source.write_text('def value := 1\n')
         dependency.write_text('def dependency := 2\n')
         for installed, built in artifacts.BINARIES.items():

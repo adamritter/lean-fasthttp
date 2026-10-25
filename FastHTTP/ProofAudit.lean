@@ -1,4 +1,7 @@
+import FastHTTP.ActionProofs
 import FastHTTP.AuthorityProofs
+import FastHTTP.PendingProofs
+import FastHTTP.StreamingProofs
 import FastHTTP.BodyFastProofs
 import FastHTTP.BodyGrammarProofs
 import FastHTTP.BodyLimitProofs
@@ -34,6 +37,16 @@ import FastHTTP.SyntaxProofs
 import FastHTTP.TargetProofs
 import FastHTTP.TrailerProofs
 import FastHTTP.WireProofs
+
+#print axioms FastHTTP.pending_stop_cancels
+#print axioms FastHTTP.pending_stream_adopted
+#print axioms FastHTTP.pending_close_idempotent
+#print axioms FastHTTP.pending_take_once
+#print axioms FastHTTP.pending_late_result
+#print axioms FastHTTP.pending_cancel_before_resolve
+#print axioms FastHTTP.pending_resolve_before_cancel
+#print axioms FastHTTP.pending_taken_not_cancelled
+#print axioms FastHTTP.sse_bad_event_rejected
 
 #print axioms FastHTTP.checkedResponseFields
 #print axioms FastHTTP.Response.create
@@ -401,3 +414,16 @@ import FastHTTP.WireProofs
 #print axioms FastHTTP.Protocol.decimal_wire_encoding
 #print axioms FastHTTP.Protocol.decimal_wire_roundtrip
 #print axioms FastHTTP.Protocol.encodeChunk_wire
+
+#print axioms FastHTTP.Protocol.outputStringAll_iff
+#print axioms FastHTTP.Protocol.outputStringAll_eq_all
+
+#print axioms FastHTTP.Action.pure_ready
+
+#print axioms FastHTTP.Action.io_ready
+
+#print axioms FastHTTP.Action.context_scoped
+
+#print axioms FastHTTP.Action.scoped_bind
+
+#print axioms FastHTTP.Action.ready_bind

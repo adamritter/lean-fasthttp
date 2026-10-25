@@ -2,6 +2,7 @@ import Std.Internal.UV.TCP
 import FastHTTP.Protocol
 import FastHTTP.StreamMachine
 import FastHTTP.Date
+import FastHTTP.Pending
 
 namespace FastHTTP
 
@@ -9,6 +10,8 @@ inductive Reply where
   | ready (response : Response)
   | streaming (response : StreamResponse)
   | deferred (response : IO.Promise (Except IO.Error Response))
+  /-- Cancellable deferred buffered or streaming response, supported by UV. -/
+  | pending (response : Pending)
 
 /-- Return promptly; deferred replies suspend only their connection. -/
 abbrev Handler := Request → IO Reply
@@ -86,6 +89,11 @@ mutual
           after promise fun
             | .ok response => send client ctx request rest response
             | .error _ => reject client ctx 500
+        | .pending pending =>
+          -- This legacy callback transport has no disconnect notification for
+          -- suspended handlers. Fail explicitly; use FastHTTP.UV for this API.
+          pending.cancel
+          reject client ctx 501
       catch _ => reject client ctx 500
 
   private partial def send (client : Socket) (ctx : Context)

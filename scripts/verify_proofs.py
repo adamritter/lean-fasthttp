@@ -19,7 +19,8 @@ def main():
     declared = set()
     for path in modules:
         source = path.read_text()
-        declared.update('FastHTTP.Protocol.' + name for name in
+        namespace = re.search(r'^namespace\s+(\S+)', source, re.M)[1]
+        declared.update(namespace + '.' + name for name in
             re.findall(r'^theorem\s+(\w+)', source, re.M))
     theorem_count = len(declared)
     declared.update(CERTIFICATE_FACTORIES)

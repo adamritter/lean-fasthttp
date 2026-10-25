@@ -1,0 +1,47 @@
+diff --git a/lean-toolchain b/lean-toolchain
+index e59446d..a6aff06 100644
+--- a/lean-toolchain
++++ b/lean-toolchain
+@@ -1 +1 @@
+-leanprover/lean4:v4.26.0
++leanprover/lean4:v4.35.0
+diff --git a/native/uv.c b/native/uv.c
+index 7ce0098..c637b0f 100644
+--- a/native/uv.c
++++ b/native/uv.c
+@@ -159,6 +159,19 @@ static int start_read(connection *c) {
+ 
+ static void wake_connection(connection *c) {
+     if (!c->closing && !c->draining && c->wakeup && c->callbacks) {
++        /* Reads are paused during pending application work. Detect socket
++           errors without consuming pipeline bytes or treating a TCP FIN as
++           cancellation: a half-closed client may still read our response. */
++        uv_os_fd_t fd;
++        int socket_error = 0;
++        socklen_t error_size = sizeof(socket_error);
++        if (uv_fileno((uv_handle_t *)&c->tcp, &fd) == 0 &&
++                getsockopt(fd, SOL_SOCKET, SO_ERROR, &socket_error, &error_size) == 0 &&
++                socket_error != 0) {
++            transport_error(c, uv_translate_sys_error(socket_error));
++            close_connection(c);
++            return;
++        }
+         lean_object *action = lean_ctor_get(c->callbacks, 2);
+         lean_inc(action);
+         callback_result(c, lean_apply_1(action, lean_box(0)));
+@@ -179,6 +192,7 @@ static void on_written(uv_write_t *req, int status) {
+         int rc = start_read(c);
+         if (rc < 0) { c->worker->errors++; close_connection(c); }
+     }
++    if (status == 0) c->last_active = uv_now(&c->worker->loop);
+     if (status == 0 && c->retained == 0) wake_connection(c);
+ }
+ 
+@@ -198,6 +212,7 @@ static lean_object *send_buffers(b_lean_obj_arg socket, lean_object *owner,
+     size_t offset = 0;
+     if (!c->tcp.write_queue_size) {
+         rc = uv_try_write((uv_stream_t *)&c->tcp, buffers, count);
++        if (rc > 0) c->last_active = uv_now(&c->worker->loop);
+         if (rc == (int64_t)len) {
+             c->worker->sends++;
+             c->worker->sent += len;

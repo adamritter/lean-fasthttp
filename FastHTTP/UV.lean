@@ -17,6 +17,12 @@ private def effect (handler : Handler) (dates : DateCache) : Driver.Work → IO 
     return some (match promise.result?.get with
       | some (.ok response) => .response response
       | _ => .failed)
+  | .pending pending => do
+    try
+      return (← pending.poll).map fun
+        | .ok response => .completed response
+        | .error _ => .failed
+    catch _ => return some .failed
   | .produce next => do
     try return some (.producer (← next)) catch _ => return some .failed
   | .chunk promise => do
@@ -25,7 +31,7 @@ private def effect (handler : Handler) (dates : DateCache) : Driver.Work → IO 
       | some (.ok chunk) => .chunk chunk
       | _ => .failed)
   | .date => do return some (.date (← dates.getChecked))
-  | .release action => do
+  | .release action | .cancel action => do
     try action catch _ => pure ()
     return some .released
 

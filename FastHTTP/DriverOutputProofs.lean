@@ -35,11 +35,12 @@ def OutputPair : Driver.State → Driver.Command → Prop
   | .reading _, command => command = .idle
   | .continuing _, command => command = .write #["HTTP/1.1 100 Continue\r\n\r\n".toUTF8]
   | .handling request _, command => command = .perform (.handle request) ∨ ∃ promise, command = .perform (.response promise)
+  | .waiting _ _ pending, command => command = .perform (.pending pending)
   | .preparing _ _, command => command = .perform .date
   | .streamDate stream, command => command = .perform .date ∧ stream.control.phase = .headers
   | .sending purpose, command => PreparedCommand purpose command
   | .streaming stream, command => StreamOutput stream command
-  | .releasing next pending, command => (∃ action, command = .finalize (.release action)) ∧ OutputPair next pending
+  | .releasing next pending, command => (∃ action, command = .finalize (.release action) ∨ command = .finalize (.cancel action)) ∧ OutputPair next pending
   | .closed, command => command = .idle ∨ command = .shutdown ∨ command = .abort
 
 theorem output_reject (status : Nat) : OutputPair (Driver.reject status).1 (Driver.reject status).2 := by
@@ -61,7 +62,7 @@ theorem output_stop (state : Driver.State) (command : Driver.Command)
     (terminal : OutputPair .closed command) : OutputPair (Driver.stop state command).1 (Driver.stop state command).2 := by
   cases state <;> simp only [Driver.stop]
   all_goals try split
-  all_goals first | exact terminal | exact ⟨⟨_, rfl⟩, terminal⟩
+  all_goals first | exact terminal | exact ⟨⟨_, Or.inl rfl⟩, terminal⟩ | exact ⟨⟨_, Or.inr rfl⟩, terminal⟩
 
 def StreamCommandOutput (stream : Driver.Streaming) : StreamCommand → Prop
   | .idle => StreamOutput stream .idle
@@ -143,7 +144,7 @@ theorem output_stream_event (cfg : Config) (stream : Driver.Streaming) (event : 
   unfold Driver.streamEvent
   dsimp only
   split
-  · exact ⟨⟨_, rfl⟩, valid⟩
+  · exact ⟨⟨_, Or.inl rfl⟩, valid⟩
   · exact valid
 
 /-- Every causally scheduled transition of the deployed controller preserves
@@ -169,6 +170,10 @@ theorem driver_step_output (cfg : Config) (state : Driver.State) (prior : Driver
     all_goals try first | exact output_stop _ .abort (Or.inr (Or.inr rfl)) |
       exact output_reject 500 | exact valid.2 | simp [OutputPair]
     case handling.handled request rest reply => cases reply <;> simp [OutputPair]
+    case waiting.completed request rest pending completion =>
+      cases completion <;> simp [OutputPair]
+    case waiting.failed request rest pending =>
+      exact output_reject 500
     case preparing.date purpose response date =>
       exact ⟨_, rfl, driver_prepared_buffers_grammar purpose response date⟩
     case streamDate.date stream date =>
@@ -294,6 +299,7 @@ theorem driver_handler_gate (cfg : Config) (state : Driver.State) (event : Drive
       | exact False.elim (reject_ne_handler 500 request handler)
     all_goals try simp at handler
     case handling.handled current rest reply => cases reply <;> simp at handler
+    case waiting.completed current rest pending completion => cases completion <;> simp at handler
     case streaming.chunk stream bytes =>
       cases bytes <;> have h := (stream_event_handler cfg stream _ request handler).1 <;> contradiction
     case streaming.failed stream =>

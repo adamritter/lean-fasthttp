@@ -27,6 +27,7 @@ def DriverRequestInvariant (cfg : Config) : Driver.State → Prop
   | .continuing parser => StateBound parser ∧ ∃ wire,
       acknowledge cfg (feed cfg parser .empty) = acknowledge cfg (feed cfg .head wire)
   | .handling request rest => DeliveredRequest cfg request rest
+  | .waiting request rest _ => DeliveredRequest cfg request rest
   | .preparing purpose _ | .sending purpose => DriverPurposeValid cfg purpose
   | .streamDate stream | .streaming stream => DeliveredRequest cfg stream.request stream.rest
   | .releasing next command => DriverRequestInvariant cfg next ∧ DriverCommandValid cfg command
@@ -121,6 +122,7 @@ theorem driver_step_request_valid (cfg : Config) (state : Driver.State) (event :
     · exact driver_stop_valid cfg _ .abort trivial
     · exact driver_streamEvent_valid cfg _ .written valid
     · exact driver_stop_valid cfg _ .abort trivial
+    · exact driver_stop_valid cfg _ .abort trivial
     · exact ⟨trivial, trivial⟩
   | result result =>
     cases state <;> cases result <;> simp only [Driver.step]
@@ -135,6 +137,10 @@ theorem driver_step_request_valid (cfg : Config) (state : Driver.State) (event :
       cases reply <;> exact ⟨valid, trivial⟩
     case streaming.chunk stream bytes =>
       cases bytes <;> exact driver_streamEvent_valid cfg stream _ valid
+    case waiting.completed request rest pending completion =>
+      cases completion <;> exact ⟨valid, trivial⟩
+    case waiting.failed =>
+      exact ⟨driver_reject_valid cfg 500, trivial⟩
 
 /-- Every command in the actual pure replay satisfies the handler-dispatch
 predicate, not only its final state or final command. -/
