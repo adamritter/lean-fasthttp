@@ -28,7 +28,7 @@ applications, distinct from the simpler prepared-response benchmarks below.
 HTTP/1.1 in Lean 4.35.0, with prepared responses, asynchronous streaming and
 independent lean-uv workers. The UV server has a **complete conditional proof of
 its documented origin-server wire/framing model**: `http11_end_to_end` and
-`driver_eventual_reply`. The audit checks **378 kernel theorems and four
+`driver_eventual_reply`. The audit checks **384 kernel theorems and four
 certificate factories**, with no `sorry`, custom axioms or `native_decide`.
 
 [Exact model, statements and assumptions](FORMAL_SCOPE.md) ·
@@ -154,7 +154,7 @@ are not provided by this buffered API.
 The final source [`db97763`](https://github.com/adamritter/lean-fasthttp/commit/db977633ade3d3a55cbffc55130c0c150fc48f7c)
 passes 29,984 exact-fragment cases with a fresh seed, both transports' wire suites,
 and 993 fresh four-worker integration responses. The kernel audit checks
-378 theorems and the four certificate factories.
+384 theorems and the four certificate factories.
 
 On GH200, **413,594 completed requests/s** is the median of three
 15-second runs with four I/O workers and the whole server pinned to four CPUs.
@@ -195,3 +195,23 @@ the earlier callback controller on GH200, while the preceding pure-reactor
 checkpoint still exceeded 400k/s in all three runs. The native cleanup diagnostic
 also preserves the old yield-related leak and its corrected immediate-finalizer
 regression in the pinned lean-uv repository.
+
+### Ready-only SSE batching
+
+SSE coalesces immediately available chunks, with a default budget of 32 pulls
+and 16 KiB per batch. The byte budget is checked after each indivisible chunk.
+An unresolved next pull never delays already buffered bytes; it is retained for
+the next call. EOF, errors and invalid empty chunks are preserved. Cleanup remains
+owned by the existing cancellation/stream adapter. Applications can also use
+`AsyncStream.Source.batchReady` explicitly. This is bounded read-ahead, so a source
+may be pulled up to one batch before the corresponding socket write completes.
+
+Five kernel theorems in `BatchProofs.lean` prove byte and length conservation and
+invariance under regrouping completed chunks. They do not prove task scheduling or
+the C transport. Tests cover readiness, one outstanding pull, ordered delivery,
+batch limits, EOF, failure and cancellation. Genuine suspended transport work still
+uses the existing 10 ms polling adapter; this change does not make it event-driven.
+
+The single-line SSE data fast path also has a kernel-checked wire-form theorem.
+Multiline data retains CRLF/CR normalization; 9,330 encoder cases compare the
+optimized encoder with the line-normalizing reference, including Unicode and NUL.

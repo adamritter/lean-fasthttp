@@ -1,3 +1,5 @@
+import FastHTTP.SSEProofs
+import FastHTTP.BatchProofs
 import FastHTTP.ActionProofs
 import FastHTTP.AuthorityProofs
 import FastHTTP.PendingProofs
@@ -427,3 +429,15 @@ import FastHTTP.WireProofs
 #print axioms FastHTTP.Action.scoped_bind
 
 #print axioms FastHTTP.Action.ready_bind
+
+#print axioms FastHTTP.AsyncStream.ReadyBatch.append_data
+
+#print axioms FastHTTP.AsyncStream.ReadyBatch.append_size
+
+#print axioms FastHTTP.AsyncStream.ReadyBatch.payload_prefix
+
+#print axioms FastHTTP.AsyncStream.ReadyBatch.payload_partition
+
+#print axioms FastHTTP.AsyncStream.ReadyBatch.coalesce_pair
+
+#print axioms FastHTTP.SSE.single_line_data_wire

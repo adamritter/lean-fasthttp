@@ -23,8 +23,11 @@ def Event.encode (value : Event) : Except String ByteArray := do
     unless singleLine id do throw "SSE id must be a single line without NUL"
     text := text ++ "id: " ++ id ++ "\n"
   if let some retry := value.retry then text := text ++ s!"retry: {retry}\n"
-  let normalized := (value.data.replace "\r\n" "\n").replace "\r" "\n"
-  for line in normalized.splitOn "\n" do text := text ++ "data: " ++ line ++ "\n"
+  if !value.data.contains '\r' && !value.data.contains '\n' then
+    text := text ++ "data: " ++ value.data ++ "\n"
+  else
+    let normalized := (value.data.replace "\r\n" "\n").replace "\r" "\n"
+    for line in normalized.splitOn "\n" do text := text ++ "data: " ++ line ++ "\n"
   return (text ++ "\n").toUTF8
 
 structure Source where
@@ -42,7 +45,7 @@ def Source.bytes (source : Source) (heartbeatMs : Nat := 15000) : IO AsyncStream
     match event with
     | none => pure none
     | some event => return some (← IO.ofExcept (event.encode.mapError IO.userError))
-  return {
+  let bytes : AsyncStream.Source := {
     close := source.close
     next := fun context => do
       if ← context.isCancelled then throw (IO.userError "SSE cancelled")
@@ -64,5 +67,6 @@ def Source.bytes (source : Source) (heartbeatMs : Nat := 15000) : IO AsyncStream
           return some ": keep-alive\n\n".toUTF8
         Std.Async.sleep 10
       return none }
+  bytes.batchReady
 
 end FastHTTP.SSE
